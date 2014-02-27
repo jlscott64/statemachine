@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -40,5 +42,11 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         /// <value>The new state.</value>
         IState<TState, TEvent> NewState { get; }
+
+        /// <summary>
+        /// Gets the new states the state machine is in.
+        /// </summary>
+        /// <value>The new states.</value>
+        IEnumerable<IState<TState, TEvent>> NewStates { get; }
     }
 }

@@ -34,9 +34,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Appccelerate.Fundamentals.2.1.0-Unstable31\lib\portable-windows8+net45\Appccelerate.Fundamentals.dll</HintPath>
     </Reference>
-    <Reference Include="FakeItEasy, Version=1.15.0.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\FakeItEasy.1.15.0\lib\net40\FakeItEasy.dll</HintPath>
+    <Reference Include="FakeItEasy">
+      <HintPath>..\packages\FakeItEasy.1.17.0\lib\net40\FakeItEasy.dll</HintPath>
     </Reference>
     <Reference Include="FluentAssertions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -57,15 +56,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\xunit.extensions.1.9.2\lib\net20\xunit.extensions.dll</HintPath>
     </Reference>
-    <Reference Include="xunit.runner.msbuild">
-      <HintPath>..\packages\xunit\lib\net20\xunit.runner.msbuild.dll</HintPath>
-    </Reference>
-    <Reference Include="xunit.runner.tdnet">
-      <HintPath>..\packages\xunit\lib\net20\xunit.runner.tdnet.dll</HintPath>
-    </Reference>
-    <Reference Include="xunit.runner.utility">
-      <HintPath>..\packages\xunit\lib\net20\xunit.runner.utility.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveStateMachineTest.cs" />
@@ -78,6 +68,7 @@
     <Compile Include="Machine\GuardTest.cs" />
     <Compile Include="Machine\HierarchyBuilderTest.cs" />
     <Compile Include="Machine\MissableTest.cs" />
+    <Compile Include="Machine\RegionBuilderTest.cs" />
     <Compile Include="Machine\StateActionTest.cs" />
     <Compile Include="Machine\StateMachineBuildHierarchyTest.cs" />
     <Compile Include="Machine\StateMachineTest.cs" />

@@ -158,6 +158,12 @@ namespace Appccelerate.StateMachine.Machine.States
         }
 
         /// <summary>
+        /// Gets or sets the region this state belongs to.
+        /// </summary>
+        /// <value>The containing region.</value>
+        public Region<TState, TEvent> ContainingRegion { get; set; }
+
+        /// <summary>
         /// Gets or sets the level of this state in the state hierarchy.
         /// When set then the levels of all sub-states are changed accordingly.
         /// </summary>

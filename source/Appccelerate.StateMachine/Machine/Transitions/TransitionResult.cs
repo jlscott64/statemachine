@@ -16,6 +16,9 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
@@ -25,12 +28,28 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         where TState : IComparable
         where TEvent : IComparable
     {
-        public static readonly ITransitionResult<TState, TEvent> NotFired = new TransitionResult<TState, TEvent>(false, null);
+        public static readonly ITransitionResult<TState, TEvent> NotFired = new TransitionResult<TState, TEvent>();
+        private readonly List<IState<TState, TEvent>> newStates = new List<IState<TState, TEvent>>();
+
+        TransitionResult()
+        {
+            this.Fired = false;
+        }
 
         public TransitionResult(bool fired, IState<TState, TEvent> newState)
         {
+            if (newState == null) throw new ArgumentNullException("newState");
+
             this.Fired = fired;
-            this.NewState = newState;
+            this.newStates.Add(newState);
+        }
+
+        public TransitionResult(bool fired, IEnumerable<IState<TState, TEvent>> newStates)
+        {
+            if (newStates == null) throw new ArgumentNullException("newStates");
+
+            this.Fired = fired;
+            this.newStates.AddRange(newStates);
         }
 
         /// <summary>
@@ -43,6 +62,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         /// Gets the new state the state machine is in.
         /// </summary>
         /// <value>The new state.</value>
-        public IState<TState, TEvent> NewState { get; private set; }
+        public IState<TState, TEvent> NewState { get { return this.newStates.FirstOrDefault(); } }
+
+        /// <summary>
+        /// Gets the new states the state machine is in.
+        /// </summary>
+        /// <value>The new states.</value>
+        public IEnumerable<IState<TState, TEvent>> NewStates { get { return this.newStates; } }
     }
 }

@@ -16,21 +16,22 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using Appccelerate.StateMachine.Machine.States;
+using System;
+using System.Collections.Generic;
+using Appccelerate.StateMachine.Machine.ActionHolders;
 
 namespace Appccelerate.StateMachine.Machine
 {
-    using System;
-    using System.Collections.Generic;
-
-    using Appccelerate.StateMachine.Machine.ActionHolders;
-    
     /// <summary>
-    /// Represents a state of the state machine.
+    /// A region in a state of the state machine.
+    /// A state with more than one region is an "orthogonal" state
+    /// in UML terminology.  Each region can be active simultaneously
+    /// meaning that the state can have more than one current substate
+    /// at a time.
     /// </summary>
-    /// <typeparam name="TState">The type of the state.</typeparam>
-    /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface IState<TState, TEvent>
+    /// <typeparam name="TState">The type of the state id.</typeparam>
+    /// <typeparam name="TEvent">The type of the event id.</typeparam>
+    public interface IRegion<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
@@ -47,16 +48,10 @@ namespace Appccelerate.StateMachine.Machine
         IState<TState, TEvent> InitialState { get; set; }
 
         /// <summary>
-        /// Gets or sets the super-state. Null if this is a root state.
+        /// Gets the state to which this region belongs.
         /// </summary>
-        /// <value>The super-state.</value>
-        IState<TState, TEvent> SuperState { get; set; }
-
-        /// <summary>
-        /// Gets or sets the region this state belongs to.
-        /// </summary>
-        /// <value>The containing region.</value>
-        Region<TState, TEvent> ContainingRegion { get; set; }
+        /// <value>The owing state of this region.</value>
+        IState<TState, TEvent> Owner { get; }
 
         /// <summary>
         /// Gets the sub-states.
@@ -71,34 +66,10 @@ namespace Appccelerate.StateMachine.Machine
         ITransitionDictionary<TState, TEvent> Transitions { get; }
 
         /// <summary>
-        /// Gets or sets the level in the hierarchy.
-        /// </summary>
-        /// <value>The level in the hierarchy.</value>
-        int Level { get; set; }
-
-        /// <summary>
         /// Gets or sets the last active state of this state.
         /// </summary>
         /// <value>The last state of the active.</value>
         IState<TState, TEvent> LastActiveState { get; set; }
-
-        /// <summary>
-        /// Gets the entry actions.
-        /// </summary>
-        /// <value>The entry actions.</value>
-        IList<IActionHolder> EntryActions { get; }
-
-        /// <summary>
-        /// Gets the exit actions.
-        /// </summary>
-        /// <value>The exit actions.</value>
-        IList<IActionHolder> ExitActions { get; }
-
-        /// <summary>
-        /// Gets or sets the history type of this state.
-        /// </summary>
-        /// <value>The type of the history.</value>
-        HistoryType HistoryType { get; set; }
 
         /// <summary>
         /// Fires the specified event id on this state.
@@ -116,13 +87,5 @@ namespace Appccelerate.StateMachine.Machine
         IState<TState, TEvent> EnterShallow(ITransitionContext<TState, TEvent> context);
 
         IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context);
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        string ToString();
     }
 }
