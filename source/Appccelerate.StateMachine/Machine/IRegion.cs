@@ -36,21 +36,15 @@ namespace Appccelerate.StateMachine.Machine
         where TEvent : IComparable
     {
         /// <summary>
-        /// Gets the id of this state.
+        /// Gets or sets the initial sub-state.
         /// </summary>
-        /// <value>The id of this state.</value>
-        TState Id { get; }
-
-        /// <summary>
-        /// Gets or sets the initial sub-state. Null if this state has no sub-states.
-        /// </summary>
-        /// <value>The initial sub-state. Null if this state has no sub-states.</value>
+        /// <value>The initial sub-state.</value>
         IState<TState, TEvent> InitialState { get; set; }
 
         /// <summary>
         /// Gets the state to which this region belongs.
         /// </summary>
-        /// <value>The owing state of this region.</value>
+        /// <value>The owning state of this region.</value>
         IState<TState, TEvent> Owner { get; }
 
         /// <summary>
@@ -78,14 +72,6 @@ namespace Appccelerate.StateMachine.Machine
         /// <returns>The result of the transition.</returns>
         ITransitionResult<TState, TEvent> Fire(ITransitionContext<TState, TEvent> context);
 
-        void Entry(ITransitionContext<TState, TEvent> context);
-
-        void Exit(ITransitionContext<TState, TEvent> context);
-
-        IState<TState, TEvent> EnterByHistory(ITransitionContext<TState, TEvent> context);
-
-        IState<TState, TEvent> EnterShallow(ITransitionContext<TState, TEvent> context);
-
-        IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context);
+        void AddSubState(IState<TState, TEvent> subState);
     }
 }

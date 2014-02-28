@@ -74,6 +74,19 @@ namespace Appccelerate.StateMachine.Machine
         }
 
         [Fact]
+        public void AddsInitialSubStateToSuperState()
+        {
+            const string SubState = "SubState";
+            var subState = A.Fake<IState<string, int>>();
+            subState.SuperState = null;
+            A.CallTo(() => this.states[SubState]).Returns(subState);
+
+            this.testee.WithInitialSubState(SubState);
+
+            A.CallTo(() => this.superState.SubStates.Add(subState)).MustHaveHappened();
+        }
+
+        [Fact]
         public void AddsSubStatesToSuperState()
         {
             const string AnotherSubState = "AnotherSubState";

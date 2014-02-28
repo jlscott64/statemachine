@@ -53,7 +53,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <summary>
         /// The state to which this region belongs.
         /// </summary>
-        private IState<TState, TEvent> owningState;
+        private readonly IState<TState, TEvent> owningState;
 
         /// <summary>
         /// The initial sub-state of this region.
@@ -107,7 +107,6 @@ namespace Appccelerate.StateMachine.Machine.States
             }
         }
 
-
         /// <summary>
         /// Gets the sub-states of this region.
         /// </summary>
@@ -153,57 +152,9 @@ namespace Appccelerate.StateMachine.Machine.States
             return result;
         }
 
-        public IState<TState, TEvent> EnterByHistory(ITransitionContext<TState, TEvent> context, HistoryType historyType)
+        public void AddSubState(IState<TState, TEvent> subState)
         {
-            IState<TState, TEvent> result = null;
-
-            switch (historyType)
-            {
-                case HistoryType.None:
-                    result = this.EnterHistoryNone(context);
-                    break;
-
-                case HistoryType.Shallow:
-                    result = this.EnterHistoryShallow(context);
-                    break;
-
-                case HistoryType.Deep:
-                    result = this.EnterHistoryDeep(context);
-                    break;
-            }
-
-            return result;
-        }
-
-        public IState<TState, TEvent> EnterShallow(ITransitionContext<TState, TEvent> context)
-        {
-            return this.initialState.EnterShallow(context);
-        }
-
-        public IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context)
-        {
-            return this.LastActiveState != null
-                ? this.LastActiveState.EnterDeep(context)
-                : null;
-        }
-
-        private IState<TState, TEvent> EnterHistoryDeep(ITransitionContext<TState, TEvent> context)
-        {
-            return this.LastActiveState != null
-                ? this.LastActiveState.EnterDeep(context)
-                : null;
-        }
-
-        private IState<TState, TEvent> EnterHistoryShallow(ITransitionContext<TState, TEvent> context)
-        {
-            return this.LastActiveState != null
-                ? this.LastActiveState.EnterShallow(context)
-                : null;
-        }
-
-        private IState<TState, TEvent> EnterHistoryNone(ITransitionContext<TState, TEvent> context)
-        {
-            return this.initialState.EnterShallow(context);
+            throw new NotImplementedException();
         }
 
         /// <summary>

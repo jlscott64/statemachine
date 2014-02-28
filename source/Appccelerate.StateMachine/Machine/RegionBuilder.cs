@@ -16,30 +16,45 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+
+using Appccelerate.StateMachine.Machine.Events;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
     using Appccelerate.StateMachine.Syntax;
+    using Appccelerate.StateMachine.Machine.States;
     
     public class RegionBuilder<TState, TEvent> : IInitialSubStateSyntax<TState>,
         ISubStateSyntax<TState>
         where TState : IComparable
         where TEvent : IComparable
     {
-        public RegionBuilder(IStateDictionary<TState, TEvent> states, TState orthogonalStateId)
+        private readonly IStateDictionary<TState, TEvent> states;
+        private readonly IRegion<TState, TEvent> region;
 
+        public RegionBuilder(IFactory<TState,TEvent> factory, IStateDictionary<TState, TEvent> states, TState owningStateId)
         {
-            
+            this.states = states;
+
+            var owningState = this.states[owningStateId];
+
+            region = factory.CreateRegion(owningState);
+            owningState.AddRegion(region);
         }
 
         public ISubStateSyntax<TState> WithInitialSubState(TState stateId)
         {
-            throw new NotImplementedException();
+            var subState = this.states[stateId];
+            region.InitialState = subState;
+            return this;
         }
 
         public ISubStateSyntax<TState> WithSubState(TState stateId)
         {
-            throw new NotImplementedException();
+            var subState = this.states[stateId];
+            region.AddSubState(subState);
+            return this;
         }
     }
 }

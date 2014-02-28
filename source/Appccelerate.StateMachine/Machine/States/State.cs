@@ -161,7 +161,17 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Gets or sets the region this state belongs to.
         /// </summary>
         /// <value>The containing region.</value>
-        public Region<TState, TEvent> ContainingRegion { get; set; }
+        public IRegion<TState, TEvent> ContainingRegion { get; set; }
+
+
+        /// <summary>
+        /// Adds a region to the state.
+        /// </summary>
+        /// <param name="region">The region to add.</param>
+        public void AddRegion(IRegion<TState, TEvent> region)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets or sets the level of this state in the state hierarchy.

@@ -260,7 +260,7 @@ namespace Appccelerate.StateMachine.Machine
         /// <returns>Syntax to build hierarchy.</returns>
         public IInitialSubStateSyntax<TState> DefineRegionOn(TState orthogonalStateIdState)
         {
-            return new RegionBuilder<TState, TEvent>(this.states, orthogonalStateIdState);
+            return new RegionBuilder<TState, TEvent>(this.factory, this.states, orthogonalStateIdState);
         }
 
         public void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception)
