@@ -72,7 +72,6 @@
     <Compile Include="ExceptionHandlingSpecification.cs" />
     <Compile Include="ExtensionSpecifications.cs" />
     <Compile Include="GuardSpecification.cs" />
-    <Compile Include="OrthogonalStatesSpecification.cs" />
     <Compile Include="HierarchicalStateMachineInitializationSpecification.cs" />
     <Compile Include="HierarchicalTransitionSpecification.cs" />
     <Compile Include="InitializationSpecification.cs" />
@@ -130,6 +129,6 @@
   <PropertyGroup>
     <PrepareForBuildDependsOn Condition="!Exists('$(StyleCopMSBuildTargetsFile)')">StyleCopMSBuildTargetsNotFound;$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
   </PropertyGroup>
-  <Import Project="..\packages\Appccelerate.Development.0.18\build\Appccelerate.development.targets" Condition="Exists('..\packages\Appccelerate.Development.0.18\build\Appccelerate.development.targets')" />
-  <Import Project="..\packages\Appccelerate.Development.Specs.0.18\build\Appccelerate.Development.Specs.targets" Condition="Exists('..\packages\Appccelerate.Development.Specs.0.18\build\Appccelerate.Development.Specs.targets')" />
+  <Import Project="..\packages\Appccelerate.Development.0.19\build\Appccelerate.development.targets" Condition="Exists('..\packages\Appccelerate.Development.0.19\build\Appccelerate.development.targets')" />
+  <Import Project="..\packages\Appccelerate.Development.Specs.0.19\build\Appccelerate.Development.Specs.targets" Condition="Exists('..\packages\Appccelerate.Development.Specs.0.19\build\Appccelerate.Development.Specs.targets')" />
 </Project>

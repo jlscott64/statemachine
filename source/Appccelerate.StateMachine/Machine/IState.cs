@@ -16,8 +16,6 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using Appccelerate.StateMachine.Machine.States;
-
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -51,18 +49,6 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         /// <value>The super-state.</value>
         IState<TState, TEvent> SuperState { get; set; }
-
-        /// <summary>
-        /// Gets or sets the region this state belongs to.
-        /// </summary>
-        /// <value>The containing region.</value>
-        IRegion<TState, TEvent> ContainingRegion { get; set; }
-
-        /// <summary>
-        /// Adds a region to the state.
-        /// </summary>
-        /// <param name="region">The region to add.</param>
-        void AddRegion(IRegion<TState, TEvent> region);
 
         /// <summary>
         /// Gets the sub-states.

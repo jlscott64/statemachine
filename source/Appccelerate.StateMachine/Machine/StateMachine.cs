@@ -253,16 +253,6 @@ namespace Appccelerate.StateMachine.Machine
             return new HierarchyBuilder<TState, TEvent>(this.states, superStateId);
         }
 
-        /// <summary>
-        /// Defines a region in an orthogonal state.
-        /// </summary>
-        /// <param name="orthogonalStateIdState">The orthogonal state id.</param>
-        /// <returns>Syntax to build hierarchy.</returns>
-        public IInitialSubStateSyntax<TState> DefineRegionOn(TState orthogonalStateIdState)
-        {
-            return new RegionBuilder<TState, TEvent>(this.factory, this.states, orthogonalStateIdState);
-        }
-
         public void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception)
         {
             RethrowExceptionIfNoHandlerRegistered(exception, this.TransitionExceptionThrown);

@@ -75,13 +75,6 @@ namespace Appccelerate.StateMachine
         IHierarchySyntax<TState> DefineHierarchyOn(TState superStateId);
 
         /// <summary>
-        /// Defines a region in an orthogonal state.
-        /// </summary>
-        /// <param name="orthogonalStateIdState">The orthogonal state id.</param>
-        /// <returns>Syntax to build hierarchy.</returns>
-        IInitialSubStateSyntax<TState> DefineRegionOn(TState orthogonalStateIdState);
-
-        /// <summary>
         /// Fires the specified event.
         /// </summary>
         /// <param name="eventId">The event.</param>

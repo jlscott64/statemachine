@@ -52,11 +52,6 @@ namespace Appccelerate.StateMachine.Machine
             return new State<TState, TEvent>(id, this.stateMachineInformation, this.extensionHost);
         }
 
-        public IRegion<TState, TEvent> CreateRegion(IState<TState, TEvent> ownerState)
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual ITransition<TState, TEvent> CreateTransition()
         {
             return new Transition<TState, TEvent>(this.stateMachineInformation, this.extensionHost);

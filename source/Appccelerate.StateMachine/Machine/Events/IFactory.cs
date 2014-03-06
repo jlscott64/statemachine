@@ -29,8 +29,6 @@ namespace Appccelerate.StateMachine.Machine.Events
     {
         IState<TState, TEvent> CreateState(TState id);
 
-        IRegion<TState, TEvent> CreateRegion(IState<TState, TEvent> ownerState);
-
         ITransition<TState, TEvent> CreateTransition();
 
         IActionHolder CreateActionHolder(Action action);
