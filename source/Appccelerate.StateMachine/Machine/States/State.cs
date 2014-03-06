@@ -40,6 +40,10 @@ namespace Appccelerate.StateMachine.Machine.States
         /// </summary>
         private readonly List<IState<TState, TEvent>> subStates;
 
+        private readonly IList<IState<TState, TEvent>> initialStates;
+
+        private readonly IList<IState<TState, TEvent>> lastActiveStates;
+
         /// <summary>
         /// Collection of transitions that start in this state (<see cref="ITransition{TState,TEvent}.Source"/> is equal to this state).
         /// </summary>
@@ -62,7 +66,11 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <summary>
         /// The initial sub-state of this state.
         /// </summary>
-        private IState<TState, TEvent> initialState;
+        IState<TState, TEvent> PrimaryInitialState
+        {
+            get { return initialStates[0]; }
+            set { initialStates[0] = value; }
+        }
 
         /// <summary>
         /// The <see cref="HistoryType"/> of this state.
@@ -83,6 +91,8 @@ namespace Appccelerate.StateMachine.Machine.States
             this.extensionHost = extensionHost;
 
             this.subStates = new List<IState<TState, TEvent>>();
+            this.initialStates = new List<IState<TState, TEvent>>(new IState<TState, TEvent>[1]);
+            this.lastActiveStates = new List<IState<TState, TEvent>>(new IState<TState, TEvent>[1]);
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
 
             this.EntryActions = new List<IActionHolder>();
@@ -93,7 +103,11 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Gets or sets the last active state of this state.
         /// </summary>
         /// <value>The last state of the active.</value>
-        public IState<TState, TEvent> LastActiveState { get; set; }
+        public IState<TState, TEvent> LastActiveState
+        {
+            get { return lastActiveStates[0]; }
+            set { lastActiveStates[0] = value; }
+        }
 
         /// <summary>
         /// Gets the unique id of this state.
@@ -121,7 +135,7 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             get
             {
-                return this.initialState;
+                return this.PrimaryInitialState;
             }
 
             set
@@ -129,7 +143,7 @@ namespace Appccelerate.StateMachine.Machine.States
                 this.CheckInitialStateIsNotThisInstance(value);
                 this.CheckInitialStateIsASubState(value);
 
-                this.initialState = this.LastActiveState = value;
+                this.PrimaryInitialState = this.LastActiveState = value;
             }
         }
 
@@ -282,9 +296,9 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             this.Entry(context);
 
-            return this.initialState == null ?
+            return this.PrimaryInitialState == null ?
                         this :
-                        this.initialState.EnterShallow(context);
+                        this.PrimaryInitialState.EnterShallow(context);
         }
 
         public IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context)
@@ -426,9 +440,9 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private IState<TState, TEvent> EnterHistoryNone(ITransitionContext<TState, TEvent> context)
         {
-            return this.initialState != null
+            return this.PrimaryInitialState != null
                        ?
-                           this.initialState.EnterShallow(context)
+                           this.PrimaryInitialState.EnterShallow(context)
                        :
                            this;
         }
