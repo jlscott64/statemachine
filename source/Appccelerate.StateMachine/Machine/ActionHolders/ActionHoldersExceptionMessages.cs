@@ -23,7 +23,7 @@ namespace Appccelerate.StateMachine.Machine.ActionHolders
     /// <summary>
     /// Holds all exception messages
     /// </summary>
-    public static class ActionHoldersExceptionMessages
+    internal static class ActionHoldersExceptionMessages
     {
         /// <summary>
         /// Cannot cast argument to action argument.

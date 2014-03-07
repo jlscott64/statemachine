@@ -30,7 +30,7 @@ namespace Appccelerate.StateMachine.Machine.States
     /// </summary>
     /// <typeparam name="TState">The type of the state id.</typeparam>
     /// <typeparam name="TEvent">The type of the event id.</typeparam>
-    public class State<TState, TEvent> 
+    internal class State<TState, TEvent> 
         : IState<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable

@@ -20,7 +20,7 @@ namespace Appccelerate.StateMachine.Machine
 {
     using System;
 
-    public class StateMachineException : Exception
+    internal class StateMachineException : Exception
     {
         public StateMachineException(string message, Exception innerException)
             : base(message, innerException)

@@ -26,7 +26,7 @@ namespace Appccelerate.StateMachine.Machine.GuardHolders
     /// <summary>
     /// Holds an argument less guard.
     /// </summary>
-    public class ArgumentLessGuardHolder : IGuardHolder
+    internal class ArgumentLessGuardHolder : IGuardHolder
     {
         private readonly Func<bool> guard;
 

@@ -25,7 +25,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
     using Appccelerate.StateMachine.Machine.ActionHolders;
     using Appccelerate.StateMachine.Machine.GuardHolders;
     
-    public class Transition<TState, TEvent>
+    internal class Transition<TState, TEvent>
         : ITransition<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable

@@ -20,7 +20,7 @@ namespace Appccelerate.StateMachine
 {
     using System;
 
-    public class EventInformation<TEvent>
+    internal class EventInformation<TEvent>
         where TEvent : IComparable
     {
         public EventInformation(TEvent eventId, object eventArgument)

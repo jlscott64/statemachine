@@ -23,7 +23,7 @@ namespace Appccelerate.StateMachine.Machine.GuardHolders
     /// <summary>
     /// Holds all exception messages
     /// </summary>
-    public static class GuardHoldersExceptionMessages
+    internal static class GuardHoldersExceptionMessages
     {
         /// <summary>
         /// Cannot cast argument to guard argument.

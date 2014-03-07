@@ -23,7 +23,7 @@ namespace Appccelerate.StateMachine.Machine.ActionHolders
     using System.Reflection;
     using System.Runtime.CompilerServices;
 
-    public class ArgumentLessActionHolder : IActionHolder
+    internal class ArgumentLessActionHolder : IActionHolder
     {
         private readonly Action action;
 

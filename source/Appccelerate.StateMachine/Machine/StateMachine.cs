@@ -32,7 +32,7 @@ namespace Appccelerate.StateMachine.Machine
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public class StateMachine<TState, TEvent> : 
+    internal class StateMachine<TState, TEvent> : 
         INotifier<TState, TEvent>, 
         IStateMachineInformation<TState, TEvent>,
         IExtensionHost<TState, TEvent>

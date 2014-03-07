@@ -24,7 +24,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
     /// <summary>
     /// Holds all exception messages
     /// </summary>
-    public static class TransitionsExceptionMessages
+    internal static class TransitionsExceptionMessages
     {
         /// <summary>
         /// Transition cannot be added to the state because it has already been added to the state.

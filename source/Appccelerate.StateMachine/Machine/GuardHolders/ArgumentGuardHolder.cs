@@ -26,7 +26,7 @@ namespace Appccelerate.StateMachine.Machine.GuardHolders
     /// Holds a single argument guard.
     /// </summary>
     /// <typeparam name="T">Type of the argument of the guard.</typeparam>
-    public class ArgumentGuardHolder<T> : IGuardHolder
+    internal class ArgumentGuardHolder<T> : IGuardHolder
     {
         private readonly Func<T, bool> guard;
 
