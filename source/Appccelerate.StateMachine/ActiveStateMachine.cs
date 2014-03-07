@@ -144,6 +144,11 @@ namespace Appccelerate.StateMachine
             return this.stateMachine.DefineHierarchyOn(superStateId);
         }
 
+        public IInitialSubStateSyntax<TState> DefineRegionOn(TState stateId)
+        {
+            return this.stateMachine.DefineRegionOn(stateId);
+        }
+
         /// <summary>
         /// Fires the specified event.
         /// </summary>

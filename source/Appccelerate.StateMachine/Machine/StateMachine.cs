@@ -44,7 +44,8 @@ namespace Appccelerate.StateMachine.Machine
         private readonly Initializable<TState> initialStateId;
         private readonly string name;
         private readonly List<IExtension<TState, TEvent>> extensions;
-        private IState<TState, TEvent> currentState;
+
+        private readonly IList<IState<TState, TEvent>> currentStates = new List<IState<TState, TEvent>>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StateMachine{TState,TEvent}"/> class.
@@ -113,31 +114,38 @@ namespace Appccelerate.StateMachine.Machine
         /// <value>The id of the current state.</value>
         public TState CurrentStateId
         {
-            get { return this.CurrentState.Id; }
+            get { return this.GetCurrentState().Id; }
+        }
+
+        IState<TState, TEvent> LegacyCurrentState
+        {
+            get { return currentStates.FirstOrDefault(); }
         }
 
         /// <summary>
         /// Gets or sets the state of the current.
         /// </summary>
-        /// <value>The state of the current.</value>
-        private IState<TState, TEvent> CurrentState
+        /// <returns>The state of the current.</returns>
+        IState<TState, TEvent> GetCurrentState()
         {
-            get
-            {
-                this.CheckThatStateMachineIsInitialized();
-                this.CheckThatStateMachineHasEnteredInitialState();
+            this.CheckThatStateMachineIsInitialized();
+            this.CheckThatStateMachineHasEnteredInitialState();
 
-                return this.currentState;
+            return this.LegacyCurrentState;
+        }
+
+        void SetCurrentState(IState<TState, TEvent> oldState, IState<TState, TEvent> newState)
+        {
+            if (oldState != null)
+            {
+                currentStates[currentStates.IndexOf(oldState)] = newState;
+            }
+            else
+            {
+                currentStates.Add(newState);
             }
 
-            set
-            {
-                IState<TState, TEvent> oldState = this.currentState;
-
-                this.currentState = value;
-
-                this.extensions.ForEach(extension => extension.SwitchedState(this, oldState, this.currentState));
-            }
+            this.extensions.ForEach(extension => extension.SwitchedState(this, oldState, newState));
         }
 
         /// <summary>
@@ -227,8 +235,13 @@ namespace Appccelerate.StateMachine.Machine
 
             this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
 
-            ITransitionContext<TState, TEvent> context = this.factory.CreateTransitionContext(this.CurrentState, new Missable<TEvent>(eventId), eventArgument, this);
-            ITransitionResult<TState, TEvent> result = this.CurrentState.Fire(context);
+            // TODO: JLS - Iterate here
+            foreach (var currentState in this.currentStates)
+            {
+            }
+
+            ITransitionContext<TState, TEvent> context = this.factory.CreateTransitionContext(LegacyCurrentState, new Missable<TEvent>(eventId), eventArgument, this);
+            ITransitionResult<TState, TEvent> result = LegacyCurrentState.Fire(context);
 
             if (!result.Fired)
             {
@@ -236,7 +249,7 @@ namespace Appccelerate.StateMachine.Machine
                 return;
             }
 
-            this.CurrentState = result.NewState;
+            this.SetCurrentState(LegacyCurrentState, result.NewState);
 
             this.extensions.ForEach(extension => extension.FiredEvent(this, context));
 
@@ -251,6 +264,16 @@ namespace Appccelerate.StateMachine.Machine
         public IHierarchySyntax<TState> DefineHierarchyOn(TState superStateId)
         {
             return new HierarchyBuilder<TState, TEvent>(this.states, superStateId);
+        }
+
+        /// <summary>
+        /// Defines a region on a state.
+        /// </summary>
+        /// <param name="stateId">The state id.</param>
+        /// <returns>Syntax to build hierarchy.</returns>
+        public IInitialSubStateSyntax<TState> DefineRegionOn(TState stateId)
+        {
+            return new RegionBuilder<TState, TEvent>(this.states, stateId);
         }
 
         public void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception)
@@ -295,8 +318,8 @@ namespace Appccelerate.StateMachine.Machine
         {
             Ensure.ArgumentNotNull(stateMachineSaver, "stateMachineSaver");
 
-            stateMachineSaver.SaveCurrentState(this.currentState != null ? 
-                new Initializable<TState> { Value = this.currentState.Id } : 
+            stateMachineSaver.SaveCurrentState(this.currentStates.Any() ? 
+                new Initializable<TState> { Value = this.LegacyCurrentState.Id } : 
                 new Initializable<TState>());
 
             IEnumerable<IState<TState, TEvent>> superStatesWithLastActiveState = this.states.GetStates()
@@ -350,8 +373,7 @@ namespace Appccelerate.StateMachine.Machine
         private void LoadCurrentState(IStateMachineLoader<TState> stateMachineLoader)
         {
             Initializable<TState> loadedCurrentState = stateMachineLoader.LoadCurrentState();
-
-            this.currentState = loadedCurrentState.IsInitialized ? this.states[loadedCurrentState.Value] : null;
+            if (loadedCurrentState.IsInitialized) currentStates.Add(this.states[loadedCurrentState.Value]);
         }
 
         private void LoadHistoryStates(IStateMachineLoader<TState> stateMachineLoader)
@@ -387,8 +409,9 @@ namespace Appccelerate.StateMachine.Machine
 
         private void EnterInitialState(IState<TState, TEvent> initialState, ITransitionContext<TState, TEvent> context)
         {
+            // TODO: JLS - Iterate here
             var initializer = this.factory.CreateStateMachineInitializer(initialState, context);
-            this.CurrentState = initializer.EnterInitialState();
+            this.SetCurrentState(null, initializer.EnterInitialState());
         }
 
         private void RaiseEvent<T>(EventHandler<T> eventHandler, T arguments, ITransitionContext<TState, TEvent> context, bool raiseEventOnException) where T : EventArgs
@@ -415,7 +438,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private void CheckThatStateMachineIsInitialized()
         {
-            if (this.currentState == null && !this.initialStateId.IsInitialized)
+            if (!this.currentStates.Any() && !this.initialStateId.IsInitialized)
             {
                 throw new InvalidOperationException(ExceptionMessages.StateMachineNotInitialized);
             }
@@ -423,7 +446,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private void CheckThatStateMachineIsNotAlreadyInitialized()
         {
-            if (this.currentState != null || this.initialStateId.IsInitialized)
+            if (this.currentStates.Any() || this.initialStateId.IsInitialized)
             {
                 throw new InvalidOperationException(ExceptionMessages.StateMachineIsAlreadyInitialized);
             }
@@ -431,7 +454,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private void CheckThatStateMachineHasEnteredInitialState()
         {
-            if (this.currentState == null)
+            if (!this.currentStates.Any())
             {
                 throw new InvalidOperationException(ExceptionMessages.StateMachineHasNotYetEnteredInitialState);
             }

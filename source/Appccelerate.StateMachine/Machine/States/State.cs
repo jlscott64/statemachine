@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Appccelerate.StateMachine.Machine.States
 {
     using System;
@@ -60,11 +62,6 @@ namespace Appccelerate.StateMachine.Machine.States
         private IState<TState, TEvent> superState;
 
         /// <summary>
-        /// The initial sub-state of this state.
-        /// </summary>
-        private IState<TState, TEvent> initialState;
-
-        /// <summary>
         /// The <see cref="HistoryType"/> of this state.
         /// </summary>
         private HistoryType historyType = HistoryType.None;
@@ -82,6 +79,8 @@ namespace Appccelerate.StateMachine.Machine.States
             this.stateMachineInformation = stateMachineInformation;
             this.extensionHost = extensionHost;
 
+            this.InitialStates = new List<IState<TState, TEvent>>();
+
             this.subStates = new List<IState<TState, TEvent>>();
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
 
@@ -94,6 +93,16 @@ namespace Appccelerate.StateMachine.Machine.States
         /// </summary>
         /// <value>The last state of the active.</value>
         public IState<TState, TEvent> LastActiveState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last active states of this state. Can have more than one element only if this states has regions.
+        /// </summary>
+        /// <value>The last state of the active.  More than one element only if this states has regions.</value>
+        public IList<IState<TState, TEvent>> LastActiveStates
+        {
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
 
         /// <summary>
         /// Gets the unique id of this state.
@@ -121,17 +130,36 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             get
             {
-                return this.initialState;
+                return this.InitialStates.FirstOrDefault();
             }
 
             set
             {
+                if (value == null) throw new ArgumentNullException();
+
                 this.CheckInitialStateIsNotThisInstance(value);
                 this.CheckInitialStateIsASubState(value);
 
-                this.initialState = this.LastActiveState = value;
+                // TODO: JLS - I don't like setting LastActiveState here.  It isn't active at this point.
+                this.LastActiveState = value;
+
+                if (InitialStates.Any())
+                {
+                    InitialStates[0] = value;
+                }
+                else
+                {
+                    InitialStates.Add(value);
+                }
             }
         }
+
+        /// <summary>
+        /// Gets or sets the initial sub-states. Empty if this state has no sub-states.
+        /// Can have more than one element only if this states has regions.
+        /// </summary>
+        /// <value>The initial sub-states. Empty if this state has no sub-states.  More than one element only if this states has regions.</value>
+        public IList<IState<TState, TEvent>> InitialStates { get; private set; }
 
         /// <summary>
         /// Gets or sets the super-state of this state.
@@ -282,9 +310,9 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             this.Entry(context);
 
-            return this.initialState == null ?
+            return this.InitialState == null ?
                         this :
-                        this.initialState.EnterShallow(context);
+                        this.InitialState.EnterShallow(context);
         }
 
         public IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context)
@@ -426,11 +454,11 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private IState<TState, TEvent> EnterHistoryNone(ITransitionContext<TState, TEvent> context)
         {
-            return this.initialState != null
-                       ?
-                           this.initialState.EnterShallow(context)
-                       :
-                           this;
+            return this.InitialState != null 
+                ? 
+                    this.InitialState.EnterShallow(context)
+                : 
+                    this;
         }
 
         /// <summary>

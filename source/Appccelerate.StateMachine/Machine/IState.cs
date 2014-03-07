@@ -45,6 +45,13 @@ namespace Appccelerate.StateMachine.Machine
         IState<TState, TEvent> InitialState { get; set; }
 
         /// <summary>
+        /// Gets or sets the initial sub-states. Empty if this state has no sub-states.
+        /// Can have more than one element only if this states has regions.
+        /// </summary>
+        /// <value>The initial sub-states. Empty if this state has no sub-states.  More than one element only if this states has regions.</value>
+        IList<IState<TState, TEvent>> InitialStates { get; }
+
+        /// <summary>
         /// Gets or sets the super-state. Null if this is a root state.
         /// </summary>
         /// <value>The super-state.</value>
@@ -73,6 +80,12 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         /// <value>The last state of the active.</value>
         IState<TState, TEvent> LastActiveState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last active states of this state. Can have more than one element only if this states has regions.
+        /// </summary>
+        /// <value>The last state of the active.  More than one element only if this states has regions.</value>
+        IList<IState<TState, TEvent>> LastActiveStates { get; }
 
         /// <summary>
         /// Gets the entry actions.

@@ -154,6 +154,16 @@ namespace Appccelerate.StateMachine
         }
 
         /// <summary>
+        /// Defines a region on a state.
+        /// </summary>
+        /// <param name="stateId">The state id.</param>
+        /// <returns>Syntax to build hierarchy.</returns>
+        public IInitialSubStateSyntax<TState> DefineRegionOn(TState stateId)
+        {
+            return this.stateMachine.DefineRegionOn(stateId);
+        }
+
+        /// <summary>
         /// Fires the specified event.
         /// </summary>
         /// <param name="eventId">The event.</param>

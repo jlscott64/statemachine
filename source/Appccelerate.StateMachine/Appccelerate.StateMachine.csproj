@@ -47,6 +47,7 @@
     <Compile Include="ActiveStateMachine.cs" />
     <Compile Include="EventInformation.cs" />
     <Compile Include="Extensions\ExtensionBase.cs" />
+    <Compile Include="HierarchyBuilder.cs" />
     <Compile Include="HistoryType.cs" />
     <Compile Include="IStateMachine.cs" />
     <Compile Include="IStateMachineInformation.cs" />
@@ -67,7 +68,7 @@
     <Compile Include="Machine\GuardHolders\ArgumentLessGuardHolder.cs" />
     <Compile Include="Machine\GuardHolders\GuardHoldersExceptionMessages.cs" />
     <Compile Include="Machine\GuardHolders\IGuardHolder.cs" />
-    <Compile Include="Machine\HierarchyBuilder.cs" />
+    <Compile Include="RegionBuilder.cs" />
     <Compile Include="Machine\IExtension.cs" />
     <Compile Include="Machine\IExtensionHost.cs" />
     <Compile Include="Machine\Initializable.cs" />
