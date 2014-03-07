@@ -29,7 +29,7 @@ namespace Appccelerate.StateMachine.Machine
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    internal sealed class StateBuilder<TState, TEvent> : 
+    public sealed class StateBuilder<TState, TEvent> : 
         IEntryActionSyntax<TState, TEvent>,
         IGotoInIfSyntax<TState, TEvent>,
         IOtherwiseSyntax<TState, TEvent>,

@@ -29,7 +29,7 @@ namespace Appccelerate.StateMachine.Machine.Contexts
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     [DebuggerDisplay("State = {state} Event = {eventId} EventArguments = {eventArguments}")]
-    internal class TransitionContext<TState, TEvent> : ITransitionContext<TState, TEvent>
+    public class TransitionContext<TState, TEvent> : ITransitionContext<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {

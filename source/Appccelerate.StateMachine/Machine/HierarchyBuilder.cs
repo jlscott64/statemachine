@@ -22,7 +22,7 @@ namespace Appccelerate.StateMachine.Machine
     
     using Appccelerate.StateMachine.Syntax;
 
-    internal class HierarchyBuilder<TState, TEvent> : 
+    public class HierarchyBuilder<TState, TEvent> : 
         IHierarchySyntax<TState>, 
         IInitialSubStateSyntax<TState>,
         ISubStateSyntax<TState>

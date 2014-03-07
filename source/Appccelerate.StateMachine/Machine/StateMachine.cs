@@ -32,7 +32,7 @@ namespace Appccelerate.StateMachine.Machine
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    internal class StateMachine<TState, TEvent> : 
+    public class StateMachine<TState, TEvent> : 
         INotifier<TState, TEvent>, 
         IStateMachineInformation<TState, TEvent>,
         IExtensionHost<TState, TEvent>
@@ -44,7 +44,7 @@ namespace Appccelerate.StateMachine.Machine
         private readonly Initializable<TState> initialStateId;
         private readonly string name;
         private readonly List<IExtension<TState, TEvent>> extensions;
-        readonly IList<IState<TState, TEvent>> currentStates;
+        private IState<TState, TEvent> currentState;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StateMachine{TState,TEvent}"/> class.
@@ -74,7 +74,6 @@ namespace Appccelerate.StateMachine.Machine
             this.factory = factory ?? new StandardFactory<TState, TEvent>(this, this);
             this.states = new StateDictionary<TState, TEvent>(this.factory);
             this.extensions = new List<IExtension<TState, TEvent>>();
-            this.currentStates = new List<IState<TState, TEvent>>(new IState<TState, TEvent>[1]);
 
             this.initialStateId = new Initializable<TState>();
         }
@@ -128,23 +127,17 @@ namespace Appccelerate.StateMachine.Machine
                 this.CheckThatStateMachineIsInitialized();
                 this.CheckThatStateMachineHasEnteredInitialState();
 
-                return this.PrimaryCurrentState;
+                return this.currentState;
             }
 
             set
             {
-                IState<TState, TEvent> oldState = this.PrimaryCurrentState;
+                IState<TState, TEvent> oldState = this.currentState;
 
-                this.PrimaryCurrentState = value;
+                this.currentState = value;
 
-                this.extensions.ForEach(extension => extension.SwitchedState(this, oldState, this.PrimaryCurrentState));
+                this.extensions.ForEach(extension => extension.SwitchedState(this, oldState, this.currentState));
             }
-        }
-
-        private  IState<TState, TEvent> PrimaryCurrentState
-        {
-            get { return currentStates[0]; }
-            set { currentStates[0] = value; }
         }
 
         /// <summary>
@@ -302,8 +295,8 @@ namespace Appccelerate.StateMachine.Machine
         {
             Ensure.ArgumentNotNull(stateMachineSaver, "stateMachineSaver");
 
-            stateMachineSaver.SaveCurrentState(this.CurrentState != null ? 
-                new Initializable<TState> { Value = this.CurrentState.Id } : 
+            stateMachineSaver.SaveCurrentState(this.currentState != null ? 
+                new Initializable<TState> { Value = this.currentState.Id } : 
                 new Initializable<TState>());
 
             IEnumerable<IState<TState, TEvent>> superStatesWithLastActiveState = this.states.GetStates()
@@ -358,7 +351,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             Initializable<TState> loadedCurrentState = stateMachineLoader.LoadCurrentState();
 
-            this.CurrentState = loadedCurrentState.IsInitialized ? this.states[loadedCurrentState.Value] : null;
+            this.currentState = loadedCurrentState.IsInitialized ? this.states[loadedCurrentState.Value] : null;
         }
 
         private void LoadHistoryStates(IStateMachineLoader<TState> stateMachineLoader)
@@ -422,7 +415,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private void CheckThatStateMachineIsInitialized()
         {
-            if (this.PrimaryCurrentState == null && !this.initialStateId.IsInitialized)
+            if (this.currentState == null && !this.initialStateId.IsInitialized)
             {
                 throw new InvalidOperationException(ExceptionMessages.StateMachineNotInitialized);
             }
@@ -430,7 +423,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private void CheckThatStateMachineIsNotAlreadyInitialized()
         {
-            if (this.PrimaryCurrentState != null || this.initialStateId.IsInitialized)
+            if (this.currentState != null || this.initialStateId.IsInitialized)
             {
                 throw new InvalidOperationException(ExceptionMessages.StateMachineIsAlreadyInitialized);
             }
@@ -438,7 +431,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private void CheckThatStateMachineHasEnteredInitialState()
         {
-            if (this.PrimaryCurrentState == null)
+            if (this.currentState == null)
             {
                 throw new InvalidOperationException(ExceptionMessages.StateMachineHasNotYetEnteredInitialState);
             }

@@ -20,7 +20,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
 
-    internal class TransitionResult<TState, TEvent>
+    public class TransitionResult<TState, TEvent>
         : ITransitionResult<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable

@@ -30,7 +30,7 @@ namespace Appccelerate.StateMachine.Machine.States
     /// </summary>
     /// <typeparam name="TState">The type of the state id.</typeparam>
     /// <typeparam name="TEvent">The type of the event id.</typeparam>
-    internal class State<TState, TEvent> 
+    public class State<TState, TEvent> 
         : IState<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
@@ -39,10 +39,6 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Collection of the sub-states of this state.
         /// </summary>
         private readonly List<IState<TState, TEvent>> subStates;
-
-        private readonly IList<IState<TState, TEvent>> initialStates;
-
-        private readonly IList<IState<TState, TEvent>> lastActiveStates;
 
         /// <summary>
         /// Collection of transitions that start in this state (<see cref="ITransition{TState,TEvent}.Source"/> is equal to this state).
@@ -66,11 +62,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <summary>
         /// The initial sub-state of this state.
         /// </summary>
-        IState<TState, TEvent> PrimaryInitialState
-        {
-            get { return initialStates[0]; }
-            set { initialStates[0] = value; }
-        }
+        private IState<TState, TEvent> initialState;
 
         /// <summary>
         /// The <see cref="HistoryType"/> of this state.
@@ -91,8 +83,6 @@ namespace Appccelerate.StateMachine.Machine.States
             this.extensionHost = extensionHost;
 
             this.subStates = new List<IState<TState, TEvent>>();
-            this.initialStates = new List<IState<TState, TEvent>>(new IState<TState, TEvent>[1]);
-            this.lastActiveStates = new List<IState<TState, TEvent>>(new IState<TState, TEvent>[1]);
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
 
             this.EntryActions = new List<IActionHolder>();
@@ -103,11 +93,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Gets or sets the last active state of this state.
         /// </summary>
         /// <value>The last state of the active.</value>
-        public IState<TState, TEvent> LastActiveState
-        {
-            get { return lastActiveStates[0]; }
-            set { lastActiveStates[0] = value; }
-        }
+        public IState<TState, TEvent> LastActiveState { get; set; }
 
         /// <summary>
         /// Gets the unique id of this state.
@@ -135,7 +121,7 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             get
             {
-                return this.PrimaryInitialState;
+                return this.initialState;
             }
 
             set
@@ -143,7 +129,7 @@ namespace Appccelerate.StateMachine.Machine.States
                 this.CheckInitialStateIsNotThisInstance(value);
                 this.CheckInitialStateIsASubState(value);
 
-                this.PrimaryInitialState = this.LastActiveState = value;
+                this.initialState = this.LastActiveState = value;
             }
         }
 
@@ -296,9 +282,9 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             this.Entry(context);
 
-            return this.PrimaryInitialState == null ?
+            return this.initialState == null ?
                         this :
-                        this.PrimaryInitialState.EnterShallow(context);
+                        this.initialState.EnterShallow(context);
         }
 
         public IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context)
@@ -440,9 +426,9 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private IState<TState, TEvent> EnterHistoryNone(ITransitionContext<TState, TEvent> context)
         {
-            return this.PrimaryInitialState != null
+            return this.initialState != null
                        ?
-                           this.PrimaryInitialState.EnterShallow(context)
+                           this.initialState.EnterShallow(context)
                        :
                            this;
         }

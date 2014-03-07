@@ -23,7 +23,7 @@ namespace Appccelerate.StateMachine.Machine.States
     /// <summary>
     /// Holds all exception messages
     /// </summary>
-    internal static class StatesExceptionMessages
+    public static class StatesExceptionMessages
     {
         /// <summary>
         /// State cannot be its own super-state..

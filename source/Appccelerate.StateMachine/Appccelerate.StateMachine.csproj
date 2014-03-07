@@ -114,7 +114,6 @@
     <Compile Include="Syntax\IIfSyntax.cs" />
     <Compile Include="Syntax\IOnSyntax.cs" />
     <Compile Include="Syntax\IOtherwiseSyntax.cs" />
-    <Compile Include="TEMP.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Appccelerate.Fundamentals, Version=2.1.0.0, Culture=neutral, PublicKeyToken=917bca444d1f2b4c, processorArchitecture=MSIL">
