@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
+
 namespace Appccelerate.StateMachine
 {
     using System;
@@ -41,5 +43,11 @@ namespace Appccelerate.StateMachine
         /// </summary>
         /// <value>The id of the current state.</value>
         TState CurrentStateId { get; }
+
+        /// <summary>
+        /// Gets the ids of the current states.
+        /// </summary>
+        /// <value>The ids of the current states.</value>
+        IEnumerable<TState> CurrentStateIds { get; }
     }
 }

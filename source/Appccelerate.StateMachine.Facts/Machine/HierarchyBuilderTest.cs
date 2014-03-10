@@ -69,8 +69,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.WithInitialSubState(SubState);
 
-            this.superState.InitialState
-                .Should().BeSameAs(subState);
+            A.CallTo(() => this.superState.AddInitialState(subState)).MustHaveHappened();
         }
 
         [Fact]

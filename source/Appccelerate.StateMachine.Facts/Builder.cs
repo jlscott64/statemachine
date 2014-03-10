@@ -119,7 +119,7 @@ namespace Appccelerate.StateMachine
 
             public TransitionContextBuilder WithState(IState<TState, TEvent> state)
             {
-                A.CallTo(() => this.transitionContext.State).Returns(state);
+                A.CallTo(() => this.transitionContext.SourceState).Returns(state);
 
                 return this;
             }

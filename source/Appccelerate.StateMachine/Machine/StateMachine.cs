@@ -72,7 +72,7 @@ namespace Appccelerate.StateMachine.Machine
         public StateMachine(string name, IFactory<TState, TEvent> factory)
         {
             this.name = name;
-            this.factory = factory ?? new StandardFactory<TState, TEvent>(this, this);
+            this.factory = factory ?? new StandardFactory<TState, TEvent>(this, this, this);
             this.states = new StateDictionary<TState, TEvent>(this.factory);
             this.extensions = new List<IExtension<TState, TEvent>>();
 
@@ -117,6 +117,15 @@ namespace Appccelerate.StateMachine.Machine
             get { return this.GetCurrentState().Id; }
         }
 
+        /// <summary>
+        /// Gets the ids of the current states.
+        /// </summary>
+        /// <value>The ids of the current states.</value>
+        public IEnumerable<TState> CurrentStateIds
+        {
+            get { return this.currentStates.Select(s => s.Id).ToArray(); }
+        }
+
         IState<TState, TEvent> LegacyCurrentState
         {
             get { return currentStates.FirstOrDefault(); }
@@ -134,7 +143,7 @@ namespace Appccelerate.StateMachine.Machine
             return this.LegacyCurrentState;
         }
 
-        void SetCurrentState(IState<TState, TEvent> oldState, IState<TState, TEvent> newState)
+        void ChangeState(IState<TState, TEvent> oldState, IState<TState, TEvent> newState)
         {
             if (oldState != null)
             {
@@ -235,11 +244,6 @@ namespace Appccelerate.StateMachine.Machine
 
             this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
 
-            // TODO: JLS - Iterate here
-            foreach (var currentState in this.currentStates)
-            {
-            }
-
             ITransitionContext<TState, TEvent> context = this.factory.CreateTransitionContext(LegacyCurrentState, new Missable<TEvent>(eventId), eventArgument, this);
             ITransitionResult<TState, TEvent> result = LegacyCurrentState.Fire(context);
 
@@ -249,12 +253,14 @@ namespace Appccelerate.StateMachine.Machine
                 return;
             }
 
-            this.SetCurrentState(LegacyCurrentState, result.NewState);
+            this.ChangeState(LegacyCurrentState, result.NewState);
 
             this.extensions.ForEach(extension => extension.FiredEvent(this, context));
 
             this.OnTransitionCompleted(context);
         }
+
+
 
         /// <summary>
         /// Defines the hierarchy on.
@@ -411,7 +417,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             // TODO: JLS - Iterate here
             var initializer = this.factory.CreateStateMachineInitializer(initialState, context);
-            this.SetCurrentState(null, initializer.EnterInitialState());
+            this.ChangeState(null, initializer.EnterInitialState());
         }
 
         private void RaiseEvent<T>(EventHandler<T> eventHandler, T arguments, ITransitionContext<TState, TEvent> context, bool raiseEventOnException) where T : EventArgs
@@ -459,5 +465,7 @@ namespace Appccelerate.StateMachine.Machine
                 throw new InvalidOperationException(ExceptionMessages.StateMachineHasNotYetEnteredInitialState);
             }
         }
+
+        public IState<TState, TEvent> LastActiveState { get; set; }
     }
 }

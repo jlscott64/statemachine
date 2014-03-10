@@ -52,7 +52,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.WithSubState(stateId);
 
-            this.superState.InitialState = this.states[stateId];
+            this.superState.AddInitialState(this.states[stateId]);
 
             return this;
         }

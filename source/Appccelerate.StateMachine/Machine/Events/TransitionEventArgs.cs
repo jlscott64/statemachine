@@ -46,7 +46,7 @@ namespace Appccelerate.StateMachine.Machine.Events
         /// <value>The id of the source state of the transition.</value>
         public TState StateId
         {
-            get { return this.Context.State.Id; }
+            get { return this.Context.SourceState.Id; }
         }
 
         /// <summary>

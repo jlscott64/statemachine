@@ -34,6 +34,9 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile />
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="Appccelerate.Public.snk" />

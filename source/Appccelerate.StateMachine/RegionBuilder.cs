@@ -45,7 +45,7 @@ namespace Appccelerate.StateMachine
         {
             this.WithSubState(stateId);
 
-            this.owingState.InitialStates.Add(this.states[stateId]);
+            this.owingState.AddInitialState(this.states[stateId]);
 
             return this;
         }

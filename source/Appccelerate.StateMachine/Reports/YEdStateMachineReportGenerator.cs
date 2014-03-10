@@ -243,7 +243,7 @@ namespace Appccelerate.StateMachine.Reports
 
         private bool DetermineWhetherThisIsAnInitialState(IState<TState, TEvent> state)
         {
-            return (this.initialStateId.IsInitialized && state.Id.ToString() == this.initialStateId.Value.ToString()) || (state.SuperState != null && state.SuperState.InitialState == state);
+            return (this.initialStateId.IsInitialized && state.Id.Equals(this.initialStateId.Value)) || (state.SuperState != null && state.SuperState.GetInitialState() == state);
         }
     }
 }

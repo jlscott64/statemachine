@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -28,8 +30,7 @@ namespace Appccelerate.StateMachine.Machine
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface IState<TState, TEvent>
-        where TState : IComparable
+    public interface IState<TState, TEvent> where TState : IComparable
         where TEvent : IComparable
     {
         /// <summary>
@@ -39,17 +40,17 @@ namespace Appccelerate.StateMachine.Machine
         TState Id { get; }
 
         /// <summary>
-        /// Gets or sets the initial sub-state. Null if this state has no sub-states.
+        /// DEPRECATED. Gets the initial sub-state. Null if this state has no sub-states.
         /// </summary>
-        /// <value>The initial sub-state. Null if this state has no sub-states.</value>
-        IState<TState, TEvent> InitialState { get; set; }
+        /// <returns>The initial sub-state. Null if this state has no sub-states.</returns>
+        IState<TState, TEvent> GetInitialState();
 
         /// <summary>
-        /// Gets or sets the initial sub-states. Empty if this state has no sub-states.
+        /// Gets the initial sub-states. Empty if this state has no sub-states.
         /// Can have more than one element only if this states has regions.
         /// </summary>
         /// <value>The initial sub-states. Empty if this state has no sub-states.  More than one element only if this states has regions.</value>
-        IList<IState<TState, TEvent>> InitialStates { get; }
+        IEnumerable<IState<TState, TEvent>> InitialStates { get; }
 
         /// <summary>
         /// Gets or sets the super-state. Null if this is a root state.
@@ -76,16 +77,16 @@ namespace Appccelerate.StateMachine.Machine
         int Level { get; set; }
 
         /// <summary>
-        /// Gets or sets the last active state of this state.
-        /// </summary>
-        /// <value>The last state of the active.</value>
-        IState<TState, TEvent> LastActiveState { get; set; }
-
-        /// <summary>
         /// Gets or sets the last active states of this state. Can have more than one element only if this states has regions.
         /// </summary>
         /// <value>The last state of the active.  More than one element only if this states has regions.</value>
         IList<IState<TState, TEvent>> LastActiveStates { get; }
+
+        /// <summary>
+        /// Gets or sets the last active state of this state.
+        /// </summary>
+        /// <value>The last state of the active.</value>
+        IState<TState, TEvent> LastActiveState { get; set; }
 
         /// <summary>
         /// Gets the entry actions.
@@ -129,5 +130,7 @@ namespace Appccelerate.StateMachine.Machine
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         string ToString();
+
+        void AddInitialState(IState<TState, TEvent> initialState);
     }
 }

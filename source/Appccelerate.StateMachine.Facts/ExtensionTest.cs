@@ -79,7 +79,7 @@ namespace Appccelerate.StateMachine
             A.CallTo(() => this.extension.EnteredInitialState(
                     this.testee,
                     InitialState,
-                    A<TransitionContext<States, Events>>.That.Matches(context => context.State == null)))
+                    A<TransitionContext<States, Events>>.That.Matches(context => context.SourceState == null)))
                 .MustHaveHappened();
         }
 
@@ -121,7 +121,7 @@ namespace Appccelerate.StateMachine
                     this.testee,
                     A<ITransitionContext<States, Events>>.That.Matches(
                         context => 
-                            context.State.Id == States.A && 
+                            context.SourceState.Id == States.A && 
                             context.EventId.Value == eventId && 
                             context.EventArgument == eventArgument)))
                 .MustHaveHappened();
@@ -410,14 +410,14 @@ namespace Appccelerate.StateMachine
             A.CallTo(() => this.extension.HandlingEntryActionException(
                     this.testee,
                     State(States.A),
-                    A<TransitionContext<States, Events>>.That.Matches(context => context.State == null),
+                    A<TransitionContext<States, Events>>.That.Matches(context => context.SourceState == null),
                     ref exception))
                 .MustHaveHappened();
 
             A.CallTo(() => this.extension.HandledEntryActionException(
                     this.testee, 
                     State(States.A),
-                    A<TransitionContext<States, Events>>.That.Matches(context => context.State == null),
+                    A<TransitionContext<States, Events>>.That.Matches(context => context.SourceState == null),
                     exception))
                 .MustHaveHappened();
         }
@@ -434,7 +434,7 @@ namespace Appccelerate.StateMachine
 
         private static ITransitionContext<States, Events> Context(States sourceState, Events eventId)
         {
-            return A<ITransitionContext<States, Events>>.That.Matches(context => context.EventId.Value == eventId && context.State.Id == sourceState);
+            return A<ITransitionContext<States, Events>>.That.Matches(context => context.EventId.Value == eventId && context.SourceState.Id == sourceState);
         }
 
         private class OverrideExtension : Extensions.ExtensionBase<States, Events>

@@ -28,18 +28,10 @@ namespace Appccelerate.StateMachine.Machine
     public interface ITransitionContext<TState, TEvent>
         where TState : IComparable where TEvent : IComparable
     {
-        IState<TState, TEvent> State { get; }
+        IState<TState, TEvent> SourceState { get; }
 
         Missable<TEvent> EventId { get; }
 
         object EventArgument { get; }
-
-        void AddRecord(TState stateId, RecordType recordType);
-
-        string GetRecords();
-
-        void OnExceptionThrown(Exception exception);
-
-        void OnTransitionBegin();
     }
 }

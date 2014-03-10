@@ -64,11 +64,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         }
 
         [Fact]
-        public void NotifiesExceptionOnTransitionContext()
+        public void NotifiesException()
         {
             this.Testee.Fire(this.TransitionContext);
 
-            A.CallTo(() => this.TransitionContext.OnExceptionThrown(this.exception)).MustHaveHappened();
+            A.CallTo(() => this.Notifier.OnExceptionThrown(this.TransitionContext, this.exception)).MustHaveHappened();
         }
     }
 }

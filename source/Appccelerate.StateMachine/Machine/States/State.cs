@@ -16,6 +16,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections;
 using System.Linq;
 
 namespace Appccelerate.StateMachine.Machine.States
@@ -66,20 +67,23 @@ namespace Appccelerate.StateMachine.Machine.States
         /// </summary>
         private HistoryType historyType = HistoryType.None;
 
+        private IList<IState<TState, TEvent>>  initialStates = new List<IState<TState, TEvent>>();
+        INotifier<TState, TEvent> notifier;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="State&lt;TState, TEvent&gt;"/> class.
         /// </summary>
         /// <param name="id">The unique id of this state.</param>
         /// <param name="stateMachineInformation">The state machine information.</param>
+        /// <param name="notifier"></param>
         /// <param name="extensionHost">The extension host.</param>
-        public State(TState id, IStateMachineInformation<TState, TEvent> stateMachineInformation, IExtensionHost<TState, TEvent> extensionHost)
+        public State(TState id, IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier, IExtensionHost<TState, TEvent> extensionHost)
         {
             this.Id = id;
             this.level = 1;
             this.stateMachineInformation = stateMachineInformation;
+            this.notifier = notifier;
             this.extensionHost = extensionHost;
-
-            this.InitialStates = new List<IState<TState, TEvent>>();
 
             this.subStates = new List<IState<TState, TEvent>>();
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
@@ -123,43 +127,43 @@ namespace Appccelerate.StateMachine.Machine.States
         public IList<IActionHolder> ExitActions { get; private set; }
 
         /// <summary>
-        /// Gets or sets the initial sub state of this state.
+        /// DEPRECATED. Gets the initial sub-state. Null if this state has no sub-states.
         /// </summary>
-        /// <value>The initial sub state of this state.</value>
-        public IState<TState, TEvent> InitialState
+        /// <returns>The initial sub-state. Null if this state has no sub-states.</returns>
+        public IState<TState, TEvent> GetInitialState()
         {
-            get
+            return this.InitialStates.FirstOrDefault();
+        }
+
+        public void AddInitialState(IState<TState, TEvent> initialState)
+        {
+            if (initialState == null) throw new ArgumentNullException();
+
+            this.CheckInitialStateIsNotThisInstance(initialState);
+            this.CheckInitialStateIsASubState(initialState);
+
+            // TODO: JLS - I don't like setting LastActiveState here.  It isn't active at this point.
+            this.LastActiveState = initialState;
+
+            if (InitialStates.Any())
             {
-                return this.InitialStates.FirstOrDefault();
+                initialStates[0] = initialState;
             }
-
-            set
+            else
             {
-                if (value == null) throw new ArgumentNullException();
-
-                this.CheckInitialStateIsNotThisInstance(value);
-                this.CheckInitialStateIsASubState(value);
-
-                // TODO: JLS - I don't like setting LastActiveState here.  It isn't active at this point.
-                this.LastActiveState = value;
-
-                if (InitialStates.Any())
-                {
-                    InitialStates[0] = value;
-                }
-                else
-                {
-                    InitialStates.Add(value);
-                }
+                initialStates.Add(initialState);
             }
         }
 
         /// <summary>
-        /// Gets or sets the initial sub-states. Empty if this state has no sub-states.
+        /// Gets the initial sub-states. Empty if this state has no sub-states.
         /// Can have more than one element only if this states has regions.
         /// </summary>
         /// <value>The initial sub-states. Empty if this state has no sub-states.  More than one element only if this states has regions.</value>
-        public IList<IState<TState, TEvent>> InitialStates { get; private set; }
+        public IEnumerable<IState<TState, TEvent>> InitialStates
+        {
+            get { return initialStates; }
+        }
 
         /// <summary>
         /// Gets or sets the super-state of this state.
@@ -269,16 +273,12 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             Ensure.ArgumentNotNull(context, "context");
 
-            context.AddRecord(this.Id, RecordType.Enter);
-
             this.ExecuteEntryActions(context);
         }
 
         public void Exit(ITransitionContext<TState, TEvent> context)
         {
             Ensure.ArgumentNotNull(context, "context");
-
-            context.AddRecord(this.Id, RecordType.Exit);
 
             this.ExecuteExitActions(context);
             this.SetThisStateAsLastStateOfSuperState();
@@ -310,9 +310,9 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             this.Entry(context);
 
-            return this.InitialState == null ?
-                        this :
-                        this.InitialState.EnterShallow(context);
+            return HasInitialState() ?
+                        this.InitialStates.First().EnterShallow(context) :
+                        this;
         }
 
         public IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context)
@@ -329,9 +329,9 @@ namespace Appccelerate.StateMachine.Machine.States
             return this.Id.ToString();
         }
 
-        private static void HandleException(Exception exception, ITransitionContext<TState, TEvent> context)
+        private void HandleException(Exception exception, ITransitionContext<TState,TEvent> context)
         {
-            context.OnExceptionThrown(exception);
+            notifier.OnExceptionThrown(context, exception);
         }
 
         /// <summary>
@@ -454,11 +454,16 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private IState<TState, TEvent> EnterHistoryNone(ITransitionContext<TState, TEvent> context)
         {
-            return this.InitialState != null 
+            return HasInitialState() 
                 ? 
-                    this.InitialState.EnterShallow(context)
+                    this.InitialStates.First().EnterShallow(context)
                 : 
                     this;
+        }
+
+        bool HasInitialState()
+        {
+            return this.InitialStates.Any();
         }
 
         /// <summary>

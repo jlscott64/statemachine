@@ -29,6 +29,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Appccelerate.Fundamentals, Version=2.1.0.0, Culture=neutral, PublicKeyToken=917bca444d1f2b4c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -47,9 +50,6 @@
     </Reference>
     <Reference Include="Machine.Specifications.Clr4">
       <HintPath>..\packages\Machine.Specifications.0.6.2\lib\net45\Machine.Specifications.Clr4.dll</HintPath>
-    </Reference>
-    <Reference Include="Machine.Specifications.Should">
-      <HintPath>..\packages\Machine.Specifications.0.6.2\lib\net45\Machine.Specifications.Should.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
@@ -106,6 +106,7 @@
     <Compile Include="StateMachineAssertionsExtensionMethods.cs" />
     <Compile Include="StateMachineTestBase.cs" />
     <Compile Include="States.cs" />
+    <Compile Include="TEMP.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Appccelerate.Public.snk" />

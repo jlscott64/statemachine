@@ -50,11 +50,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         }
 
         [Fact]
-        public void NotifiesTransitionBeginOnTransitionContext()
+        public void NotifiesTransitionBegin()
         {
             this.Testee.Fire(this.TransitionContext);
 
-            A.CallTo(() => this.TransitionContext.OnTransitionBegin()).MustHaveHappened();
+            A.CallTo(() => this.Notifier.OnTransitionBegin(this.TransitionContext)).MustHaveHappened();
         }
     }
 }

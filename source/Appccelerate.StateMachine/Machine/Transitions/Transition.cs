@@ -33,10 +33,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         private readonly List<IActionHolder> actions;
         private readonly IExtensionHost<TState, TEvent> extensionHost;
         private readonly IStateMachineInformation<TState, TEvent> stateMachineInformation;
+        private readonly INotifier<TState, TEvent> notifier;
 
-        public Transition(IStateMachineInformation<TState, TEvent> stateMachineInformation, IExtensionHost<TState, TEvent> extensionHost)
+        public Transition(IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier, IExtensionHost<TState, TEvent> extensionHost)
         {
             this.stateMachineInformation = stateMachineInformation;
+            this.notifier = notifier;
             this.extensionHost = extensionHost;
 
             this.actions = new List<IActionHolder>();
@@ -72,9 +74,9 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 return TransitionResult<TState, TEvent>.NotFired;
             }
 
-            context.OnTransitionBegin();
+            this.notifier.OnTransitionBegin(context);
 
-            IState<TState, TEvent> newState = context.State;
+            IState<TState, TEvent> newState;
 
             if (!this.IsInternalTransition)
             {
@@ -87,6 +89,8 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             else
             {
                 this.PerformActions(context);
+
+                newState = context.SourceState;
             }
 
             this.extensionHost.ForEach(extension => extension.ExecutedTransition(
@@ -102,9 +106,9 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             return string.Format(CultureInfo.InvariantCulture, "Transition from state {0} to state {1}.", this.Source, this.Target);
         }
 
-        private static void HandleException(Exception exception, ITransitionContext<TState, TEvent> context)
+        private void HandleException(Exception exception, ITransitionContext<TState, TEvent> context)
         {
-            context.OnExceptionThrown(exception);
+            notifier.OnExceptionThrown(context, exception);
         }
 
         /// <summary>
@@ -231,7 +235,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
         private void UnwindSubStates(ITransitionContext<TState, TEvent> context)
         {
-            for (IState<TState, TEvent> o = context.State; o != this.Source; o = o.SuperState)
+            for (IState<TState, TEvent> o = context.SourceState; o != this.Source; o = o.SuperState)
             {
                 o.Exit(context);
             }

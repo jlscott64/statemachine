@@ -21,7 +21,6 @@ namespace Appccelerate.StateMachine.Machine.Contexts
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Text;
 
     /// <summary>
     /// Provides context information during a transition.
@@ -33,24 +32,21 @@ namespace Appccelerate.StateMachine.Machine.Contexts
         where TState : IComparable
         where TEvent : IComparable
     {
-        private readonly IState<TState, TEvent> state;
+        private readonly IState<TState, TEvent> sourceState;
         private readonly Missable<TEvent> eventId;
         private readonly object eventArgument;
-        private readonly List<Record> records;
 
-        public TransitionContext(IState<TState, TEvent> state, Missable<TEvent> eventId, object eventArgument, INotifier<TState, TEvent> notifier)
+        public TransitionContext(IState<TState, TEvent> sourceState, Missable<TEvent> eventId, object eventArgument, INotifier<TState, TEvent> notifier)
         {
-            this.state = state;
+            this.sourceState = sourceState;
             this.eventId = eventId;
             this.eventArgument = eventArgument;
             this.Notifier = notifier;
-
-            this.records = new List<Record>();
         }
 
-        public IState<TState, TEvent> State
+        public IState<TState, TEvent> SourceState
         {
-            get { return this.state; }
+            get { return this.sourceState; }
         }
 
         public Missable<TEvent> EventId
@@ -66,48 +62,6 @@ namespace Appccelerate.StateMachine.Machine.Contexts
         private INotifier<TState, TEvent> Notifier
         {
             get; set;
-        }
-
-        public void OnExceptionThrown(Exception exception)
-        {
-            this.Notifier.OnExceptionThrown(this, exception);
-        }
-
-        public void OnTransitionBegin()
-        {
-            this.Notifier.OnTransitionBegin(this);
-        }
-
-        public void AddRecord(TState stateId, RecordType recordType)
-        {
-            this.records.Add(new Record(stateId, recordType));
-        }
-
-        public string GetRecords()
-        {
-            StringBuilder result = new StringBuilder();
-
-            this.records.ForEach(record => result.AppendFormat(" -> {0}", record));
-
-            return result.ToString();
-        }
-
-        private class Record
-        {
-            public Record(TState stateId, RecordType recordType)
-            {
-                this.StateId = stateId;
-                this.RecordType = recordType;
-            }
-
-            private TState StateId { get; set; }
-
-            private RecordType RecordType { get; set; }
-
-            public override string ToString()
-            {
-                return this.RecordType + " " + this.StateId;
-            }
         }
     }
 }

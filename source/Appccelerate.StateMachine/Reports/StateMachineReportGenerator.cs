@@ -85,7 +85,7 @@ namespace Appccelerate.StateMachine.Reports
                 "{0}{1}: initial state = {2} history type = {3}{4}",
                 indentation,
                 state,
-                state.InitialState != null ? state.InitialState.ToString() : "None",
+                state.GetInitialState() != null ? state.GetInitialState().ToString() : "None",
                 state.HistoryType,
                 Environment.NewLine);
             indentation += "    ";
