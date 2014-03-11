@@ -63,5 +63,12 @@ namespace Appccelerate.StateMachine.Machine
         /// <param name="context">The event context.</param>
         /// <returns>The result of the transition.</returns>
         ITransitionResult<TState, TEvent> Fire(ITransitionContext<TState, TEvent> context);
+
+        /// <summary>
+        /// Indicates if the transition will fire in the given context.
+        /// </summary>
+        /// <param name="context">The event context.</param>
+        /// <returns>True if the transition will fire.</returns>
+        bool WillFire(ITransitionContext<TState, TEvent> context);
     }
 }

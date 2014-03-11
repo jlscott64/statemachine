@@ -64,16 +64,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         {
             Ensure.ArgumentNotNull(context, "context");
 
-            if (!this.ShouldFire(context))
-            {
-                this.extensionHost.ForEach(extension => extension.SkippedTransition(
-                    this.stateMachineInformation,
-                    this,
-                    context));
-
-                return TransitionResult<TState, TEvent>.NotFired;
-            }
-
             this.notifier.OnTransitionBegin(context);
 
             IState<TState, TEvent> newState;
@@ -196,7 +186,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             }
         }
 
-        private bool ShouldFire(ITransitionContext<TState, TEvent> context)
+        /// <summary>
+        /// Indicates if the transition will fire in the given context.
+        /// </summary>
+        /// <param name="context">The event context.</param>
+        /// <returns>True if the transition will fire.</returns>
+        public bool WillFire(ITransitionContext<TState, TEvent> context)
         {
             try
             {

@@ -253,10 +253,18 @@ namespace Appccelerate.StateMachine.Machine.States
             {
                 foreach (ITransition<TState, TEvent> transition in transitionsForEvent)
                 {
-                    result = transition.Fire(context);
-                    if (result.Fired)
+                    if (transition.WillFire(context))
                     {
-                        return result;
+                        return transition.Fire(context);
+                    }
+                    else
+                    {
+                        var transition1 = transition;
+
+                        this.extensionHost.ForEach(extension => extension.SkippedTransition(
+                            this.stateMachineInformation,
+                            transition1,
+                            context));
                     }
                 }
             }
