@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Appccelerate.StateMachine.Machine;
+using Appccelerate.StateMachine.Machine.States;
 using FakeItEasy;
 using FluentAssertions;
 using Xunit;
@@ -18,13 +21,89 @@ namespace Appccelerate.StateMachine
                     "A1A",
                 "A2",
                     "A2A",
+                        "A2A1",
                     "A2B",
                         "A2B1",
+                            "A2B1A",
             "B",
                 "B1",
+            "C",
+                "C1",
         };
 
         IList<string> visitList = new List<string>();
+
+        [Fact]
+        public void Test2()
+        {
+            var states = ids.Select(MakeFakeState).ToArray();
+            var dict = states.ToDictionary(s => s.Id);
+            AssignSuperStates(dict);
+
+            var currentStates = new[] { "B", "A2B1A", "A1A", "C1", "A2A1" }.Select(s => dict[s]).ToArray();
+
+            TraverseActiveStateTree2(currentStates);
+
+            var visits = string.Join(", ", visitList);
+
+            var ord = visitList.Select((s, i) => new { S = s, I = i }).ToDictionary(t => t.S, t => t.I);
+
+            ord["A1"].Should().BeLessThan(ord["A"]);
+            ord["A2"].Should().BeLessThan(ord["A"]);
+            ord["A1A"].Should().BeLessThan(ord["A1"]);
+            ord["A2A"].Should().BeLessThan(ord["A2"]);
+            ord["A2A1"].Should().BeLessThan(ord["A2A"]);
+            ord["A2B"].Should().BeLessThan(ord["A2"]);
+            ord["A2B1"].Should().BeLessThan(ord["A2B"]);
+            ord["A2B1A"].Should().BeLessThan(ord["A2B1"]);
+            //ord["B1"].Should().BeLessThan(ord["B"]);
+            ord["C1"].Should().BeLessThan(ord["C"]);
+        }
+
+        void TraverseActiveStateTree2(IEnumerable<IState<string, int>> currentStates)
+        {
+            var states = currentStates.OrderByDescending(s => s.Level).ThenBy(s => s.Id).ToArray();
+            var levels = states.Select(s => s == null ? 0 : s.Level).ToArray();
+            
+            var start = 0;
+            var end = states.Count() - 1;
+
+            for (var targetLevel = levels[start] - 1; 
+                start < end && targetLevel >= 0; 
+                targetLevel--)
+            {
+                // Invariant: At this point, the states list, from index "start",
+                // is ordered by descending level and then by state id.
+
+                // Delete duplicates at the start of the list.
+                while (start < end && states[start] == states[start + 1])
+                {
+                    start++;
+                }
+
+                // Invariant: At this point, the states list, from index "start",
+                // is still ordered by descending level and then by state id.
+
+                // For the first state and all the states at the same level,
+                // visit the state and replace it in the list with its superstate.
+                for (var index = start;
+                    index <= end && levels[index] == targetLevel + 1;
+                    index++)
+                {
+                        Visit(states[index]);
+                        states[index] = states[index].SuperState;
+                        levels[index]--;
+                }
+
+                // Invariant: At this point, the states list, from index "start",
+                // is ordered by descending level and then by state id.
+            }
+        }
+
+        void Visit(IState<string, int> state)
+        {
+            visitList.Add(state.Id);
+        }
 
         [Fact]
         public void Test()
