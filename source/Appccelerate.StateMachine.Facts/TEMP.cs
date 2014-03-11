@@ -64,12 +64,13 @@ namespace Appccelerate.StateMachine
         {
             var states = currentStates.OrderByDescending(s => s.Level).ThenBy(s => s.Id).ToArray();
             var levels = states.Select(s => s == null ? 0 : s.Level).ToArray();
-            
+            var eventConsumed = states.Select(s => false).ToArray();
+ 
             var start = 0;
             var end = states.Count() - 1;
 
             for (var targetLevel = levels[start] - 1; 
-                start < end && targetLevel >= 0; 
+                start <= end && targetLevel >= 0; 
                 targetLevel--)
             {
                 // Invariant: At this point, the states list, from index "start",
@@ -78,6 +79,7 @@ namespace Appccelerate.StateMachine
                 // Delete duplicates at the start of the list.
                 while (start < end && states[start] == states[start + 1])
                 {
+                    eventConsumed[start + 1] = eventConsumed[start] || eventConsumed[start + 1];
                     start++;
                 }
 
