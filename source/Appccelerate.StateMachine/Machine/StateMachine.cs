@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -260,7 +262,49 @@ namespace Appccelerate.StateMachine.Machine
             this.OnTransitionCompleted(context);
         }
 
+        private void TraverseActiveStateTree()
+        {
+            var stateArray = this.currentStates.OrderByDescending(s => s.Level).ThenBy(s => s.Id).ToArray();
+            var levels = stateArray.Select(s => s == null ? 0 : s.Level).ToArray();
+            var eventConsumed = stateArray.Select(s => false).ToArray();
 
+            List<ITransition<TState, TEvent>> transitions = new List<ITransition<TState, TEvent>>();
+
+            var start = 0;
+            var end = stateArray.Count() - 1;
+
+            for (var targetLevel = levels[start] - 1;
+                start <= end && targetLevel >= 0;
+                targetLevel--)
+            {
+                // Invariant: At this point, the states list, from index "start",
+                // is ordered by descending level and then by state id.
+
+                // Delete duplicates at the start of the list.
+                while (start < end && stateArray[start] == stateArray[start + 1])
+                {
+                    eventConsumed[start + 1] = eventConsumed[start] || eventConsumed[start + 1];
+                    start++;
+                }
+
+                // Invariant: At this point, the states list, from index "start",
+                // is still ordered by descending level and then by state id.
+
+                // For the first state and all the states at the same level,
+                // visit the state and replace it in the list with its superstate.
+                for (var index = start;
+                    index <= end && levels[index] == targetLevel + 1;
+                    index++)
+                {
+                    transitions.AddRange();
+                    stateArray[index] = stateArray[index].SuperState;
+                    levels[index]--;
+                }
+
+                // Invariant: At this point, the states list, from index "start",
+                // is ordered by descending level and then by state id.
+            }
+        }
 
         /// <summary>
         /// Defines the hierarchy on.

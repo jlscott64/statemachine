@@ -96,13 +96,13 @@
     <Compile Include="TEMP.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Appccelerate.StateMachine\Appccelerate.StateMachine.csproj">
       <Project>{2a577aa9-6c1c-4614-9b8b-94b4cad9cf81}</Project>
       <Name>Appccelerate.StateMachine</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
