@@ -113,6 +113,13 @@ namespace Appccelerate.StateMachine.Machine
         /// <returns>The result of the transition.</returns>
         ITransitionResult<TState, TEvent> Fire(ITransitionContext<TState, TEvent> context);
 
+        /// <summary>
+        /// Give the event context, returns the transition to be fired by this state.
+        /// </summary>
+        /// <param name="context">The event context.</param>
+        /// <returns>The transition to be fired or null.</returns>
+        ITransition<TState, TEvent> GetTransitionToFire(ITransitionContext<TState, TEvent> context);
+
         void Entry(ITransitionContext<TState, TEvent> context);
 
         void Exit(ITransitionContext<TState, TEvent> context);

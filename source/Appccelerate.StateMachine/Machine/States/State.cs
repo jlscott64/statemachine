@@ -238,43 +238,46 @@ namespace Appccelerate.StateMachine.Machine.States
         }
 
         /// <summary>
+        /// Give the event context, returns the transition to be fired by this state.
+        /// </summary>
+        /// <param name="context">The event context.</param>
+        /// <returns>The transition to be fired or null.</returns>
+        public ITransition<TState, TEvent> GetTransitionToFire(ITransitionContext<TState, TEvent> context)
+        {
+            Ensure.ArgumentNotNull(context, "context");
+            ITransition<TState, TEvent> result = null;
+
+            var transitionsForEvent = this.transitions[context.EventId.Value].NotNull();
+
+            foreach (ITransition<TState, TEvent> transition in transitionsForEvent)
+            {
+                if (transition.WillFire(context))
+                {
+                    result = transition;
+                    break;
+                }
+                else
+                {
+                    var transition1 = transition;
+
+                    this.extensionHost.ForEach(extension => extension.SkippedTransition(
+                        this.stateMachineInformation,
+                        transition1,
+                        context));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Goes recursively up the state hierarchy until a state is found that can handle the event.
         /// </summary>
         /// <param name="context">The event context.</param>
         /// <returns>The result of the transition.</returns>
         public ITransitionResult<TState, TEvent> Fire(ITransitionContext<TState, TEvent> context)
         {
-            Ensure.ArgumentNotNull(context, "context");
-
-            ITransitionResult<TState, TEvent> result = TransitionResult<TState, TEvent>.NotFired;
-
-            var transitionsForEvent = this.transitions[context.EventId.Value];
-            if (transitionsForEvent != null)
-            {
-                foreach (ITransition<TState, TEvent> transition in transitionsForEvent)
-                {
-                    if (transition.WillFire(context))
-                    {
-                        return transition.Fire(context);
-                    }
-                    else
-                    {
-                        var transition1 = transition;
-
-                        this.extensionHost.ForEach(extension => extension.SkippedTransition(
-                            this.stateMachineInformation,
-                            transition1,
-                            context));
-                    }
-                }
-            }
-
-            if (this.SuperState != null)
-            {
-                result = this.SuperState.Fire(context);
-            }
-
-            return result;
+            throw new NotImplementedException();
         }
 
         public void Entry(ITransitionContext<TState, TEvent> context)

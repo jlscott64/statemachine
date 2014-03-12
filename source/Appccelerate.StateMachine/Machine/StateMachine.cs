@@ -128,11 +128,6 @@ namespace Appccelerate.StateMachine.Machine
             get { return this.currentStates.Select(s => s.Id).ToArray(); }
         }
 
-        IState<TState, TEvent> LegacyCurrentState
-        {
-            get { return currentStates.FirstOrDefault(); }
-        }
-
         /// <summary>
         /// Gets or sets the state of the current.
         /// </summary>
@@ -142,7 +137,7 @@ namespace Appccelerate.StateMachine.Machine
             this.CheckThatStateMachineIsInitialized();
             this.CheckThatStateMachineHasEnteredInitialState();
 
-            return this.LegacyCurrentState;
+            return this.currentStates.FirstOrDefault();
         }
 
         void ChangeState(IState<TState, TEvent> oldState, IState<TState, TEvent> newState)
@@ -246,29 +241,40 @@ namespace Appccelerate.StateMachine.Machine
 
             this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
 
-            ITransitionContext<TState, TEvent> context = this.factory.CreateTransitionContext(LegacyCurrentState, new Missable<TEvent>(eventId), eventArgument, this);
-            ITransitionResult<TState, TEvent> result = LegacyCurrentState.Fire(context);
-
-            if (!result.Fired)
+            bool fired = false;
+            foreach (var pair in GetTransitionsToFire(eventId, eventArgument))
             {
-                this.OnTransitionDeclined(context);
-                return;
+                var transition = pair.Item1;
+                var context = pair.Item2;
+                
+                var result = transition.Fire(context);
+                this.ChangeState(context.SourceState, result.NewState);
+
+                fired = true;
+
+                this.extensions.ForEach(extension => extension.FiredEvent(this, context));
+                this.OnTransitionCompleted(context);
             }
 
-            this.ChangeState(LegacyCurrentState, result.NewState);
+            if (!fired)
+            {
+                var missableEventId = new Missable<TEvent>(eventId);
 
-            this.extensions.ForEach(extension => extension.FiredEvent(this, context));
-
-            this.OnTransitionCompleted(context);
+                foreach (var context in this.currentStates.Select(state => this.factory.CreateTransitionContext(state, missableEventId, eventArgument, this)))
+                {
+                    this.OnTransitionDeclined(context);
+                }
+            }
         }
 
-        private void TraverseActiveStateTree()
+        private IEnumerable<Tuple<ITransition<TState, TEvent>, ITransitionContext<TState, TEvent>>> GetTransitionsToFire(TEvent eventId, object eventArgument)
         {
+            var missableEventId = new Missable<TEvent>(eventId);
+
             var stateArray = this.currentStates.OrderByDescending(s => s.Level).ThenBy(s => s.Id).ToArray();
             var levels = stateArray.Select(s => s == null ? 0 : s.Level).ToArray();
             var eventConsumed = stateArray.Select(s => false).ToArray();
-
-            List<ITransition<TState, TEvent>> transitions = new List<ITransition<TState, TEvent>>();
+            var contexts = stateArray.Select(s => this.factory.CreateTransitionContext(s, missableEventId, eventArgument, this)).ToArray();
 
             var start = 0;
             var end = stateArray.Count() - 1;
@@ -296,8 +302,19 @@ namespace Appccelerate.StateMachine.Machine
                     index <= end && levels[index] == targetLevel + 1;
                     index++)
                 {
-                    transitions.AddRange();
-                    stateArray[index] = stateArray[index].SuperState;
+                    var currentState = stateArray[index];
+
+                    if (!eventConsumed[index])
+                    {
+                        var newTransition = currentState.GetTransitionToFire(contexts[index]);
+                        if (newTransition != null)
+                        {
+                            eventConsumed[index] = true;
+                            yield return Tuple.Create(newTransition, contexts[index]);
+                        }                      
+                    }
+
+                    stateArray[index] = currentState.SuperState;
                     levels[index]--;
                 }
 
@@ -369,7 +386,7 @@ namespace Appccelerate.StateMachine.Machine
             Ensure.ArgumentNotNull(stateMachineSaver, "stateMachineSaver");
 
             stateMachineSaver.SaveCurrentState(this.currentStates.Any() ? 
-                new Initializable<TState> { Value = this.LegacyCurrentState.Id } : 
+                new Initializable<TState> { Value = this.GetCurrentState().Id } : 
                 new Initializable<TState>());
 
             IEnumerable<IState<TState, TEvent>> superStatesWithLastActiveState = this.states.GetStates()
