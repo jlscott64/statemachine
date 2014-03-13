@@ -72,7 +72,13 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             {
                 this.UnwindSubStates(context);
 
-                this.Fire(this.Source, this.Target, context);
+                var exitedStates = new List<IState<TState, TEvent>>();
+                var enteredStates = new List<IState<TState, TEvent>>();
+                this.GetStateChanges(this.Source, this.Target, context, exitedStates, enteredStates);
+
+                exitedStates.ForEach(s => s.Exit(context));
+                this.PerformActions(context);
+                enteredStates.ForEach(s => s.Entry(context));
 
                 newState = this.Target.EnterByHistory(context);
             }
@@ -182,6 +188,60 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                     source.Exit(context);
                     this.Fire(source.SuperState, target.SuperState, context);
                     target.Entry(context);
+                }
+            }
+        }
+
+        void GetStateChanges(IState<TState, TEvent> source,
+            IState<TState, TEvent> target,
+            ITransitionContext<TState, TEvent> context,
+            IList<IState<TState, TEvent>> exitedStates,
+            IList<IState<TState, TEvent>> enteredStates)
+        {
+            if (source == this.Target)
+            {
+                // Handles 1.
+                // Handles 3. after traversing from the source to the target.
+                exitedStates.Add(source);
+                
+                enteredStates.Add(this.Target);
+            }
+            else if (source == target)
+            {
+
+            }
+            else if (source.SuperState == target.SuperState)
+            {
+                //// Handles 4.
+                //// Handles 5a. after traversing the hierarchy until a common ancestor if found.
+                exitedStates.Add(source);
+
+                enteredStates.Add(target);
+            }
+            else
+            {
+                // traverses the hierarchy until one of the above scenarios is met.
+
+                // Handles 3.
+                // Handles 5b.
+                if (source.Level > target.Level)
+                {
+                    exitedStates.Add(source);
+                    this.GetStateChanges(source.SuperState, target, context, exitedStates, enteredStates);
+                }
+                else if (source.Level < target.Level)
+                {
+                    // Handles 2.
+                    // Handles 5c.
+                    this.GetStateChanges(source, target.SuperState, context, exitedStates, enteredStates);
+                    enteredStates.Add(target);
+                }
+                else
+                {
+                    // Handles 5a.
+                    exitedStates.Add(source);
+                    this.GetStateChanges(source.SuperState, target.SuperState, context, exitedStates, enteredStates);
+                    enteredStates.Add(target);
                 }
             }
         }
