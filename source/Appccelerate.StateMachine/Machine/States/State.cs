@@ -317,6 +317,45 @@ namespace Appccelerate.StateMachine.Machine.States
             return result;
         }
 
+
+        public void Foobar(ICollection<IState<TState, TEvent>> states)
+        {
+            states.Add(this);
+            switch (this.HistoryType)
+            {
+                case HistoryType.None:
+                    if (this.HasInitialState()) 
+                        this.InitialStates.First().FoobarShallow(states);
+                    break;
+
+                case HistoryType.Shallow:
+                    if (this.LastActiveState != null) 
+                        this.LastActiveState.FoobarShallow(states);
+                    break;
+
+                case HistoryType.Deep:
+                    if (this.LastActiveState != null)
+                        this.LastActiveState.FoobarDeep(states);
+                    break;
+            }
+        }
+
+        public void FoobarShallow(ICollection<IState<TState, TEvent>> states)
+        {
+            if (HasInitialState())
+                this.InitialStates.First().FoobarShallow(states);
+            else
+                states.Add(this);
+        }
+
+        public void FoobarDeep(ICollection<IState<TState, TEvent>> states)
+        {
+            if (this.LastActiveState == null)
+                states.Add(this);
+            else
+                this.LastActiveState.FoobarDeep(states);
+        }
+
         public IState<TState, TEvent> EnterShallow(ITransitionContext<TState, TEvent> context)
         {
             this.Entry(context);

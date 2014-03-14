@@ -139,5 +139,9 @@ namespace Appccelerate.StateMachine.Machine
         string ToString();
 
         void AddInitialState(IState<TState, TEvent> initialState);
+
+        void Foobar(ICollection<IState<TState, TEvent>> states);
+        void FoobarShallow(ICollection<IState<TState, TEvent>> states);
+        void FoobarDeep(ICollection<IState<TState, TEvent>> states);
     }
 }

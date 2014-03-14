@@ -16,6 +16,9 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+using FakeItEasy;
+
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
@@ -70,17 +73,27 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
             if (!this.IsInternalTransition)
             {
-                this.UnwindSubStates(context);
-
                 var exitedStates = new List<IState<TState, TEvent>>();
-                var enteredStates = new List<IState<TState, TEvent>>();
-                this.GetStateChanges(this.Source, this.Target, context, exitedStates, enteredStates);
+                IList<IState<TState, TEvent>> enteredStatesReal = new List<IState<TState, TEvent>>();
+                var enteredStates = A.Fake<IList<IState<TState, TEvent>>>(x => x.Wrapping(enteredStatesReal));
+                A.CallTo(() => enteredStates.Add(A<IState<TState, TEvent>>._)).Invokes(a =>
+                {
+                    a.GetHashCode();
+                });
+
+                for (IState<TState, TEvent> o = context.SourceState; o != this.Source; o = o.SuperState)
+                {
+                    exitedStates.Add(o);
+                }
+
+                this.GetStateChanges(this.Source, this.Target, exitedStates, enteredStates);
+                this.Target.Foobar(enteredStates);
 
                 exitedStates.ForEach(s => s.Exit(context));
                 this.PerformActions(context);
                 enteredStates.ForEach(s => s.Entry(context));
 
-                newState = this.Target.EnterByHistory(context);
+                newState = enteredStates.Last();
             }
             else
             {
@@ -194,7 +207,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
         void GetStateChanges(IState<TState, TEvent> source,
             IState<TState, TEvent> target,
-            ITransitionContext<TState, TEvent> context,
             IList<IState<TState, TEvent>> exitedStates,
             IList<IState<TState, TEvent>> enteredStates)
         {
@@ -227,20 +239,20 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 if (source.Level > target.Level)
                 {
                     exitedStates.Add(source);
-                    this.GetStateChanges(source.SuperState, target, context, exitedStates, enteredStates);
+                    this.GetStateChanges(source.SuperState, target, exitedStates, enteredStates);
                 }
                 else if (source.Level < target.Level)
                 {
                     // Handles 2.
                     // Handles 5c.
-                    this.GetStateChanges(source, target.SuperState, context, exitedStates, enteredStates);
+                    this.GetStateChanges(source, target.SuperState, exitedStates, enteredStates);
                     enteredStates.Add(target);
                 }
                 else
                 {
                     // Handles 5a.
                     exitedStates.Add(source);
-                    this.GetStateChanges(source.SuperState, target.SuperState, context, exitedStates, enteredStates);
+                    this.GetStateChanges(source.SuperState, target.SuperState, exitedStates, enteredStates);
                     enteredStates.Add(target);
                 }
             }
@@ -285,14 +297,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
                     this.extensionHost.ForEach(extension => extension.HandledTransitionException(this.stateMachineInformation, this, context, exception));
                 }
-            }
-        }
-
-        private void UnwindSubStates(ITransitionContext<TState, TEvent> context)
-        {
-            for (IState<TState, TEvent> o = context.SourceState; o != this.Source; o = o.SuperState)
-            {
-                o.Exit(context);
             }
         }
     }
