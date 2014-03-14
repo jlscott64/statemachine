@@ -65,6 +65,7 @@
     <Compile Include="Machine\GuardHolders\ArgumentLessGuardHolder.cs" />
     <Compile Include="Machine\GuardHolders\GuardHoldersExceptionMessages.cs" />
     <Compile Include="Machine\GuardHolders\IGuardHolder.cs" />
+    <Compile Include="Machine\Transitions\Traversal.cs" />
     <Compile Include="RegionBuilder.cs" />
     <Compile Include="Machine\IExtension.cs" />
     <Compile Include="Machine\IExtensionHost.cs" />
@@ -115,9 +116,6 @@
   <ItemGroup>
     <Reference Include="Appccelerate.Fundamentals">
       <HintPath>..\packages\Appccelerate.Fundamentals.2.1.0\lib\portable-windows8+net45\Appccelerate.Fundamentals.dll</HintPath>
-    </Reference>
-    <Reference Include="FakeItEasy">
-      <HintPath>..\packages\FakeItEasy.1.18.0\lib\net40\FakeItEasy.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

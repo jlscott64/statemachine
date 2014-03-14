@@ -16,9 +16,6 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using System.Linq;
-using FakeItEasy;
-
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
@@ -27,7 +24,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
     using Appccelerate.StateMachine.Machine.ActionHolders;
     using Appccelerate.StateMachine.Machine.GuardHolders;
-    
+
     public class Transition<TState, TEvent>
         : ITransition<TState, TEvent>
         where TState : IComparable
@@ -71,34 +68,20 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
             IState<TState, TEvent> newState;
 
+            Action<ITransitionContext<TState, TEvent>> transitionAction = this.PerformActions;
             if (!this.IsInternalTransition)
             {
-                var exitedStates = new List<IState<TState, TEvent>>();
-                IList<IState<TState, TEvent>> enteredStatesReal = new List<IState<TState, TEvent>>();
-                var enteredStates = A.Fake<IList<IState<TState, TEvent>>>(x => x.Wrapping(enteredStatesReal));
-                A.CallTo(() => enteredStates.Add(A<IState<TState, TEvent>>._)).Invokes(a =>
-                {
-                    a.GetHashCode();
-                });
+                var currentFromState = context.SourceState;
+                var currentToState = this.Target;
+                var destinationState = this.Target;
 
-                for (IState<TState, TEvent> o = context.SourceState; o != this.Source; o = o.SuperState)
-                {
-                    exitedStates.Add(o);
-                }
+                var traversal = new Traversal<TState, TEvent>();
 
-                this.GetStateChanges(this.Source, this.Target, exitedStates, enteredStates);
-                this.Target.Foobar(enteredStates);
-
-                exitedStates.ForEach(s => s.Exit(context));
-                this.PerformActions(context);
-                enteredStates.ForEach(s => s.Entry(context));
-
-                newState = enteredStates.Last();
+                newState = traversal.ExecuteTraversal(context, currentFromState, currentToState, destinationState, transitionAction);
             }
             else
             {
-                this.PerformActions(context);
-
+                transitionAction(context);
                 newState = context.SourceState;
             }
 
@@ -118,144 +101,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         private void HandleException(Exception exception, ITransitionContext<TState, TEvent> context)
         {
             notifier.OnExceptionThrown(context, exception);
-        }
-
-        /// <summary>
-        /// Recursively traverses the state hierarchy, exiting states along
-        /// the way, performing the action, and entering states to the target.
-        /// </summary>
-        /// <remarks>
-        /// There exist the following transition scenarios:
-        /// 0. there is no target state (internal transition)
-        ///    --> handled outside this method.
-        /// 1. The source and target state are the same (self transition)
-        ///    --> perform the transition directly:
-        ///        Exit source state, perform transition actions and enter target state
-        /// 2. The target state is a direct or indirect sub-state of the source state
-        ///    --> perform the transition actions, then traverse the hierarchy 
-        ///        from the source state down to the target state,
-        ///        entering each state along the way.
-        ///        No state is exited.
-        /// 3. The source state is a sub-state of the target state
-        ///    --> traverse the hierarchy from the source up to the target, 
-        ///        exiting each state along the way. 
-        ///        Then perform transition actions.
-        ///        Finally enter the target state.
-        /// 4. The source and target state share the same super-state
-        /// 5. All other scenarios:
-        ///    a. The source and target states reside at the same level in the hierarchy 
-        ///       but do not share the same direct super-state
-        ///    --> exit the source state, move up the hierarchy on both sides and enter the target state
-        ///    b. The source state is lower in the hierarchy than the target state
-        ///    --> exit the source state and move up the hierarchy on the source state side
-        ///    c. The target state is lower in the hierarchy than the source state
-        ///    --> move up the hierarchy on the target state side, afterward enter target state
-        /// </remarks>
-        /// <param name="source">The source state.</param>
-        /// <param name="target">The target state.</param>
-        /// <param name="context">The event context.</param>
-        private void Fire(IState<TState, TEvent> source, IState<TState, TEvent> target, ITransitionContext<TState, TEvent> context)
-        {
-            if (source == this.Target)
-            {
-                // Handles 1.
-                // Handles 3. after traversing from the source to the target.
-                source.Exit(context);
-                this.PerformActions(context);
-                this.Target.Entry(context);
-            }
-            else if (source == target)
-            {
-                // Handles 2. after traversing from the target to the source.
-                this.PerformActions(context);
-            }
-            else if (source.SuperState == target.SuperState)
-            {
-                //// Handles 4.
-                //// Handles 5a. after traversing the hierarchy until a common ancestor if found.
-                source.Exit(context);
-                this.PerformActions(context);
-                target.Entry(context);
-            }
-            else
-            {
-                // traverses the hierarchy until one of the above scenarios is met.
-
-                // Handles 3.
-                // Handles 5b.
-                if (source.Level > target.Level)
-                {
-                    source.Exit(context);
-                    this.Fire(source.SuperState, target, context);
-                }
-                else if (source.Level < target.Level)
-                {
-                    // Handles 2.
-                    // Handles 5c.
-                    this.Fire(source, target.SuperState, context);
-                    target.Entry(context);
-                }
-                else
-                {
-                    // Handles 5a.
-                    source.Exit(context);
-                    this.Fire(source.SuperState, target.SuperState, context);
-                    target.Entry(context);
-                }
-            }
-        }
-
-        void GetStateChanges(IState<TState, TEvent> source,
-            IState<TState, TEvent> target,
-            IList<IState<TState, TEvent>> exitedStates,
-            IList<IState<TState, TEvent>> enteredStates)
-        {
-            if (source == this.Target)
-            {
-                // Handles 1.
-                // Handles 3. after traversing from the source to the target.
-                exitedStates.Add(source);
-                
-                enteredStates.Add(this.Target);
-            }
-            else if (source == target)
-            {
-
-            }
-            else if (source.SuperState == target.SuperState)
-            {
-                //// Handles 4.
-                //// Handles 5a. after traversing the hierarchy until a common ancestor if found.
-                exitedStates.Add(source);
-
-                enteredStates.Add(target);
-            }
-            else
-            {
-                // traverses the hierarchy until one of the above scenarios is met.
-
-                // Handles 3.
-                // Handles 5b.
-                if (source.Level > target.Level)
-                {
-                    exitedStates.Add(source);
-                    this.GetStateChanges(source.SuperState, target, exitedStates, enteredStates);
-                }
-                else if (source.Level < target.Level)
-                {
-                    // Handles 2.
-                    // Handles 5c.
-                    this.GetStateChanges(source, target.SuperState, exitedStates, enteredStates);
-                    enteredStates.Add(target);
-                }
-                else
-                {
-                    // Handles 5a.
-                    exitedStates.Add(source);
-                    this.GetStateChanges(source.SuperState, target.SuperState, exitedStates, enteredStates);
-                    enteredStates.Add(target);
-                }
-            }
         }
 
         /// <summary>
