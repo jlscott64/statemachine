@@ -39,7 +39,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             var enteredStates = new List<IState<TState, TEvent>>();
 
             GetStateChanges(sourceState, targetState, exitedStates, enteredStates);
-            Foobar(enteredStates, targetState);
+            TraverseToEntrySubstate(enteredStates, targetState);
             
             exitedStates.ForEach(s => s.Exit(context));
             if (transitionAction != null) transitionAction(context);
@@ -146,59 +146,59 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             }
         }
 
-        static void Foobar(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
+        static void TraverseToEntrySubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
         {
             switch (state.HistoryType)
             {
                 case HistoryType.None:
-                    FoobarInitial(states, state);
+                    TraverseToInitialSubstate(states, state);
                     break;
 
                 case HistoryType.Shallow:
-                    FoobarShallow(states, state);
+                    TraverseToShallowHistorySubstate(states, state);
                     break;
 
                 case HistoryType.Deep:
-                    FoobarDeep(states, state);
+                    TraverseToDeepHistorySubstate(states, state);
                     break;
             }
         }
 
-        static void FoobarInitial(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
+        static void TraverseToInitialSubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
         {
             if (state.HasInitialState())
             {
                 var nextState = state.InitialStates.First();
                 states.Add(nextState);
-                FoobarInitial(states, nextState);
+                TraverseToInitialSubstate(states, nextState);
             }
         }
 
-        static void FoobarShallow(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
+        static void TraverseToShallowHistorySubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
         {
             if (state.LastActiveState != null)
             {
                 var nextState = state.LastActiveState;
                 states.Add(nextState);
-                FoobarInitial(states, nextState);
+                TraverseToInitialSubstate(states, nextState);
             }
             else
             {
-                FoobarInitial(states, state);
+                TraverseToInitialSubstate(states, state);
             }
         }
 
-        static void FoobarDeep(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
+        static void TraverseToDeepHistorySubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
         {
             if (state.LastActiveState != null)
             {
                 var nextState = state.LastActiveState;
                 states.Add(nextState);
-                FoobarDeep(states, nextState);
+                TraverseToDeepHistorySubstate(states, nextState);
             }
             else
             {
-                FoobarInitial(states, state);
+                TraverseToInitialSubstate(states, state);
             }
         }
 
