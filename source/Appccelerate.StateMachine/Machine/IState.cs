@@ -107,13 +107,6 @@ namespace Appccelerate.StateMachine.Machine
         HistoryType HistoryType { get; set; }
 
         /// <summary>
-        /// Fires the specified event id on this state.
-        /// </summary>
-        /// <param name="context">The event context.</param>
-        /// <returns>The result of the transition.</returns>
-        ITransitionResult<TState, TEvent> Fire(ITransitionContext<TState, TEvent> context);
-
-        /// <summary>
         /// Give the event context, returns the transition to be fired by this state.
         /// </summary>
         /// <param name="context">The event context.</param>
@@ -123,12 +116,6 @@ namespace Appccelerate.StateMachine.Machine
         void Entry(ITransitionContext<TState, TEvent> context);
 
         void Exit(ITransitionContext<TState, TEvent> context);
-
-        IState<TState, TEvent> EnterByHistory(ITransitionContext<TState, TEvent> context);
-
-        IState<TState, TEvent> EnterShallow(ITransitionContext<TState, TEvent> context);
-
-        IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context);
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

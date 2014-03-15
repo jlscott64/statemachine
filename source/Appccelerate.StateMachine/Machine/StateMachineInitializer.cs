@@ -16,10 +16,11 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
-    using System.Collections.Generic;
+    using Appccelerate.StateMachine.Machine.Transitions;
 
     /// <summary>
     /// Responsible for entering the initial state of the state machine. 
@@ -43,37 +44,11 @@ namespace Appccelerate.StateMachine.Machine
 
         public IState<TState, TEvent> EnterInitialState()
         {
-            var stack = this.TraverseUpTheStateHierarchy();
-            this.TraverseDownTheStateHierarchyAndEnterStates(stack);
+            IState<TState, TEvent> sourceState = null;
+            var targetState = this.initialState;
 
-            return this.initialState.EnterByHistory(this.context);
-        }
-
-        /// <summary>
-        /// Traverses up the state hierarchy and build the stack of states.
-        /// </summary>
-        /// <returns>The stack containing all states up the state hierarchy.</returns>
-        private Stack<IState<TState, TEvent>> TraverseUpTheStateHierarchy()
-        {
-            var stack = new Stack<IState<TState, TEvent>>();
-
-            var state = this.initialState;
-            while (state != null)
-            {
-                stack.Push(state);
-                state = state.SuperState;
-            }
-
-            return stack;
-        }
-
-        private void TraverseDownTheStateHierarchyAndEnterStates(Stack<IState<TState, TEvent>> stack)
-        {
-            while (stack.Count > 0)
-            {
-                IState<TState, TEvent> state = stack.Pop();
-                state.Entry(this.context);
-            }
+            var traversal = new Traversal<TState, TEvent>();
+            return traversal.ExecuteTraversal(context, sourceState, targetState, null);
         }
     }
 }

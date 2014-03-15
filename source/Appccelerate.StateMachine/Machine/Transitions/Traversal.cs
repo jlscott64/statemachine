@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using Appccelerate.StateMachine.Machine.ActionHolders;
+
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
@@ -26,20 +28,33 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         where TState : IComparable
         where TEvent : IComparable
     {
-        public IState<TState, TEvent> ExecuteTraversal(ITransitionContext<TState, TEvent> context, IState<TState, TEvent> currentFromState, IState<TState, TEvent> currentToState,
-            IState<TState, TEvent> destinationState, Action<ITransitionContext<TState, TEvent>> transitionAction)
+        public IState<TState, TEvent> ExecuteTraversal(ITransitionContext<TState, TEvent> context, 
+            IState<TState, TEvent> sourceState,
+            IState<TState, TEvent> targetState, 
+            Action<ITransitionContext<TState, TEvent>> transitionAction)
         {
+            if (sourceState == null) sourceState = new OverState();
+
             var exitedStates = new List<IState<TState, TEvent>>();
             var enteredStates = new List<IState<TState, TEvent>>();
 
-            GetStateChanges(currentFromState, currentToState, destinationState, exitedStates, enteredStates);
-            Foobar(enteredStates, currentToState);
+            GetStateChanges(sourceState, targetState, exitedStates, enteredStates);
+            Foobar(enteredStates, targetState);
             
             exitedStates.ForEach(s => s.Exit(context));
-            transitionAction(context);
+            if (transitionAction != null) transitionAction(context);
             enteredStates.ForEach(s => s.Entry(context));
 
             return enteredStates.Last();
+        }
+
+        public void GetStateChanges(IState<TState, TEvent> sourceState,
+            IState<TState, TEvent> targetState,
+            IList<IState<TState, TEvent>> exitedStates,
+            IList<IState<TState, TEvent>> enteredStates)
+        {
+            var finalDestinationState = targetState;
+            GetStateChanges(sourceState, targetState, finalDestinationState, exitedStates, enteredStates);
         }
 
         /// <summary>
@@ -78,7 +93,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         /// <param name="finalDestinationState"></param>
         /// <param name="exitedStates">The list of states to be exited.</param>
         /// <param name="enteredStates">The list of states to be entered.</param>
-        public void GetStateChanges(IState<TState, TEvent> currentFromState, IState<TState, TEvent> currentToState, IState<TState, TEvent> finalDestinationState, IList<IState<TState, TEvent>> exitedStates, IList<IState<TState, TEvent>> enteredStates)
+        public void GetStateChanges(IState<TState, TEvent> currentFromState, 
+            IState<TState, TEvent> currentToState, 
+            IState<TState, TEvent> finalDestinationState, 
+            IList<IState<TState, TEvent>> exitedStates, 
+            IList<IState<TState, TEvent>> enteredStates)
         {
             if (currentFromState == finalDestinationState)
             {
@@ -180,6 +199,98 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             else
             {
                 FoobarInitial(states, state);
+            }
+        }
+
+        private class OverState : IState<TState, TEvent>
+        {
+            public TState Id
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public IState<TState, TEvent> GetInitialState()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<IState<TState, TEvent>> InitialStates
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public IState<TState, TEvent> SuperState
+            {
+                get { return null; }
+                set { throw new NotImplementedException(); }
+            }
+
+            public ICollection<IState<TState, TEvent>> SubStates
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public ITransitionDictionary<TState, TEvent> Transitions
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public int Level
+            {
+                get { return 0; }
+                set { throw new NotImplementedException(); }
+            }
+
+            public IList<IState<TState, TEvent>> LastActiveStates
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public IState<TState, TEvent> LastActiveState
+            {
+                get { throw new NotImplementedException(); }
+                set { throw new NotImplementedException(); }
+            }
+
+            public IList<IActionHolder> EntryActions
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public IList<IActionHolder> ExitActions
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public HistoryType HistoryType
+            {
+                get { throw new NotImplementedException(); }
+                set { throw new NotImplementedException(); }
+            }
+
+            public ITransition<TState, TEvent> GetTransitionToFire(ITransitionContext<TState, TEvent> context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Entry(ITransitionContext<TState, TEvent> context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Exit(ITransitionContext<TState, TEvent> context)
+            {
+                
+            }
+
+            public void AddInitialState(IState<TState, TEvent> initialState)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool HasInitialState()
+            {
+                throw new NotImplementedException();
             }
         }
     }

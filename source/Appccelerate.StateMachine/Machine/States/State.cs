@@ -270,16 +270,6 @@ namespace Appccelerate.StateMachine.Machine.States
             return result;
         }
 
-        /// <summary>
-        /// Goes recursively up the state hierarchy until a state is found that can handle the event.
-        /// </summary>
-        /// <param name="context">The event context.</param>
-        /// <returns>The result of the transition.</returns>
-        public ITransitionResult<TState, TEvent> Fire(ITransitionContext<TState, TEvent> context)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Entry(ITransitionContext<TState, TEvent> context)
         {
             Ensure.ArgumentNotNull(context, "context");
@@ -293,46 +283,6 @@ namespace Appccelerate.StateMachine.Machine.States
 
             this.ExecuteExitActions(context);
             this.SetThisStateAsLastStateOfSuperState();
-        }
-
-        public IState<TState, TEvent> EnterByHistory(ITransitionContext<TState, TEvent> context)
-        {
-            IState<TState, TEvent> result = this;
-
-            switch (this.HistoryType)
-            {
-                case HistoryType.None:
-                    result = this.EnterHistoryNone(context);
-                    break;
-
-                case HistoryType.Shallow:
-                    result = this.EnterHistoryShallow(context);
-                    break;
-
-                case HistoryType.Deep:
-                    result = this.EnterHistoryDeep(context);
-                    break;
-            }
-
-            return result;
-        }
-
-        public IState<TState, TEvent> EnterShallow(ITransitionContext<TState, TEvent> context)
-        {
-            this.Entry(context);
-
-            return HasInitialState() ?
-                        this.InitialStates.First().EnterShallow(context) :
-                        this;
-        }
-
-        public IState<TState, TEvent> EnterDeep(ITransitionContext<TState, TEvent> context)
-        {
-            this.Entry(context);
-
-            return this.LastActiveState == null ?
-                        this :
-                        this.LastActiveState.EnterDeep(context);
         }
 
         public override string ToString()
@@ -443,33 +393,6 @@ namespace Appccelerate.StateMachine.Machine.States
             {
                 this.superState.LastActiveState = this;
             }
-        }
-
-        private IState<TState, TEvent> EnterHistoryDeep(ITransitionContext<TState, TEvent> context)
-        {
-            return this.LastActiveState != null
-                       ?
-                           this.LastActiveState.EnterDeep(context)
-                       :
-                           this;
-        }
-
-        private IState<TState, TEvent> EnterHistoryShallow(ITransitionContext<TState, TEvent> context)
-        {
-            return this.LastActiveState != null
-                       ?
-                           this.LastActiveState.EnterShallow(context)
-                       :
-                           this;
-        }
-
-        private IState<TState, TEvent> EnterHistoryNone(ITransitionContext<TState, TEvent> context)
-        {
-            return HasInitialState() 
-                ? 
-                    this.InitialStates.First().EnterShallow(context)
-                : 
-                    this;
         }
 
         public bool HasInitialState()

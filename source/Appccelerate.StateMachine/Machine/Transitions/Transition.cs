@@ -71,13 +71,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             Action<ITransitionContext<TState, TEvent>> transitionAction = this.PerformActions;
             if (!this.IsInternalTransition)
             {
-                var currentFromState = context.SourceState;
-                var currentToState = this.Target;
-                var destinationState = this.Target;
+                var sourceState = context.SourceState;
+                var targetState = this.Target;
 
                 var traversal = new Traversal<TState, TEvent>();
 
-                newState = traversal.ExecuteTraversal(context, currentFromState, currentToState, destinationState, transitionAction);
+                newState = traversal.ExecuteTraversal(context, sourceState, targetState, transitionAction);
             }
             else
             {
