@@ -226,6 +226,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 set { throw new NotImplementedException(); }
             }
 
+            public IRegion<TState, TEvent> Region
+            {
+                get { throw new NotImplementedException(); }
+                set { throw new NotImplementedException(); }
+            }
+
             public IEnumerable<IState<TState, TEvent>> SubStates
             {
                 get { throw new NotImplementedException(); }

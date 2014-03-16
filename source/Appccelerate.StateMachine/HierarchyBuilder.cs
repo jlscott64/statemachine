@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using Appccelerate.StateMachine.Machine.States;
+
 namespace Appccelerate.StateMachine
 {
     using System;
@@ -33,6 +35,7 @@ namespace Appccelerate.StateMachine
         private readonly IStateDictionary<TState, TEvent> states;
 
         private readonly IState<TState, TEvent> superState;
+        IRegion<TState, TEvent> region;
 
         public HierarchyBuilder(IStateDictionary<TState, TEvent> states, TState superStateId)
         {
@@ -40,7 +43,7 @@ namespace Appccelerate.StateMachine
 
             this.states = states;
             this.superState = this.states[superStateId];
-            this.superState.AddRegion();
+            this.region = this.superState.AddRegion();
         }
 
         public IInitialSubStateSyntax<TState> WithHistoryType(HistoryType historyType)
@@ -66,6 +69,7 @@ namespace Appccelerate.StateMachine
             this.CheckThatStateHasNotAlreadyASuperState(subState);
             
             subState.SuperState = this.superState;
+            subState.Region = this.region;
             this.superState.AddSubState(subState);
 
             return this;

@@ -48,9 +48,8 @@ namespace Appccelerate.StateMachine.Machine
 
         /// <summary>
         /// Gets the initial sub-states. Empty if this state has no sub-states.
-        /// Can have more than one element only if this states has regions.
         /// </summary>
-        /// <value>The initial sub-states. Empty if this state has no sub-states.  More than one element only if this states has regions.</value>
+        /// <value>The initial sub-states. Empty if this state has no sub-states.</value>
         IEnumerable<IState<TState, TEvent>> InitialStates { get; }
 
         /// <summary>
@@ -58,6 +57,12 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         /// <value>The super-state.</value>
         IState<TState, TEvent> SuperState { get; set; }
+
+        /// <summary>
+        /// Gets or sets the region the state belongs to. Null if this is a simple state.
+        /// </summary>
+        /// <value>The region.</value>
+        IRegion<TState, TEvent> Region { get; set; }
 
         /// <summary>
         /// Gets the sub-states.

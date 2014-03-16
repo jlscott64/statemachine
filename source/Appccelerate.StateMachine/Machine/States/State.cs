@@ -16,84 +16,14 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using System.Collections;
-using System.Linq;
-
 namespace Appccelerate.StateMachine.Machine.States
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     using Appccelerate.StateMachine.Machine.ActionHolders;
     using Appccelerate.StateMachine.Machine.Transitions;
-
-    public interface IRegion<TState, TEvent>
-        where TState : IComparable
-        where TEvent : IComparable
-    {
-        /// <summary>
-        /// The owner of this region.
-        /// </summary>
-        IState<TState, TEvent> Owner { get; }
-
-        /// <summary>
-        /// Collection of the states of this region.
-        /// </summary>
-        IEnumerable<IState<TState, TEvent>> States { get; }
-
-        /// <summary>
-        /// Gets the initial state of the region.
-        /// </summary>
-        /// <returns>The initial state of the region.</returns>
-        IState<TState, TEvent> IntialState { get; }
-
-        void AddState(IState<TState, TEvent> state);
-        void SetInitialState(IState<TState, TEvent> initialState);
-    }
-
-    public class Region<TState, TEvent> : IRegion<TState, TEvent>
-        where TState : IComparable
-        where TEvent : IComparable
-    {
-        /// <summary>
-        /// Collection of the states of this region.
-        /// </summary>
-        readonly List<IState<TState, TEvent>> states = new List<IState<TState, TEvent>>();
-
-        public Region(IState<TState, TEvent> owner)
-        {
-            this.Owner = owner;
-        }
-
-        /// <summary>
-        /// The owner of this region.
-        /// </summary>
-        public IState<TState, TEvent> Owner { get; private set; }
-
-        /// <summary>
-        /// Gets the initial state of the region.
-        /// </summary>
-        /// <returns>The initial state of the region.</returns>
-        public IState<TState, TEvent> IntialState { get; private set; }
-
-        /// <summary>
-        /// Collection of the states of this region.
-        /// </summary>
-        public IEnumerable<IState<TState, TEvent>> States
-        {
-            get { return states; }
-        }
-
-        public void AddState(IState<TState, TEvent> state)
-        {
-            states.Add(state);
-        }
-
-        public void SetInitialState(IState<TState, TEvent> initialState)
-        {
-            IntialState = initialState;
-        }
-    }
 
     /// <summary>
     /// A state of the state machine.
@@ -163,7 +93,11 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Gets or sets the last active state of this state.
         /// </summary>
         /// <value>The last state of the active.</value>
-        public IState<TState, TEvent> LastActiveState { get; set; }
+        public IState<TState, TEvent> LastActiveState
+        {
+            get { return (this.regions.Any()) ? this.regions.First().LastActiveState : null; }
+            set { this.regions.First().LastActiveState = value; }
+        }
 
         /// <summary>
         /// Gets or sets the last active states of this state. Can have more than one element only if this states has regions.
@@ -199,7 +133,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <returns>The initial sub-state. Null if this state has no sub-states.</returns>
         public IState<TState, TEvent> GetInitialState()
         {
-            return this.regions.First().IntialState;
+            return regions.Any() ? this.regions.First().IntialState : null;
         }
 
         public void AddSubState(IState<TState, TEvent> subState)
@@ -218,9 +152,8 @@ namespace Appccelerate.StateMachine.Machine.States
 
         /// <summary>
         /// Gets the initial sub-states. Empty if this state has no sub-states.
-        /// Can have more than one element only if this states has regions.
         /// </summary>
-        /// <value>The initial sub-states. Empty if this state has no sub-states.  More than one element only if this states has regions.</value>
+        /// <value>The initial sub-states. Empty if this state has no sub-states.</value>
         public IEnumerable<IState<TState, TEvent>> InitialStates
         {
             get { return regions.Select(r => r.IntialState); }
@@ -279,6 +212,8 @@ namespace Appccelerate.StateMachine.Machine.States
             get { return this.historyType; } 
             set { this.historyType = value; }
         }
+
+        public IRegion<TState, TEvent> Region { get; set; }
 
         /// <summary>
         /// Gets the sub-states of this state.
