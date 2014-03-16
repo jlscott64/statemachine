@@ -17,6 +17,7 @@
 //-------------------------------------------------------------------------------
 
 using System.Collections;
+using Appccelerate.StateMachine.Machine.States;
 
 namespace Appccelerate.StateMachine.Machine
 {
@@ -62,7 +63,7 @@ namespace Appccelerate.StateMachine.Machine
         /// Gets the sub-states.
         /// </summary>
         /// <value>The sub-states.</value>
-        ICollection<IState<TState, TEvent>> SubStates { get; }
+        IEnumerable<IState<TState, TEvent>> SubStates { get; }
 
         /// <summary>
         /// Gets the transitions.
@@ -125,8 +126,12 @@ namespace Appccelerate.StateMachine.Machine
         /// </returns>
         string ToString();
 
+
+        void AddSubState(IState<TState, TEvent> subState);
+
         void AddInitialState(IState<TState, TEvent> initialState);
 
         bool HasInitialState();
+        IRegion<TState, TEvent> AddRegion();
     }
 }

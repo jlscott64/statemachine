@@ -17,6 +17,7 @@
 //-------------------------------------------------------------------------------
 
 using Appccelerate.StateMachine.Machine.ActionHolders;
+using Appccelerate.StateMachine.Machine.States;
 
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
@@ -225,7 +226,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 set { throw new NotImplementedException(); }
             }
 
-            public ICollection<IState<TState, TEvent>> SubStates
+            public IEnumerable<IState<TState, TEvent>> SubStates
             {
                 get { throw new NotImplementedException(); }
             }
@@ -283,12 +284,22 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 
             }
 
+            public void AddSubState(IState<TState, TEvent> subState)
+            {
+                throw new NotImplementedException();
+            }
+
             public void AddInitialState(IState<TState, TEvent> initialState)
             {
                 throw new NotImplementedException();
             }
 
             public bool HasInitialState()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IRegion<TState, TEvent> AddRegion()
             {
                 throw new NotImplementedException();
             }

@@ -16,10 +16,11 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-namespace Appccelerate.StateMachine.Machine
+namespace Appccelerate.StateMachine
 {
     using System;
     
+    using Appccelerate.StateMachine.Machine;
     using Appccelerate.StateMachine.Syntax;
 
     public class HierarchyBuilder<TState, TEvent> : 
@@ -39,6 +40,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.states = states;
             this.superState = this.states[superStateId];
+            this.superState.AddRegion();
         }
 
         public IInitialSubStateSyntax<TState> WithHistoryType(HistoryType historyType)
@@ -64,7 +66,7 @@ namespace Appccelerate.StateMachine.Machine
             this.CheckThatStateHasNotAlreadyASuperState(subState);
             
             subState.SuperState = this.superState;
-            this.superState.SubStates.Add(subState);
+            this.superState.AddSubState(subState);
 
             return this;
         }

@@ -57,7 +57,7 @@ namespace Appccelerate.StateMachine
             this.CheckThatStateHasNotAlreadyASuperState(subState);
             
             subState.SuperState = this.owingState;
-            this.owingState.SubStates.Add(subState);
+            this.owingState.AddSubState(subState);
 
             return this;
         }

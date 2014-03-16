@@ -83,7 +83,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee
                 .WithSubState(AnotherSubState);
 
-            A.CallTo(() => this.superState.SubStates.Add(anotherSubState)).MustHaveHappened();
+            A.CallTo(() => this.superState.AddSubState(anotherSubState)).MustHaveHappened();
         }
 
         [Fact]

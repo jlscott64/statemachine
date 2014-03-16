@@ -27,6 +27,74 @@ namespace Appccelerate.StateMachine.Machine.States
     using Appccelerate.StateMachine.Machine.ActionHolders;
     using Appccelerate.StateMachine.Machine.Transitions;
 
+    public interface IRegion<TState, TEvent>
+        where TState : IComparable
+        where TEvent : IComparable
+    {
+        /// <summary>
+        /// The owner of this region.
+        /// </summary>
+        IState<TState, TEvent> Owner { get; }
+
+        /// <summary>
+        /// Collection of the states of this region.
+        /// </summary>
+        IEnumerable<IState<TState, TEvent>> States { get; }
+
+        /// <summary>
+        /// Gets the initial state of the region.
+        /// </summary>
+        /// <returns>The initial state of the region.</returns>
+        IState<TState, TEvent> IntialState { get; }
+
+        void AddState(IState<TState, TEvent> state);
+        void SetInitialState(IState<TState, TEvent> initialState);
+    }
+
+    public class Region<TState, TEvent> : IRegion<TState, TEvent>
+        where TState : IComparable
+        where TEvent : IComparable
+    {
+        /// <summary>
+        /// Collection of the states of this region.
+        /// </summary>
+        readonly List<IState<TState, TEvent>> states = new List<IState<TState, TEvent>>();
+
+        public Region(IState<TState, TEvent> owner)
+        {
+            this.Owner = owner;
+        }
+
+        /// <summary>
+        /// The owner of this region.
+        /// </summary>
+        public IState<TState, TEvent> Owner { get; private set; }
+
+        /// <summary>
+        /// Gets the initial state of the region.
+        /// </summary>
+        /// <returns>The initial state of the region.</returns>
+        public IState<TState, TEvent> IntialState { get; private set; }
+
+        /// <summary>
+        /// Collection of the states of this region.
+        /// </summary>
+        public IEnumerable<IState<TState, TEvent>> States
+        {
+            get { return states; }
+        }
+
+        public void AddState(IState<TState, TEvent> state)
+        {
+            states.Add(state);
+        }
+
+        public void SetInitialState(IState<TState, TEvent> initialState)
+        {
+            IntialState = initialState;
+        }
+    }
+
     /// <summary>
     /// A state of the state machine.
     /// A state can be a sub-state or super-state of another state.
@@ -39,9 +107,9 @@ namespace Appccelerate.StateMachine.Machine.States
         where TEvent : IComparable
     {
         /// <summary>
-        /// Collection of the sub-states of this state.
+        /// Collection of the regions of this state.
         /// </summary>
-        private readonly List<IState<TState, TEvent>> subStates;
+        private readonly List<IRegion<TState, TEvent>> regions;
 
         /// <summary>
         /// Collection of transitions that start in this state (<see cref="ITransition{TState,TEvent}.Source"/> is equal to this state).
@@ -67,8 +135,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// </summary>
         private HistoryType historyType = HistoryType.None;
 
-        private IList<IState<TState, TEvent>>  initialStates = new List<IState<TState, TEvent>>();
-        INotifier<TState, TEvent> notifier;
+        readonly INotifier<TState, TEvent> notifier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="State&lt;TState, TEvent&gt;"/> class.
@@ -85,7 +152,7 @@ namespace Appccelerate.StateMachine.Machine.States
             this.notifier = notifier;
             this.extensionHost = extensionHost;
 
-            this.subStates = new List<IState<TState, TEvent>>();
+            this.regions = new List<IRegion<TState, TEvent>>();
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
 
             this.EntryActions = new List<IActionHolder>();
@@ -132,7 +199,12 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <returns>The initial sub-state. Null if this state has no sub-states.</returns>
         public IState<TState, TEvent> GetInitialState()
         {
-            return this.InitialStates.FirstOrDefault();
+            return this.regions.First().IntialState;
+        }
+
+        public void AddSubState(IState<TState, TEvent> subState)
+        {
+            this.regions.First().AddState(subState);
         }
 
         public void AddInitialState(IState<TState, TEvent> initialState)
@@ -141,18 +213,7 @@ namespace Appccelerate.StateMachine.Machine.States
 
             this.CheckInitialStateIsNotThisInstance(initialState);
             this.CheckInitialStateIsASubState(initialState);
-
-            // TODO: JLS - I don't like setting LastActiveState here.  It isn't active at this point.
-            this.LastActiveState = initialState;
-
-            if (InitialStates.Any())
-            {
-                initialStates[0] = initialState;
-            }
-            else
-            {
-                initialStates.Add(initialState);
-            }
+            regions.First().SetInitialState(initialState);
         }
 
         /// <summary>
@@ -162,7 +223,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <value>The initial sub-states. Empty if this state has no sub-states.  More than one element only if this states has regions.</value>
         public IEnumerable<IState<TState, TEvent>> InitialStates
         {
-            get { return initialStates; }
+            get { return regions.Select(r => r.IntialState); }
         }
 
         /// <summary>
@@ -223,9 +284,9 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Gets the sub-states of this state.
         /// </summary>
         /// <value>The sub-states of this state.</value>
-        public ICollection<IState<TState, TEvent>> SubStates 
-        { 
-            get { return this.subStates; }
+        public IEnumerable<IState<TState, TEvent>> SubStates 
+        {
+            get { return this.regions.SelectMany(r => r.States); }
         }
 
         /// <summary>
@@ -308,7 +369,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// </summary>
         private void SetLevelOfSubStates()
         {
-            foreach (var state in this.subStates)
+            foreach (var state in this.SubStates)
             {
                 state.Level = this.level + 1;
             }
@@ -398,6 +459,13 @@ namespace Appccelerate.StateMachine.Machine.States
         public bool HasInitialState()
         {
             return this.InitialStates.Any();
+        }
+
+        public IRegion<TState, TEvent> AddRegion()
+        {
+            var region = new Region<TState, TEvent>(this);
+            this.regions.Add(region);
+            return region;
         }
 
         /// <summary>
