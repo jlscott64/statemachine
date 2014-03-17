@@ -16,14 +16,12 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using System.Collections;
-using Appccelerate.StateMachine.Machine.States;
 
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
     using System.Collections.Generic;
-
+    using Appccelerate.StateMachine.Machine.States;
     using Appccelerate.StateMachine.Machine.ActionHolders;
     
     /// <summary>
@@ -83,10 +81,10 @@ namespace Appccelerate.StateMachine.Machine
         int Level { get; set; }
 
         /// <summary>
-        /// Gets or sets the last active states of this state. Can have more than one element only if this states has regions.
+        /// Gets the last active states of this state.
         /// </summary>
-        /// <value>The last state of the active.  More than one element only if this states has regions.</value>
-        IList<IState<TState, TEvent>> LastActiveStates { get; }
+        /// <value>The last active states.</value>
+        IEnumerable<IState<TState, TEvent>> LastActiveStates { get; }
 
         /// <summary>
         /// Gets or sets the last active state of this state.

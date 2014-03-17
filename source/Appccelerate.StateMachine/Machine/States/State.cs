@@ -100,13 +100,12 @@ namespace Appccelerate.StateMachine.Machine.States
         }
 
         /// <summary>
-        /// Gets or sets the last active states of this state. Can have more than one element only if this states has regions.
+        /// Gets the last active states of this state.
         /// </summary>
-        /// <value>The last state of the active.  More than one element only if this states has regions.</value>
-        public IList<IState<TState, TEvent>> LastActiveStates
+        /// <value>The last active states.</value>
+        public IEnumerable<IState<TState, TEvent>> LastActiveStates
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get { return this.regions.Select(r => r.LastActiveState).ToArray(); }
         }
 
         /// <summary>
@@ -278,7 +277,7 @@ namespace Appccelerate.StateMachine.Machine.States
             Ensure.ArgumentNotNull(context, "context");
 
             this.ExecuteExitActions(context);
-            this.SetThisStateAsLastStateOfSuperState();
+            this.SetThisStateAsLastStateOfRegion();
         }
 
         public override string ToString()
@@ -383,11 +382,11 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <summary>
         /// Sets this instance as the last state of this instance's super state.
         /// </summary>
-        private void SetThisStateAsLastStateOfSuperState()
+        private void SetThisStateAsLastStateOfRegion()
         {
-            if (this.superState != null)
+            if (this.Region != null)
             {
-                this.superState.LastActiveState = this;
+                this.Region.LastActiveState = this;
             }
         }
 
