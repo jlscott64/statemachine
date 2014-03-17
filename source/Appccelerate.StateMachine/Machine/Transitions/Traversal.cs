@@ -309,6 +309,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             {
                 throw new NotImplementedException();
             }
+
+
+            IEnumerable<IState<TState, TEvent>> IState<TState, TEvent>.LastActiveStates
+            {
+                get { throw new NotImplementedException(); }
+            }
         }
     }
 }
