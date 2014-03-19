@@ -28,69 +28,75 @@ namespace Appccelerate.StateMachine
     using FluentAssertions;
     using global::Machine.Specifications;
 
-    [Subject(Concern.Initialization)]
-    public class When_a_state_with_two_regions_is_initialized
+    public class RegionSpecification
     {
+        protected static PassiveStateMachine<S, E> machine;
+        protected static IExtension<S, E> extension;
+
         public enum S
         {
             A,
+
+            // State A, region R
             Ar1,
+            Ar2,
+
+            // State A, Region Q
             Aq1,
+            Aq2,
         }
 
         public enum E
         {
-            
+            E1,
         }
 
-        static PassiveStateMachine<S, E> machine;
-
-        static IExtension<S, E> extension;
-
         Establish context = () =>
-            {
-                machine = new PassiveStateMachine<S, E>();
+        {
+            machine = new PassiveStateMachine<S, E>();
 
-                extension = A.Fake<IExtension<S, E>>();
-                machine.AddExtension(extension);
-                A.CallTo(() => extension.SwitchedState(anyMachine, anyState, State(S.Ar1))).Invokes(() =>
-                {
-                    machine.GetHashCode();
-                });
+            extension = A.Fake<IExtension<S, E>>();
+            machine.AddExtension(extension);
 
+            machine.DefineHierarchyOn(S.A)
+                .WithHistoryType(HistoryType.None)
+                .WithInitialSubState(S.Ar1)
+                .WithSubState(S.Ar2);
 
-                machine.DefineHierarchyOn(S.A)
-                    .WithHistoryType(HistoryType.None)
-                    .WithInitialSubState(S.Ar1);
-                
-                machine.DefineRegionOn(S.A)
-                    .WithInitialSubState(S.Aq1);
+            machine.DefineRegionOn(S.A)
+                .WithInitialSubState(S.Aq1)
+                .WithSubState(S.Aq2);
 
-                machine.Initialize(S.A);
-            };
+            machine.In(S.Ar1).On(E.E1).Goto(S.Ar2);
+            machine.In(S.Aq1).On(E.E1).Goto(S.Aq2);
 
-        Because of = () => machine.Start();
+            machine.Initialize(S.A);
+            machine.Start();
+        };
 
+        protected static IState<S, E> anyState
+        {
+            get { return A<IState<S, E>>._; }
+        }
+
+        protected static IStateMachineInformation<S, E> anyMachine
+        {
+            get { return A<IStateMachineInformation<S, E>>._; }
+        }
+
+        protected static IState<S, E> State(S id)
+        {
+            return A<IState<S, E>>.That.Matches(s => s.Id == id);
+        }
+    }
+
+    [Subject(Concern.Initialization)]
+    public class When_a_state_with_two_regions_is_initialized : RegionSpecification
+    {
         It should_be_in_the_first_regions_intial_state = () =>
             A.CallTo(() => extension.SwitchedState(anyMachine, anyState, State(S.Ar1))).MustHaveHappened();
 
         It should_be_in_the_second_regions_intial_state = () =>
             A.CallTo(() => extension.SwitchedState(anyMachine, anyState, State(S.Aq1))).MustHaveHappened();
-
-        static IState<S, E> anyState
-        {
-            get { return A<IState<S, E>>._; }
-        }
-
-        static IStateMachineInformation<S, E> anyMachine
-        {
-            get { return A<IStateMachineInformation<S, E>>._; }
-        }
-
-        static IState<S, E> State(S id)
-        {
-            return A<IState<S, E>>.That.Matches(s => s.Id == id);
-        }
-
     }
 }
