@@ -355,7 +355,8 @@ namespace Appccelerate.StateMachine
         /// <param name="allTransitionsCompleted">All transitions completed.</param>
         private void WaitForAllTransitions(AutoResetEvent allTransitionsCompleted)
         {
-            Assert.True(allTransitionsCompleted.WaitOne(1000), "not enough transition completed events received within time-out.");
+            var timeout = System.Diagnostics.Debugger.IsAttached ? Timeout.InfiniteTimeSpan : TimeSpan.FromMilliseconds(1000);
+            Assert.True(allTransitionsCompleted.WaitOne(timeout), "not enough transition completed events received within time-out.");
         }
     }
 }

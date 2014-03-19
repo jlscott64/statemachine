@@ -44,7 +44,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Gets the initial state of the region.
         /// </summary>
         /// <returns>The initial state of the region.</returns>
-        public IState<TState, TEvent> IntialState { get; private set; }
+        public IState<TState, TEvent> InitialState { get; private set; }
 
         public IState<TState, TEvent> LastActiveState { get; set; }
 
@@ -63,7 +63,7 @@ namespace Appccelerate.StateMachine.Machine.States
 
         public void SetInitialState(IState<TState, TEvent> initialState)
         {
-            IntialState = initialState;
+            InitialState = initialState;
         }
     }
 }

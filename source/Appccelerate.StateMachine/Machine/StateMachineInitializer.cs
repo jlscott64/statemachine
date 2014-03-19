@@ -17,6 +17,8 @@
 //-------------------------------------------------------------------------------
 
 
+using System.Collections.Generic;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -42,7 +44,7 @@ namespace Appccelerate.StateMachine.Machine
             this.context = context;
         }
 
-        public IState<TState, TEvent> EnterInitialState()
+        public IEnumerable<IState<TState, TEvent>> EnterInitialStates()
         {
             IState<TState, TEvent> sourceState = null;
             var targetState = this.initialState;

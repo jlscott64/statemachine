@@ -39,7 +39,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// Gets the initial state of the region.
         /// </summary>
         /// <returns>The initial state of the region.</returns>
-        IState<TState, TEvent> IntialState { get; }
+        IState<TState, TEvent> InitialState { get; }
 
         /// <summary>
         /// Gets or sets the last active state of this state.

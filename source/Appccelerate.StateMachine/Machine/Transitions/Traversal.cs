@@ -23,16 +23,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     public class Traversal<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
-        public IState<TState, TEvent> ExecuteTraversal(ITransitionContext<TState, TEvent> context, 
-            IState<TState, TEvent> sourceState,
-            IState<TState, TEvent> targetState, 
-            Action<ITransitionContext<TState, TEvent>> transitionAction)
+        public IEnumerable<IState<TState, TEvent>> ExecuteTraversal(ITransitionContext<TState, TEvent> context, IState<TState, TEvent> sourceState, IState<TState, TEvent> targetState, Action<ITransitionContext<TState, TEvent>> transitionAction)
         {
             if (sourceState == null) sourceState = new OverState();
 
@@ -40,13 +36,15 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             var enteredStates = new List<IState<TState, TEvent>>();
 
             GetStateChanges(sourceState, targetState, exitedStates, enteredStates);
-            TraverseToEntrySubstate(enteredStates, targetState);
+
+            var finalStates = new List<IState<TState, TEvent>>();
+            TraverseToEntrySubstates(enteredStates, targetState, finalStates);
             
             exitedStates.ForEach(s => s.Exit(context));
             if (transitionAction != null) transitionAction(context);
             enteredStates.ForEach(s => s.Entry(context));
 
-            return enteredStates.Last();
+            return finalStates;
         }
 
         public void GetStateChanges(IState<TState, TEvent> sourceState,
@@ -147,59 +145,73 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             }
         }
 
-        static void TraverseToEntrySubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
+        static void TraverseToEntrySubstates(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state, ICollection<IState<TState, TEvent>> finalStates)
         {
             switch (state.HistoryType)
             {
                 case HistoryType.None:
-                    TraverseToInitialSubstate(states, state);
+                    TraverseToInitialSubstates(states, state, finalStates);
                     break;
 
                 case HistoryType.Shallow:
-                    TraverseToShallowHistorySubstate(states, state);
+                    TraverseToShallowHistorySubstates(states, state, finalStates);
                     break;
 
                 case HistoryType.Deep:
-                    TraverseToDeepHistorySubstate(states, state);
+                    TraverseToDeepHistorySubstates(states, state, finalStates);
                     break;
+
+                default:
+                    throw new Exception(string.Format("Unhandled HistoryType: HistoryType.{0}", Enum.GetName(typeof(HistoryType), state.HistoryType)));
             }
         }
 
-        static void TraverseToInitialSubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
+        static void TraverseToInitialSubstates(ICollection<IState<TState, TEvent>> enteredStates, IState<TState, TEvent> state, ICollection<IState<TState, TEvent>> finalStates)
         {
             if (state.HasInitialState())
             {
-                var nextState = state.InitialStates.First();
-                states.Add(nextState);
-                TraverseToInitialSubstate(states, nextState);
-            }
-        }
 
-        static void TraverseToShallowHistorySubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
-        {
-            if (state.LastActiveState != null)
-            {
-                var nextState = state.LastActiveState;
-                states.Add(nextState);
-                TraverseToInitialSubstate(states, nextState);
+                foreach (var nextState in state.InitialStates)
+                {
+                    enteredStates.Add(nextState);
+                    TraverseToInitialSubstates(enteredStates, nextState, finalStates);
+                }
             }
             else
             {
-                TraverseToInitialSubstate(states, state);
+                finalStates.Add(state);
             }
         }
 
-        static void TraverseToDeepHistorySubstate(ICollection<IState<TState, TEvent>> states, IState<TState, TEvent> state)
+        static void TraverseToShallowHistorySubstates(ICollection<IState<TState, TEvent>> enteredStates, IState<TState, TEvent> state, ICollection<IState<TState, TEvent>> finalStates)
         {
             if (state.LastActiveState != null)
             {
-                var nextState = state.LastActiveState;
-                states.Add(nextState);
-                TraverseToDeepHistorySubstate(states, nextState);
+                foreach(var nextState in state.LastActiveStates)
+                {
+                    enteredStates.Add(nextState);
+                    TraverseToInitialSubstates(enteredStates, nextState, finalStates);
+                }
             }
             else
             {
-                TraverseToInitialSubstate(states, state);
+                TraverseToInitialSubstates(enteredStates, state, finalStates);
+            }
+        }
+
+        static void TraverseToDeepHistorySubstates(ICollection<IState<TState, TEvent>> enteredStates, IState<TState, TEvent> state, ICollection<IState<TState, TEvent>> finalStates)
+        {
+            if (state.LastActiveState != null)
+            {
+                foreach (var nextState in state.LastActiveStates)
+                {
+                    enteredStates.Add(nextState);
+                    TraverseToDeepHistorySubstates(enteredStates, nextState, finalStates);
+                }
+            }
+            else
+            {
+                TraverseToInitialSubstates(enteredStates, state, finalStates);
             }
         }
 
@@ -248,7 +260,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 set { throw new NotImplementedException(); }
             }
 
-            public IList<IState<TState, TEvent>> LastActiveStates
+            public IEnumerable<IState<TState, TEvent>> LastActiveStates
             {
                 get { throw new NotImplementedException(); }
             }

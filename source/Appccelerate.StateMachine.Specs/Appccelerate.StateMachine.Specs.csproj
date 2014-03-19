@@ -64,6 +64,7 @@
     <Compile Include="ExtensionSpecifications.cs" />
     <Compile Include="GuardSpecification.cs" />
     <Compile Include="HierarchicalStateMachineInitializationSpecification.cs" />
+    <Compile Include="RegionSpecifications.cs" />
     <Compile Include="HierarchicalTransitionSpecification.cs" />
     <Compile Include="InitializationSpecification.cs" />
     <Compile Include="PassiveStateMachineSpecifications.cs" />

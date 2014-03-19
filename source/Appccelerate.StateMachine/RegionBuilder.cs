@@ -19,8 +19,9 @@
 namespace Appccelerate.StateMachine
 {
     using System;
-    
+
     using Appccelerate.StateMachine.Machine;
+    using Appccelerate.StateMachine.Machine.States;
     using Appccelerate.StateMachine.Syntax;
 
     public class RegionBuilder<TState, TEvent> : 
@@ -32,6 +33,7 @@ namespace Appccelerate.StateMachine
         private readonly IStateDictionary<TState, TEvent> states;
 
         private readonly IState<TState, TEvent> owingState;
+        private readonly IRegion<TState, TEvent> region;
 
         public RegionBuilder(IStateDictionary<TState, TEvent> states, TState owningStateId)
         {
@@ -39,13 +41,15 @@ namespace Appccelerate.StateMachine
 
             this.states = states;
             this.owingState = this.states[owningStateId];
+            this.region = this.owingState.AddRegion();
         }
 
         public ISubStateSyntax<TState> WithInitialSubState(TState stateId)
         {
-            this.WithSubState(stateId);
+            var subState = this.states[stateId];
 
-            this.owingState.AddInitialState(this.states[stateId]);
+            this.WithSubState(subState);
+            this.region.SetInitialState(subState);
 
             return this;
         }
@@ -53,11 +57,16 @@ namespace Appccelerate.StateMachine
         public ISubStateSyntax<TState> WithSubState(TState stateId)
         {
             var subState = this.states[stateId];
+            return WithSubState(subState);
+        }
 
+        ISubStateSyntax<TState> WithSubState(IState<TState, TEvent> subState)
+        {
             this.CheckThatStateHasNotAlreadyASuperState(subState);
-            
+
             subState.SuperState = this.owingState;
-            this.owingState.AddSubState(subState);
+            subState.Region = this.region;
+            this.region.AddState(subState);
 
             return this;
         }

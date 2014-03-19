@@ -132,21 +132,17 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <returns>The initial sub-state. Null if this state has no sub-states.</returns>
         public IState<TState, TEvent> GetInitialState()
         {
-            return regions.Any() ? this.regions.First().IntialState : null;
+            return regions.Any() ? this.regions.First().InitialState : null;
         }
 
         public void AddSubState(IState<TState, TEvent> subState)
         {
-            this.regions.First().AddState(subState);
+            throw new NotImplementedException("Getting rid of this function.");
         }
 
         public void AddInitialState(IState<TState, TEvent> initialState)
         {
-            if (initialState == null) throw new ArgumentNullException();
-
-            this.CheckInitialStateIsNotThisInstance(initialState);
-            this.CheckInitialStateIsASubState(initialState);
-            regions.First().SetInitialState(initialState);
+            throw new NotImplementedException("Getting rid of this function.");
         }
 
         /// <summary>
@@ -155,7 +151,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <value>The initial sub-states. Empty if this state has no sub-states.</value>
         public IEnumerable<IState<TState, TEvent>> InitialStates
         {
-            get { return regions.Select(r => r.IntialState); }
+            get { return regions.Select(r => r.InitialState); }
         }
 
         /// <summary>

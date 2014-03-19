@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
@@ -66,7 +68,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
             this.notifier.OnTransitionBegin(context);
 
-            IState<TState, TEvent> newState;
+            IEnumerable<IState<TState, TEvent>> newStates;
 
             Action<ITransitionContext<TState, TEvent>> transitionAction = this.PerformActions;
             if (!this.IsInternalTransition)
@@ -76,12 +78,12 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
                 var traversal = new Traversal<TState, TEvent>();
 
-                newState = traversal.ExecuteTraversal(context, sourceState, targetState, transitionAction);
+                newStates = traversal.ExecuteTraversal(context, sourceState, targetState, transitionAction);
             }
             else
             {
                 transitionAction(context);
-                newState = context.SourceState;
+                newStates = new[] {context.SourceState};
             }
 
             this.extensionHost.ForEach(extension => extension.ExecutedTransition(
@@ -89,7 +91,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 this,
                 context));
 
-            return new TransitionResult<TState, TEvent>(true, newState);
+            return new TransitionResult<TState, TEvent>(true, newStates);
         }
 
         public override string ToString()

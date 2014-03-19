@@ -16,13 +16,14 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using Appccelerate.StateMachine.Machine.States;
+
 
 namespace Appccelerate.StateMachine
 {
     using System;
     
     using Appccelerate.StateMachine.Machine;
+    using Appccelerate.StateMachine.Machine.States;
     using Appccelerate.StateMachine.Syntax;
 
     public class HierarchyBuilder<TState, TEvent> : 
@@ -35,7 +36,7 @@ namespace Appccelerate.StateMachine
         private readonly IStateDictionary<TState, TEvent> states;
 
         private readonly IState<TState, TEvent> superState;
-        IRegion<TState, TEvent> region;
+        private readonly IRegion<TState, TEvent> region;
 
         public HierarchyBuilder(IStateDictionary<TState, TEvent> states, TState superStateId)
         {
@@ -55,9 +56,10 @@ namespace Appccelerate.StateMachine
 
         public ISubStateSyntax<TState> WithInitialSubState(TState stateId)
         {
-            this.WithSubState(stateId);
+            var subState = this.states[stateId];
 
-            this.superState.AddInitialState(this.states[stateId]);
+            this.WithSubState(subState);
+            this.region.SetInitialState(subState);
 
             return this;
         }
@@ -65,12 +67,16 @@ namespace Appccelerate.StateMachine
         public ISubStateSyntax<TState> WithSubState(TState stateId)
         {
             var subState = this.states[stateId];
+            return WithSubState(subState);
+        }
 
+        ISubStateSyntax<TState> WithSubState(IState<TState, TEvent> subState)
+        {
             this.CheckThatStateHasNotAlreadyASuperState(subState);
-            
+
             subState.SuperState = this.superState;
             subState.Region = this.region;
-            this.superState.AddSubState(subState);
+            this.region.AddState(subState);
 
             return this;
         }

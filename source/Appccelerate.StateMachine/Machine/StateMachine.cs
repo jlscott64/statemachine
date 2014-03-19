@@ -140,15 +140,23 @@ namespace Appccelerate.StateMachine.Machine
             return this.currentStates.FirstOrDefault();
         }
 
+
+        void ChangeStates(IState<TState, TEvent> oldState, IEnumerable<IState<TState, TEvent>> newStates)
+        {
+            foreach (var newState in newStates)
+                this.ChangeState(oldState, newState);
+        }
+
         void ChangeState(IState<TState, TEvent> oldState, IState<TState, TEvent> newState)
         {
-            if (oldState != null)
+            var indexOf = currentStates.IndexOf(oldState);
+            if (indexOf == -1)
             {
-                currentStates[currentStates.IndexOf(oldState)] = newState;
+                currentStates.Add(newState);
             }
             else
             {
-                currentStates.Add(newState);
+                currentStates[indexOf] = newState;
             }
 
             this.extensions.ForEach(extension => extension.SwitchedState(this, oldState, newState));
@@ -248,7 +256,7 @@ namespace Appccelerate.StateMachine.Machine
                 var context = pair.Item2;
                 
                 var result = transition.Fire(context);
-                this.ChangeState(context.SourceState, result.NewState);
+                this.ChangeStates(context.SourceState, result.NewStates);
 
                 fired = true;
 
@@ -476,9 +484,8 @@ namespace Appccelerate.StateMachine.Machine
 
         private void EnterInitialState(IState<TState, TEvent> initialState, ITransitionContext<TState, TEvent> context)
         {
-            // TODO: JLS - Iterate here
             var initializer = this.factory.CreateStateMachineInitializer(initialState, context);
-            this.ChangeState(null, initializer.EnterInitialState());
+            this.ChangeStates(null, initializer.EnterInitialStates());
         }
 
         private void RaiseEvent<T>(EventHandler<T> eventHandler, T arguments, ITransitionContext<TState, TEvent> context, bool raiseEventOnException) where T : EventArgs

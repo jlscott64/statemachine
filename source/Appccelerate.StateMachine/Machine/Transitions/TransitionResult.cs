@@ -16,6 +16,9 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
@@ -25,12 +28,24 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         where TState : IComparable
         where TEvent : IComparable
     {
-        public static readonly ITransitionResult<TState, TEvent> NotFired = new TransitionResult<TState, TEvent>(false, null);
+        public static readonly ITransitionResult<TState, TEvent> NotFired = new TransitionResult<TState, TEvent>();
+        readonly IEnumerable<IState<TState, TEvent>> newStates;
 
         public TransitionResult(bool fired, IState<TState, TEvent> newState)
+            : this(fired, new[] { newState })
+        {
+        }
+
+        public TransitionResult(bool fired, IEnumerable<IState<TState, TEvent>> newStates)
         {
             this.Fired = fired;
-            this.NewState = newState;
+            this.newStates = newStates.ToArray();
+            this.NewState = NewStates.FirstOrDefault();
+        }
+
+        private TransitionResult()
+            : this(false, new IState<TState, TEvent>[0])
+        {
         }
 
         /// <summary>
@@ -44,5 +59,14 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         /// </summary>
         /// <value>The new state.</value>
         public IState<TState, TEvent> NewState { get; private set; }
+
+        /// <summary>
+        /// Gets the new states the state machine is in.
+        /// </summary>
+        /// <value>The new states.</value>
+        public IEnumerable<IState<TState, TEvent>> NewStates
+        {
+            get { return newStates; }
+        }
     }
 }

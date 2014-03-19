@@ -58,8 +58,8 @@ namespace Appccelerate.StateMachine.Machine.States
 
             var subState = A.Fake<IState<States, Events>>();
 
-            this.testee.AddRegion();
-            this.testee.AddSubState(subState);
+            var region = this.testee.AddRegion();
+            region.AddState(subState);
 
             this.testee.Level = Level;
 

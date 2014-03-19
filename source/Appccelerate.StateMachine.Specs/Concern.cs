@@ -31,7 +31,5 @@ namespace Appccelerate.StateMachine
         public const string ExceptionHandling = "Exception Handling";
         
         public const string Persistence = "Persistence";
-
-        public const string OrthogonalStates = "OrthogonalStates";
     }
 }
