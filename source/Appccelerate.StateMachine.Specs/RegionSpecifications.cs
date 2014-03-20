@@ -16,12 +16,16 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections;
+using System.Collections.Generic;
 using Appccelerate.StateMachine.Machine;
 using Appccelerate.StateMachine.Machine.States;
 using FakeItEasy;
 
 namespace Appccelerate.StateMachine
 {
+// ReSharper disable InconsistentNaming
+    
     using System;
     using System.Globalization;
 
@@ -32,71 +36,97 @@ namespace Appccelerate.StateMachine
     {
         protected static PassiveStateMachine<S, E> machine;
         protected static IExtension<S, E> extension;
+        protected static IList<S> currentStates;
 
         public enum S
         {
+            // State A
             A,
 
-            // State A, region R
-            Ar1,
-            Ar2,
+            // State A, region X
+            Ax1,
+            Ax2,
 
-            // State A, Region Q
-            Aq1,
-            Aq2,
+            // State A, Region Y
+            Ay1,
+            Ay2,
+
+            // State B
+            B,
         }
 
         public enum E
         {
-            E1,
+            Ax1_to_Ax2_and_Ay1_to_Ay2,
+            Ay1_to_Ay2,
+            Ax1_to_B,
         }
 
         Establish context = () =>
         {
             machine = new PassiveStateMachine<S, E>();
+            currentStates = new List<S>();
 
             extension = A.Fake<IExtension<S, E>>();
             machine.AddExtension(extension);
 
             machine.DefineHierarchyOn(S.A)
                 .WithHistoryType(HistoryType.None)
-                .WithInitialSubState(S.Ar1)
-                .WithSubState(S.Ar2);
+                .WithInitialSubState(S.Ax1)
+                .WithSubState(S.Ax2);
 
             machine.DefineRegionOn(S.A)
-                .WithInitialSubState(S.Aq1)
-                .WithSubState(S.Aq2);
+                .WithInitialSubState(S.Ay1)
+                .WithSubState(S.Ay2);
 
-            machine.In(S.Ar1).On(E.E1).Goto(S.Ar2);
-            machine.In(S.Aq1).On(E.E1).Goto(S.Aq2);
+            machine.In(S.Ax1).On(E.Ax1_to_Ax2_and_Ay1_to_Ay2).Goto(S.Ax2);
+            machine.In(S.Ay1).On(E.Ax1_to_Ax2_and_Ay1_to_Ay2).Goto(S.Ay2);
+            machine.In(S.Ay1).On(E.Ay1_to_Ay2).Goto(S.Ay2);
+            machine.In(S.Ax1).On(E.Ax1_to_B).Goto(S.B);
+
+            foreach(S id in Enum.GetValues(typeof(S)))
+            {
+                machine.In(id)
+                    .ExecuteOnEntryParametrized(currentStates.Add, id)
+                    .ExecuteOnExitParametrized(s => currentStates.Remove(s), id);
+            }
 
             machine.Initialize(S.A);
             machine.Start();
         };
-
-        protected static IState<S, E> anyState
-        {
-            get { return A<IState<S, E>>._; }
-        }
-
-        protected static IStateMachineInformation<S, E> anyMachine
-        {
-            get { return A<IStateMachineInformation<S, E>>._; }
-        }
-
-        protected static IState<S, E> State(S id)
-        {
-            return A<IState<S, E>>.That.Matches(s => s.Id == id);
-        }
     }
 
     [Subject(Concern.Initialization)]
     public class When_a_state_with_two_regions_is_initialized : RegionSpecification
     {
-        It should_be_in_the_first_regions_intial_state = () =>
-            A.CallTo(() => extension.SwitchedState(anyMachine, anyState, State(S.Ar1))).MustHaveHappened();
+        It should_be_in_the_both_regions_intial_states = () =>
+            currentStates.Should().BeEquivalentTo(S.A, S.Ax1, S.Ay1);
+    }
 
-        It should_be_in_the_second_regions_intial_state = () =>
-            A.CallTo(() => extension.SwitchedState(anyMachine, anyState, State(S.Aq1))).MustHaveHappened();
+    [Subject(Concern.Transition)]
+    public class When_an_event_has_transitions_one_region_of_a_state : RegionSpecification
+    {
+        Because of = () => { machine.Fire(E.Ay1_to_Ay2); };
+
+        It should_be_in_that_regions_new_state = () =>
+            currentStates.Should().BeEquivalentTo(S.A, S.Ax1, S.Ay2);
+    }
+
+    [Subject(Concern.Transition)]
+    public class When_an_event_has_transitions_two_regions_of_a_state : RegionSpecification
+    {
+        Because of = () => machine.Fire(E.Ax1_to_Ax2_and_Ay1_to_Ay2);
+
+        It should_be_in_both_regions_new_states = () =>
+            currentStates.Should().BeEquivalentTo(S.A, S.Ax2, S.Ay2);
+    }
+
+    [Subject(Concern.Transition)]
+    public class When_an_event_transitions_out_of_a_state_with_two_regions : RegionSpecification
+    {
+        Because of = () => machine.Fire(E.Ax1_to_B);
+
+        It should_exit_both_regions = () =>
+            currentStates.Should().BeEquivalentTo(S.B);
     }
 }
