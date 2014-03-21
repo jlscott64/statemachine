@@ -16,8 +16,11 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Appccelerate.StateMachine.Machine.ActionHolders;
+using Appccelerate.StateMachine.Machine.States;
 
 namespace Appccelerate.StateMachine
 {
@@ -88,26 +91,23 @@ namespace Appccelerate.StateMachine
             private IState<TState, TEvent> superState;
 
             private int level;
-            private static Random random = new Random(1234);
 
             public StateBuilder()
             {
                 this.state = A.Fake<IState<TState, TEvent>>();
-                var toStringValue = String.Join("", Enumerable.Range(0, 3).Select(i => Convert.ToChar(65 + random.Next(0, 25))));
-                A.CallTo(() => this.state.ToString()).Returns(toStringValue);
             }
 
             public StateBuilder WithSuperState(IState<TState, TEvent> newSuperState)
             {
                 this.superState = newSuperState;
                 this.level = newSuperState.Level + 1;
+                A.CallTo(() => this.superState.ActiveStates).Returns(new[] { this.state });
 
                 return this;
             }
 
             public IState<TState, TEvent> Build()
             {
-                A.CallTo(() => this.state.SuperState.ActiveStates).Returns(new[] { this.state });
                 A.CallTo(() => this.state.SuperState).Returns(this.superState);
                 A.CallTo(() => this.state.Level).Returns(this.level);
 
