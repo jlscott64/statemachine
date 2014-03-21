@@ -15,10 +15,36 @@
   <DetectStackOverflow>true</DetectStackOverflow>
   <IncludeStaticReferencesInWorkspace>true</IncludeStaticReferencesInWorkspace>
   <DefaultTestTimeout>60000</DefaultTestTimeout>
-  <UseBuildConfiguration />
-  <UseBuildPlatform />
-  <ProxyProcessPath />
+  <UseBuildConfiguration></UseBuildConfiguration>
+  <UseBuildPlatform></UseBuildPlatform>
+  <ProxyProcessPath></ProxyProcessPath>
   <UseCPUArchitecture>AutoDetect</UseCPUArchitecture>
   <MSTestThreadApartmentState>STA</MSTestThreadApartmentState>
   <BuildProcessArchitecture>x86</BuildProcessArchitecture>
+  <IgnoredTests>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.HierarchyBuilderTest.AddsSubStatesToSuperState</TestName>
+    </NamedTestSelector>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.HierarchyBuilderTest.SetsInitialSubStateOfSuperState</TestName>
+    </NamedTestSelector>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.Transitions.ExceptionThrowingGuardTransitionTest.CallsExtensionToHandleException</TestName>
+    </NamedTestSelector>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.Transitions.ExceptionThrowingGuardTransitionTest.NotifiesException</TestName>
+    </NamedTestSelector>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.Transitions.ExceptionThrowingGuardTransitionTest.ReturnsNotFiredTransitionResult</TestName>
+    </NamedTestSelector>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.Transitions.GuardsTransitionTest.DoesNotExecute_WhenGuardIsNotMet</TestName>
+    </NamedTestSelector>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.Transitions.GuardsTransitionTest.NotifiesExtensions_WhenGuardIsNotMet</TestName>
+    </NamedTestSelector>
+    <NamedTestSelector>
+      <TestName>Appccelerate.StateMachine.Machine.Transitions.GuardsTransitionTest.ReturnsNotFiredTransitionResult_WhenGuardIsNotMet</TestName>
+    </NamedTestSelector>
+  </IgnoredTests>
 </ProjectConfiguration>
