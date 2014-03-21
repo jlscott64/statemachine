@@ -47,6 +47,12 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <value>The last state of the active.</value>
         IState<TState, TEvent> LastActiveState { get; set; }
 
+        /// <summary>
+        /// Gets or sets the current active state of this state.
+        /// </summary>
+        /// <value>The last state of the active.</value>
+        IState<TState, TEvent> ActiveState { get; set; }
+
         void AddState(IState<TState, TEvent> state);
         void SetInitialState(IState<TState, TEvent> initialState);
     }

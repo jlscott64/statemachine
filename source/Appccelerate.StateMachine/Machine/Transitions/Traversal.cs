@@ -125,7 +125,8 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 // Handles 5b.
                 if (currentFromState.Level > currentToState.Level)
                 {
-                    exitedStates.Add(currentFromState);
+                    foreach (var activeState in currentFromState.SuperState.ActiveStates)
+                        exitedStates.Add(activeState);
                     GetStateChanges(currentFromState.SuperState, currentToState, finalDestinationState, exitedStates, enteredStates);
                 }
                 else if (currentFromState.Level < currentToState.Level)
@@ -257,6 +258,17 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             public int Level
             {
                 get { return 0; }
+                set { throw new NotImplementedException(); }
+            }
+
+            public IEnumerable<IState<TState, TEvent>> ActiveStates
+            {
+                get { throw new NotImplementedException(); }
+            }
+
+            public IState<TState, TEvent> ActiveState
+            {
+                get { throw new NotImplementedException(); }
                 set { throw new NotImplementedException(); }
             }
 

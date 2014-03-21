@@ -90,6 +90,25 @@ namespace Appccelerate.StateMachine.Machine.States
         }
 
         /// <summary>
+        /// Gets or sets the current active state of this state.
+        /// </summary>
+        /// <value>The current state of the active.</value>
+        public IState<TState, TEvent> ActiveState
+        {
+            get { return (this.regions.Any()) ? this.regions.First().ActiveState : null; }
+            set { this.regions.First().ActiveState = value; }
+        }
+
+        /// <summary>
+        /// Gets the current active states of this state.
+        /// </summary>
+        /// <value>The current active states.</value>
+        public IEnumerable<IState<TState, TEvent>> ActiveStates
+        {
+            get { return this.regions.Select(r => r.ActiveState).Where(r => r != null).ToArray(); }
+        }
+
+        /// <summary>
         /// Gets or sets the last active state of this state.
         /// </summary>
         /// <value>The last state of the active.</value>
@@ -265,6 +284,7 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             Ensure.ArgumentNotNull(context, "context");
 
+            this.SetThisStateAsActiveStateOfRegion();
             this.ExecuteEntryActions(context);
         }
 
@@ -274,6 +294,30 @@ namespace Appccelerate.StateMachine.Machine.States
 
             this.ExecuteExitActions(context);
             this.SetThisStateAsLastStateOfRegion();
+        }
+
+        /// <summary>
+        /// Sets this instance as the last state of this instance's region.
+        /// </summary>
+        private void SetThisStateAsActiveStateOfRegion()
+        {
+            if (this.Region != null)
+            {
+                this.Region.ActiveState = this;
+                //this.Region.LastActiveState = null;
+            }
+        }
+
+        /// <summary>
+        /// Sets this instance as the last state of this instance's region.
+        /// </summary>
+        private void SetThisStateAsLastStateOfRegion()
+        {
+            if (this.Region != null)
+            {
+                this.Region.ActiveState = null;
+                this.Region.LastActiveState = this;
+            }
         }
 
         public override string ToString()
@@ -373,17 +417,6 @@ namespace Appccelerate.StateMachine.Machine.States
                 extension =>
                 extension.HandledExitActionException(
                     this.stateMachineInformation, this, context, exception));
-        }
-
-        /// <summary>
-        /// Sets this instance as the last state of this instance's super state.
-        /// </summary>
-        private void SetThisStateAsLastStateOfRegion()
-        {
-            if (this.Region != null)
-            {
-                this.Region.LastActiveState = this;
-            }
         }
 
         public bool HasInitialState()

@@ -48,6 +48,8 @@ namespace Appccelerate.StateMachine.Machine.States
 
         public IState<TState, TEvent> LastActiveState { get; set; }
 
+        public IState<TState, TEvent> ActiveState { get; set; }
+
         /// <summary>
         /// Collection of the states of this region.
         /// </summary>

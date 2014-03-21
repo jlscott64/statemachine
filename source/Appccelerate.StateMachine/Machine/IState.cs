@@ -81,7 +81,19 @@ namespace Appccelerate.StateMachine.Machine
         int Level { get; set; }
 
         /// <summary>
-        /// Gets the last active states of this state.
+        /// Gets the current active states of this state.
+        /// </summary>
+        /// <value>The current active states.</value>
+        IEnumerable<IState<TState, TEvent>> ActiveStates { get; }
+
+        /// <summary>
+        /// Gets or sets the current active state of this state.
+        /// </summary>
+        /// <value>The current state of the active.</value>
+        IState<TState, TEvent> ActiveState { get; set; }
+
+        /// <summary>
+        /// Gets the current active states of this state.
         /// </summary>
         /// <value>The last active states.</value>
         IEnumerable<IState<TState, TEvent>> LastActiveStates { get; }
@@ -128,7 +140,6 @@ namespace Appccelerate.StateMachine.Machine
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         string ToString();
-
 
         void AddSubState(IState<TState, TEvent> subState);
 
