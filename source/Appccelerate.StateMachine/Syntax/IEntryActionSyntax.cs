@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Threading;
+
 namespace Appccelerate.StateMachine.Syntax
 {
     using System;
@@ -25,7 +27,7 @@ namespace Appccelerate.StateMachine.Syntax
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface IEntryActionSyntax<TState, TEvent> : IExitActionSyntax<TState, TEvent>
+    public interface IEntryActionSyntax<TState, TEvent> : IDoActionSyntax<TState, TEvent>
     {
         /// <summary>
         /// Defines an entry action.

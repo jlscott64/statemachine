@@ -111,6 +111,12 @@ namespace Appccelerate.StateMachine.Machine
         IList<IActionHolder> EntryActions { get; }
 
         /// <summary>
+        /// Gets the do actions.
+        /// </summary>
+        /// <value>The do actions.</value>
+        IList<IDoActionHolder> DoActions { get; }
+
+        /// <summary>
         /// Gets the exit actions.
         /// </summary>
         /// <value>The exit actions.</value>

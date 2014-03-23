@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// <copyright file="Concern.cs" company="Appccelerate">
+// <copyright file="IActionHolder.cs" company="Appccelerate">
 //   Copyright (c) 2008-2013
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,22 +16,26 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-namespace Appccelerate.StateMachine
+using System.Threading;
+
+namespace Appccelerate.StateMachine.Machine.ActionHolders
 {
-    public static class Concern
+    /// <summary>
+    /// Holds a transition action.
+    /// </summary>
+    public interface IDoActionHolder
     {
-        public const string Initialization = "Initialize state machine";
+        /// <summary>
+        /// Starts the do action.
+        /// </summary>
+        /// <param name="argument">The state machine event argument.</param>
+        /// <param name="cancellation">A cancellation token for halting the do action</param>
+        void Start(object argument, CancellationToken cancellation);
 
-        public const string StartStop = "Start and stop state machine";
-
-        public const string Transition = "Execute transition";
-
-        public const string EntryAndExitActions = "Entry and exit actions";
-
-        public const string DoActions = "Do actions";
-
-        public const string ExceptionHandling = "Exception Handling";
-        
-        public const string Persistence = "Persistence";
+        /// <summary>
+        /// Describes the action.
+        /// </summary>
+        /// <returns>Description of the action.</returns>
+        string Describe();
     }
 }

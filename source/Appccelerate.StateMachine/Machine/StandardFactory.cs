@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Threading;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -71,7 +73,22 @@ namespace Appccelerate.StateMachine.Machine
 
         public virtual IActionHolder CreateActionHolder<T>(Action<T> action, T parameter)
         {
-            return new ParametrizedActionHolder<T>(action, parameter);    
+            return new ParametrizedActionHolder<T>(action, parameter);
+        }
+
+        public virtual IDoActionHolder CreateDoActionHolder(Action<CancellationToken> action)
+        {
+            return new ArgumentLessDoActionHolder(action);
+        }
+
+        public virtual IDoActionHolder CreateDoActionHolder<T>(Action<T, CancellationToken> action)
+        {
+            return new ArgumentDoActionHolder<T>(action);
+        }
+
+        public virtual IDoActionHolder CreateDoActionHolder<T>(Action<T, CancellationToken> action, T parameter)
+        {
+            return new ParametrizedDoActionHolder<T>(action, parameter);
         }
 
         public virtual IActionHolder CreateTransitionActionHolder(Action action)

@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Threading;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -95,8 +97,16 @@ namespace Appccelerate.StateMachine.Machine
         /// <returns>Exit action syntax.</returns>
         IEntryActionSyntax<TState, TEvent> IEntryActionSyntax<TState, TEvent>.ExecuteOnEntryParametrized<T>(Action<T> action, T parameter)
         {
+            Ensure.ArgumentNotNull(action, "action");
+
             this.state.EntryActions.Add(this.factory.CreateActionHolder(action, parameter));
 
+            return this;
+        }
+
+        public IDoActionSyntax<TState, TEvent> ExecuteWhileActive(Action<CancellationToken> action)
+        {
+            this.state.DoActions.Add(this.factory.CreateDoActionHolder(action));
             return this;
         }
 

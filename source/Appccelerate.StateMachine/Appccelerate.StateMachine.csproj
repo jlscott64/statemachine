@@ -50,9 +50,14 @@
     <Compile Include="IStateMachineInformation.cs" />
     <Compile Include="ListExtensionMethods.cs" />
     <Compile Include="Machine\ActionHolders\ActionHoldersExceptionMessages.cs" />
+    <Compile Include="Machine\ActionHolders\ArgumentDoActionHolder.cs" />
     <Compile Include="Machine\ActionHolders\ArgumentActionHolder.cs" />
+    <Compile Include="Machine\ActionHolders\ArgumentLessDoActionHolder.cs" />
     <Compile Include="Machine\ActionHolders\ArgumentLessActionHolder.cs" />
+    <Compile Include="Machine\ActionHolders\DoActionHolderBase.cs" />
+    <Compile Include="Machine\ActionHolders\IDoActionHolder.cs" />
     <Compile Include="Machine\ActionHolders\IActionHolder.cs" />
+    <Compile Include="Machine\ActionHolders\ParametrizedDoActionHolder.cs" />
     <Compile Include="Machine\ActionHolders\ParametrizedActionHolder{T}.cs" />
     <Compile Include="Machine\Contexts\TransitionContext.cs" />
     <Compile Include="Machine\Events\ContextEventArgs.cs" />
@@ -104,6 +109,7 @@
     <Compile Include="Reports\CsvTransitionsWriter.cs" />
     <Compile Include="Reports\StateMachineReportGenerator.cs" />
     <Compile Include="Reports\YEdStateMachineReportGenerator.cs" />
+    <Compile Include="Syntax\IDoActionSyntax.cs" />
     <Compile Include="Syntax\IEntryActionSyntax.cs" />
     <Compile Include="Syntax\IEventSyntax.cs" />
     <Compile Include="Syntax\IExitActionSyntax.cs" />

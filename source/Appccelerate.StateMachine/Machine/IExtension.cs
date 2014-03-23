@@ -148,6 +148,32 @@ namespace Appccelerate.StateMachine.Machine
             Exception exception);
 
         /// <summary>
+        /// Called before a do action exception is handled.
+        /// </summary>
+        /// <param name="stateMachine">The state machine.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="exception">The exception. Can be replaced by the extension.</param>
+        void HandlingDoActionException(
+            IStateMachineInformation<TState, TEvent> stateMachine,
+            IState<TState, TEvent> state,
+            ITransitionContext<TState, TEvent> context,
+            ref Exception exception);
+
+        /// <summary>
+        /// Called after a do action exception was handled.
+        /// </summary>
+        /// <param name="stateMachine">The state machine.</param>
+        /// <param name="state">The state.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="exception">The exception.</param>
+        void HandledDoActionException(
+            IStateMachineInformation<TState, TEvent> stateMachine,
+            IState<TState, TEvent> state,
+            ITransitionContext<TState, TEvent> context,
+            Exception exception);
+
+        /// <summary>
         /// Called before an exit action exception is handled.
         /// </summary>
         /// <param name="stateMachine">The state machine.</param>

@@ -288,6 +288,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 get { throw new NotImplementedException(); }
             }
 
+            public IList<IDoActionHolder> DoActions
+            {
+                get { throw new NotImplementedException(); }
+            }
+
             public IList<IActionHolder> ExitActions
             {
                 get { throw new NotImplementedException(); }

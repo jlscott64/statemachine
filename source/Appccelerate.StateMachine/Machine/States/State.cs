@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Threading;
+
 namespace Appccelerate.StateMachine.Machine.States
 {
     using System;
@@ -66,6 +68,7 @@ namespace Appccelerate.StateMachine.Machine.States
         private HistoryType historyType = HistoryType.None;
 
         readonly INotifier<TState, TEvent> notifier;
+        CancellationTokenSource cancellation;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="State&lt;TState, TEvent&gt;"/> class.
@@ -86,6 +89,7 @@ namespace Appccelerate.StateMachine.Machine.States
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
 
             this.EntryActions = new List<IActionHolder>();
+            this.DoActions = new List<IDoActionHolder>();
             this.ExitActions = new List<IActionHolder>();
         }
 
@@ -140,9 +144,15 @@ namespace Appccelerate.StateMachine.Machine.States
         public IList<IActionHolder> EntryActions { get; private set; }
 
         /// <summary>
+        /// Gets the do actions.
+        /// </summary>
+        /// <value>The do actiona.</value>
+        public IList<IDoActionHolder> DoActions { get; private set; }
+
+        /// <summary>
         /// Gets the exit actions.
         /// </summary>
-        /// <value>The exit action.</value>
+        /// <value>The exit actions.</value>
         public IList<IActionHolder> ExitActions { get; private set; }
 
         /// <summary>
@@ -286,12 +296,14 @@ namespace Appccelerate.StateMachine.Machine.States
 
             this.SetThisStateAsActiveStateOfRegion();
             this.ExecuteEntryActions(context);
+            this.StartDoActions(context);
         }
 
         public void Exit(ITransitionContext<TState, TEvent> context)
         {
             Ensure.ArgumentNotNull(context, "context");
 
+            this.StopDoActions(context);
             this.ExecuteExitActions(context);
             this.SetThisStateAsLastStateOfRegion();
         }
@@ -382,6 +394,50 @@ namespace Appccelerate.StateMachine.Machine.States
                 extension =>
                 extension.HandledEntryActionException(
                     this.stateMachineInformation, this, context, exception));
+        }
+
+        private void StartDoActions(ITransitionContext<TState, TEvent> context)
+        {
+            cancellation = new CancellationTokenSource();
+            var cancellationToken = cancellation.Token;
+
+            foreach (var actionHolder in this.DoActions)
+            {
+                this.StartDoAction(actionHolder, context, cancellationToken);
+            }
+        }
+
+        private void StartDoAction(IDoActionHolder actionHolder, ITransitionContext<TState, TEvent> context, CancellationToken cancellation)
+        {
+            try
+            {
+                actionHolder.Start(context.EventArgument, cancellation);
+            }
+            catch (Exception exception)
+            {
+                this.HandleDoActionException(context, exception);
+            }
+        }
+
+        private void HandleDoActionException(ITransitionContext<TState, TEvent> context, Exception exception)
+        {
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandlingDoActionException(
+                    this.stateMachineInformation, this, context, ref exception));
+
+            HandleException(exception, context);
+
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandledDoActionException(
+                    this.stateMachineInformation, this, context, exception));
+        }
+
+        private void StopDoActions(ITransitionContext<TState, TEvent> context)
+        {
+            cancellation.Cancel();
+
         }
 
         private void ExecuteExitActions(ITransitionContext<TState, TEvent> context)

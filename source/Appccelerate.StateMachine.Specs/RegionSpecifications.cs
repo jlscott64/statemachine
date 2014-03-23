@@ -60,6 +60,7 @@ namespace Appccelerate.StateMachine
             Ax1_to_Ax2_and_Ay1_to_Ay2,
             Ay1_to_Ay2,
             Ax1_to_B,
+            B_to_A
         }
 
         Establish context = () =>
@@ -83,6 +84,7 @@ namespace Appccelerate.StateMachine
             machine.In(S.Ay1).On(E.Ax1_to_Ax2_and_Ay1_to_Ay2).Goto(S.Ay2);
             machine.In(S.Ay1).On(E.Ay1_to_Ay2).Goto(S.Ay2);
             machine.In(S.Ax1).On(E.Ax1_to_B).Goto(S.B);
+            machine.In(S.B).On(E.B_to_A).Goto(S.A);
 
             foreach(S id in Enum.GetValues(typeof(S)))
             {
@@ -90,8 +92,23 @@ namespace Appccelerate.StateMachine
                     .ExecuteOnEntryParametrized(currentStates.Add, id)
                     .ExecuteOnExitParametrized(s => currentStates.Remove(s), id);
             }
+        };
+    }
 
+    public class Starting_in_A : RegionSpecification
+    {
+        Establish context = () =>
+        {
             machine.Initialize(S.A);
+            machine.Start();
+        };
+    }
+
+    public class Starting_in_B : RegionSpecification
+    {
+        Establish context = () =>
+        {
+            machine.Initialize(S.B);
             machine.Start();
         };
     }
@@ -99,12 +116,18 @@ namespace Appccelerate.StateMachine
     [Subject(Concern.Initialization)]
     public class When_a_state_with_two_regions_is_initialized : RegionSpecification
     {
+        Because of = () =>
+        {
+            machine.Initialize(S.A);
+            machine.Start();
+        };
+
         It should_be_in_the_both_regions_intial_states = () =>
             currentStates.Should().BeEquivalentTo(S.A, S.Ax1, S.Ay1);
     }
 
     [Subject(Concern.Transition)]
-    public class When_an_event_has_transitions_one_region_of_a_state : RegionSpecification
+    public class When_an_event_has_transitions_one_region_of_a_state : Starting_in_A
     {
         Because of = () => { machine.Fire(E.Ay1_to_Ay2); };
 
@@ -113,7 +136,7 @@ namespace Appccelerate.StateMachine
     }
 
     [Subject(Concern.Transition)]
-    public class When_an_event_has_transitions_two_regions_of_a_state : RegionSpecification
+    public class When_an_event_has_transitions_two_regions_of_a_state : Starting_in_A
     {
         Because of = () => machine.Fire(E.Ax1_to_Ax2_and_Ay1_to_Ay2);
 
@@ -122,11 +145,20 @@ namespace Appccelerate.StateMachine
     }
 
     [Subject(Concern.Transition)]
-    public class When_an_event_transitions_out_of_a_state_with_two_regions : RegionSpecification
+    public class When_an_event_transitions_out_of_a_state_with_two_regions : Starting_in_A
     {
         Because of = () => machine.Fire(E.Ax1_to_B);
 
         It should_exit_both_regions = () =>
             currentStates.Should().BeEquivalentTo(S.B);
+    }
+
+    [Subject(Concern.Transition)]
+    public class When_an_event_transitions_to_a_state_with_two_regions : Starting_in_B
+    {
+        Because of = () => machine.Fire(E.B_to_A);
+
+        It should_enter_both_regions_initialStates = () =>
+            currentStates.Should().BeEquivalentTo(S.A, S.Ax1, S.Ay1);
     }
 }
