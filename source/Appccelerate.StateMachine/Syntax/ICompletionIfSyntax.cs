@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// <copyright file="INotifier.cs" company="Appccelerate">
+// <copyright file="ICompletionIfSyntax.cs" company="Appccelerate">
 //   Copyright (c) 2008-2013
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,24 +16,22 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-namespace Appccelerate.StateMachine.Machine
+namespace Appccelerate.StateMachine.Syntax
 {
     using System;
 
     /// <summary>
-    /// Provides functionalities to notify events.
+    /// Defines the If syntax.
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface INotifier<TState, TEvent>
-        where TState : IComparable
-        where TEvent : IComparable
+    public interface ICompletionIfSyntax<TState, TEvent>
     {
         /// <summary>
-        /// Called when an exception was thrown.
+        /// Defines the target state of the transition.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="exception">The exception.</param>
-        void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception);
+        /// <param name="target">The target.</param>
+        /// <returns>Go to syntax</returns>
+        ICompletionGotoInIfSyntax<TState, TEvent> Goto(TState target);
     }
 }

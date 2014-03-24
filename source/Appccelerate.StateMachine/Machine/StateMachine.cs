@@ -36,8 +36,7 @@ namespace Appccelerate.StateMachine.Machine
     /// <typeparam name="TEvent">The type of the event.</typeparam>
     public class StateMachine<TState, TEvent> : 
         INotifier<TState, TEvent>, 
-        IStateMachineInformation<TState, TEvent>,
-        IExtensionHost<TState, TEvent>
+        IStateMachineInformation<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
@@ -45,7 +44,6 @@ namespace Appccelerate.StateMachine.Machine
         private readonly IFactory<TState, TEvent> factory;
         private readonly Initializable<TState> initialStateId;
         private readonly string name;
-        private readonly List<IExtension<TState, TEvent>> extensions;
 
         private readonly IList<IState<TState, TEvent>> currentStates = new List<IState<TState, TEvent>>();
 
@@ -74,32 +72,13 @@ namespace Appccelerate.StateMachine.Machine
         public StateMachine(string name, IFactory<TState, TEvent> factory)
         {
             this.name = name;
-            this.factory = factory ?? new StandardFactory<TState, TEvent>(this, this, this);
+            this.factory = factory ?? new StandardFactory<TState, TEvent>(this, this);
             this.states = new StateDictionary<TState, TEvent>(this.factory);
-            this.extensions = new List<IExtension<TState, TEvent>>();
 
             this.initialStateId = new Initializable<TState>();
         }
 
-        /// <summary>
-        /// Occurs when no transition could be executed.
-        /// </summary>
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined;
-
-        /// <summary>
-        /// Occurs when an exception was thrown inside a transition of the state machine.
-        /// </summary>
         public event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown;
-
-        /// <summary>
-        /// Occurs when a transition begins.
-        /// </summary>
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin;
-
-        /// <summary>
-        /// Occurs when a transition completed.
-        /// </summary>
-        public event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted;
 
         /// <summary>
         /// Gets the name of this instance.
@@ -159,33 +138,6 @@ namespace Appccelerate.StateMachine.Machine
                 currentStates[indexOf] = newState;
             }
 
-            this.extensions.ForEach(extension => extension.SwitchedState(this, oldState, newState));
-        }
-
-        /// <summary>
-        /// Adds the <paramref name="extension"/>.
-        /// </summary>
-        /// <param name="extension">The extension.</param>
-        public void AddExtension(IExtension<TState, TEvent> extension)
-        {
-            this.extensions.Add(extension);
-        }
-
-        /// <summary>
-        /// Clears all extensions.
-        /// </summary>
-        public void ClearExtensions()
-        {
-            this.extensions.Clear();
-        }
-
-        /// <summary>
-        /// Executes the specified <paramref name="action"/> for all extensions.
-        /// </summary>
-        /// <param name="action">The action to execute.</param>
-        public void ForEach(Action<IExtension<TState, TEvent>> action)
-        {
-            this.extensions.ForEach(action);
         }
 
         /// <summary>
@@ -206,11 +158,7 @@ namespace Appccelerate.StateMachine.Machine
         /// <param name="initialState">The initial state of the state machine.</param>
         public void Initialize(TState initialState)
         {
-            this.extensions.ForEach(extension => extension.InitializingStateMachine(this, ref initialState));
-
             this.Initialize(this.states[initialState]);
-
-            this.extensions.ForEach(extension => extension.InitializedStateMachine(this, initialState));
         }
 
         /// <summary>
@@ -220,12 +168,8 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.CheckThatStateMachineIsInitialized();
 
-            this.extensions.ForEach(extension => extension.EnteringInitialState(this, this.initialStateId.Value));
-
             var context = this.factory.CreateTransitionContext(null, new Missable<TEvent>(), Missing.Value, this);
             this.EnterInitialState(this.states[this.initialStateId.Value], context);
-
-            this.extensions.ForEach(extension => extension.EnteredInitialState(this, this.initialStateId.Value, context));
         }
 
         /// <summary>
@@ -247,31 +191,13 @@ namespace Appccelerate.StateMachine.Machine
             this.CheckThatStateMachineIsInitialized();
             this.CheckThatStateMachineHasEnteredInitialState();
 
-            this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
-
-            bool fired = false;
             foreach (var pair in GetTransitionsToFire(eventId, eventArgument))
             {
                 var transition = pair.Item1;
                 var context = pair.Item2;
-                
+
                 var result = transition.Fire(context);
                 this.ChangeStates(context.SourceState, result.NewStates);
-
-                fired = true;
-
-                this.extensions.ForEach(extension => extension.FiredEvent(this, context));
-                this.OnTransitionCompleted(context);
-            }
-
-            if (!fired)
-            {
-                var missableEventId = new Missable<TEvent>(eventId);
-
-                foreach (var context in this.currentStates.Select(state => this.factory.CreateTransitionContext(state, missableEventId, eventArgument, this)))
-                {
-                    this.OnTransitionDeclined(context);
-                }
             }
         }
 
@@ -359,15 +285,6 @@ namespace Appccelerate.StateMachine.Machine
         }
 
         /// <summary>
-        /// Fires the <see cref="TransitionBegin"/> event.
-        /// </summary>
-        /// <param name="transitionContext">The transition context.</param>
-        public void OnTransitionBegin(ITransitionContext<TState, TEvent> transitionContext)
-        {
-            this.RaiseEvent(this.TransitionBegin, new TransitionEventArgs<TState, TEvent>(transitionContext), transitionContext, true);
-        }
-
-        /// <summary>
         /// Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
         /// </summary>
         /// <returns>
@@ -425,24 +342,6 @@ namespace Appccelerate.StateMachine.Machine
             {
                 throw new StateMachineException("No exception listener is registered. Exception: ", exception);
             }
-        }
-
-        /// <summary>
-        /// Fires the <see cref="TransitionDeclined"/> event.
-        /// </summary>
-        /// <param name="transitionContext">The transition event context.</param>
-        private void OnTransitionDeclined(ITransitionContext<TState, TEvent> transitionContext)
-        {
-            this.RaiseEvent(this.TransitionDeclined, new TransitionEventArgs<TState, TEvent>(transitionContext), transitionContext, true);
-        }
-
-        /// <summary>
-        /// Fires the <see cref="TransitionCompleted"/> event.
-        /// </summary>
-        /// <param name="transitionContext">The transition event context.</param>
-        private void OnTransitionCompleted(ITransitionContext<TState, TEvent> transitionContext)
-        {
-            this.RaiseEvent(this.TransitionCompleted, new TransitionCompletedEventArgs<TState, TEvent>(this.CurrentStateId, transitionContext), transitionContext, true);
         }
 
         private void LoadCurrentState(IStateMachineLoader<TState> stateMachineLoader)

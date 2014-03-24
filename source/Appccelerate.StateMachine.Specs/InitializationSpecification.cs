@@ -35,15 +35,10 @@ namespace Appccelerate.StateMachine
 
         static PassiveStateMachine<int, int> machine;
         static bool entryActionExecuted;
-        static CurrentStateExtension testExtension;
 
         Establish context = () =>
             {
-                testExtension = new CurrentStateExtension();
-
                 machine = new PassiveStateMachine<int, int>();
-
-                machine.AddExtension(testExtension);
 
                 machine.In(TestState)
                     .ExecuteOnEntry(() => entryActionExecuted = true);
@@ -55,8 +50,8 @@ namespace Appccelerate.StateMachine
                 machine.Start();
             };
 
-        It should_set_current_state_of_state_machine_to_state_to_which_it_is_initialized = () => 
-            testExtension.CurrentState.Should().Be(TestState);
+        It should_set_current_state_of_state_machine_to_state_to_which_it_is_initialized = () =>
+            machine.CurrentState.Should().Be(TestState);
 
         It should_execute_entry_action_of_state_to_which_state_machine_is_initialized = () => 
             entryActionExecuted.Should().BeTrue();
@@ -69,15 +64,10 @@ namespace Appccelerate.StateMachine
 
         static PassiveStateMachine<int, int> machine;
         static bool entryActionExecuted;
-        static CurrentStateExtension testExtension;
 
         Establish context = () =>
             {
-                testExtension = new CurrentStateExtension();
-
                 machine = new PassiveStateMachine<int, int>();
-
-                machine.AddExtension(testExtension);
 
                 machine.In(TestState)
                     .ExecuteOnEntry(() => entryActionExecuted = true);

@@ -43,7 +43,6 @@
     <Compile Include="ActiveStateMachine.cs" />
     <Compile Include="EnumerableExtensionMethods.cs" />
     <Compile Include="EventInformation.cs" />
-    <Compile Include="Extensions\ExtensionBase.cs" />
     <Compile Include="HierarchyBuilder.cs" />
     <Compile Include="HistoryType.cs" />
     <Compile Include="IStateMachine.cs" />
@@ -74,8 +73,6 @@
     <Compile Include="Machine\States\IRegion.cs" />
     <Compile Include="Machine\Transitions\Traversal.cs" />
     <Compile Include="RegionBuilder.cs" />
-    <Compile Include="Machine\IExtension.cs" />
-    <Compile Include="Machine\IExtensionHost.cs" />
     <Compile Include="Machine\Initializable.cs" />
     <Compile Include="Machine\INotifier.cs" />
     <Compile Include="Machine\IState.cs" />
@@ -109,6 +106,11 @@
     <Compile Include="Reports\CsvTransitionsWriter.cs" />
     <Compile Include="Reports\StateMachineReportGenerator.cs" />
     <Compile Include="Reports\YEdStateMachineReportGenerator.cs" />
+    <Compile Include="Syntax\ICompletionEventSyntax.cs" />
+    <Compile Include="Syntax\ICompletionGotoInIfSyntax.cs" />
+    <Compile Include="Syntax\ICompletionIfSyntax.cs" />
+    <Compile Include="Syntax\ICompletionOnSyntax.cs" />
+    <Compile Include="Syntax\ICompletionOtherwiseSyntax.cs" />
     <Compile Include="Syntax\IDoActionSyntax.cs" />
     <Compile Include="Syntax\IEntryActionSyntax.cs" />
     <Compile Include="Syntax\IEventSyntax.cs" />
@@ -133,7 +135,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Syntax\Syntax Interfaces.cd" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Appccelerate.StateMachine.RegionBuilder&lt;TState, TEvent&gt;" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="37.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAACCAAIAAAAAAAAAAAAAEAAEAAAAAAAAAAA=</HashCode>
+      <FileName>RegionBuilder.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Appccelerate.StateMachine.HierarchyBuilder&lt;TState, TEvent&gt;" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="35.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACCAAAAAAACAAIAAAAAAAAAAAAAEAAEAgAAAAAAAAA=</HashCode>
+      <FileName>HierarchyBuilder.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Appccelerate.StateMachine.Machine.StateBuilder&lt;TState, TEvent&gt;" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="35.5" Y="2.5" Width="1.5" />
+    <NestedTypes>
+      <Class Name="Appccelerate.StateMachine.Machine.StateBuilder&lt;TState, TEvent&gt;.CompletionBuilder" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Machine\StateBuilder.g.cs</NewMemberFileName>
+        </TypeIdentifier>
+        <Lollipop Position="0.2" />
+      </Class>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>IAAwAAEJBAEiBRAAUgihAAAgBEAACgQFgAgAACAAAEA=</HashCode>
+      <FileName>Machine\StateBuilder.g.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IDoActionSyntax&lt;TState, TEvent&gt;">
+    <Position X="30.25" Y="6" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAA=</HashCode>
+      <FileName>Syntax\IDoActionSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IEntryActionSyntax&lt;TState, TEvent&gt;">
+    <Position X="29.75" Y="8" Width="4.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAEAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IEntryActionSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IEventSyntax&lt;TState, TEvent&gt;">
+    <Position X="18.5" Y="1.5" Width="3" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Syntax\IEventSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IExitActionSyntax&lt;TState, TEvent&gt;">
+    <Position X="30" Y="3.75" Width="4.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAAAAABAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IExitActionSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IGotoInIfSyntax&lt;TState, TEvent&gt;">
+    <Position X="5.5" Y="3.75" Width="4" />
+    <TypeIdentifier>
+      <HashCode>AABAACAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IGotoInIfSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IGotoSyntax&lt;TState, TEvent&gt;">
+    <Position X="15" Y="3.75" Width="3.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IGotoSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IHierarchySyntax&lt;TState&gt;" Collapsed="true">
+    <Position X="35.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IHierarchySyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IInitialSubStateSyntax&lt;TState&gt;" Collapsed="true">
+    <Position X="35.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IHierarchySyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.ISubStateSyntax&lt;TState&gt;" Collapsed="true">
+    <Position X="37.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IHierarchySyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IIfOrOtherwiseSyntax&lt;TState, TEvent&gt;">
+    <Position X="19.5" Y="3.75" Width="4.25" />
+    <TypeIdentifier>
+      <HashCode>AABAACAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IIfOrOtherwiseSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IIfSyntax&lt;TState, TEvent&gt;" Collapsed="true">
+    <Position X="37.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Syntax\IIfSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IOnSyntax&lt;TState, TEvent&gt;">
+    <Position X="10.5" Y="5.75" Width="3.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Syntax\IOnSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IOnExecuteSyntax&lt;TState, TEvent&gt;">
+    <Position X="10.25" Y="3.75" Width="4" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IOnSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IOtherwiseSyntax&lt;TState, TEvent&gt;">
+    <Position X="25.5" Y="5.75" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Syntax\IOtherwiseSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Appccelerate.StateMachine.Syntax.IOtherwiseExecuteSyntax&lt;TState, TEvent&gt;">
+    <Position X="24.5" Y="3.75" Width="4.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Syntax\IOtherwiseSyntax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// <copyright file="IExtensionHost.cs" company="Appccelerate">
+// <copyright file="ICompletionOtherwiseSyntax.cs" company="Appccelerate">
 //   Copyright (c) 2008-2013
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,23 +16,22 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-namespace Appccelerate.StateMachine.Machine
+namespace Appccelerate.StateMachine.Syntax
 {
     using System;
 
     /// <summary>
-    /// Interface to execute actions on all extensions of the event broker.
+    /// Defines the Otherwise syntax
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface IExtensionHost<TState, TEvent>
-        where TState : IComparable
-        where TEvent : IComparable
+    public interface ICompletionOtherwiseSyntax<TState, TEvent> : ICompletionEventSyntax<TState, TEvent>
     {
         /// <summary>
-        /// Executes the specified action for all extensions.
+        /// Defines the target state of the transition.
         /// </summary>
-        /// <param name="action">The action to execute.</param>
-        void ForEach(Action<IExtension<TState, TEvent>> action);
+        /// <param name="target">The target.</param>
+        /// <returns>Go to syntax</returns>
+        ICompletionEventSyntax<TState, TEvent> Goto(TState target);
     }
 }

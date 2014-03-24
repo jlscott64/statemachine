@@ -38,7 +38,11 @@ namespace Appccelerate.StateMachine.Machine
         IIfOrOtherwiseSyntax<TState, TEvent>,
         IGotoSyntax<TState, TEvent>,
         IIfSyntax<TState, TEvent>,
-        IOnSyntax<TState, TEvent>
+        IOnSyntax<TState, TEvent>,
+        ICompletionOnSyntax<TState, TEvent>,
+        ICompletionIfSyntax<TState, TEvent>,
+        ICompletionGotoInIfSyntax<TState, TEvent>,
+        ICompletionOtherwiseSyntax<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
@@ -161,27 +165,18 @@ namespace Appccelerate.StateMachine.Machine
             return this;
         }
 
-        private class CompletionBuilder : IGotoSyntax<TState, TEvent>
+        IOnSyntax<TState, TEvent> ICompletionEventSyntax<TState, TEvent>.On(TEvent eventId)
         {
-            StateBuilder<TState, TEvent> parentBuilder;
+            this.currentEventId = eventId;
 
-            public CompletionBuilder(StateBuilder<TState, TEvent> parentBuilder)
-            {
-                this.parentBuilder = parentBuilder;
-            }
+            this.CreateTransition();
 
-            
+            return this;
         }
 
-        public IOnSyntax<TState, TEvent> OnCompletion
+        ICompletionOnSyntax<TState, TEvent> IEventSyntax<TState, TEvent>.OnCompletion
         {
             get { return this; }
-        }
-
-        private void CreateTransition()
-        {
-            this.currentTransition = this.factory.CreateTransition();
-            this.state.Transitions.Add(this.currentEventId, this.currentTransition);
         }
 
         /// <summary>
@@ -191,23 +186,32 @@ namespace Appccelerate.StateMachine.Machine
         /// <returns>Execute syntax.</returns>
         IGotoSyntax<TState, TEvent> IOnSyntax<TState, TEvent>.Goto(TState target)
         {
-            this.SetTargetState(target);
-
-            return this;
+            return GotoInternal(target);
         }
 
         IGotoSyntax<TState, TEvent> IOtherwiseSyntax<TState, TEvent>.Goto(TState target)
         {
-            this.SetTargetState(target);
-
-            return this;
+            return GotoInternal(target);
         }
 
         IGotoInIfSyntax<TState, TEvent> IIfSyntax<TState, TEvent>.Goto(TState target)
         {
-            this.SetTargetState(target);
+            return GotoInternal(target);
+        }
 
-            return this;
+        ICompletionEventSyntax<TState, TEvent> ICompletionOtherwiseSyntax<TState, TEvent>.Goto(TState target)
+        {
+            return GotoInternal(target);
+        }
+
+        ICompletionEventSyntax<TState, TEvent> ICompletionOnSyntax<TState, TEvent>.Goto(TState target)
+        {
+            return GotoInternal(target);
+        }
+
+        ICompletionGotoInIfSyntax<TState, TEvent> ICompletionIfSyntax<TState, TEvent>.Goto(TState target)
+        {
+            return GotoInternal(target);
         }
 
         IOtherwiseExecuteSyntax<TState, TEvent> IOtherwiseExecuteSyntax<TState, TEvent>.Execute(Action action)
@@ -260,31 +264,6 @@ namespace Appccelerate.StateMachine.Machine
             return this.ExecuteInternal(action);
         }
 
-        IIfSyntax<TState, TEvent> IGotoInIfSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
-        {
-            this.CreateTransition();
-
-            this.SetGuard(guard);
-
-            return this;
-        }
-
-        IIfSyntax<TState, TEvent> IGotoInIfSyntax<TState, TEvent>.If(Func<bool> guard)
-        {
-            this.CreateTransition();
-
-            this.SetGuard(guard);
-
-            return this;
-        }
-
-        IOtherwiseSyntax<TState, TEvent> IGotoInIfSyntax<TState, TEvent>.Otherwise()
-        {
-            this.CreateTransition();
-
-            return this;
-        }
-
         IIfOrOtherwiseSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.Execute(Action action)
         {
             return this.ExecuteInternal(action);
@@ -293,6 +272,78 @@ namespace Appccelerate.StateMachine.Machine
         IIfOrOtherwiseSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.Execute<T>(Action<T> action)
         {
             return this.ExecuteInternal(action);
+        }
+
+        IIfSyntax<TState, TEvent> IGotoInIfSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
+        {
+            return IfInternal(guard);
+        }
+
+        IIfSyntax<TState, TEvent> IGotoInIfSyntax<TState, TEvent>.If(Func<bool> guard)
+        {
+            return IfInternal(guard);
+        }
+
+        IIfSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
+        {
+            return IfInternal(guard);
+        }
+
+        IIfSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.If(Func<bool> guard)
+        {
+            return IfInternal(guard);
+        }
+
+        ICompletionIfSyntax<TState, TEvent> ICompletionGotoInIfSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
+        {
+            return IfInternal(guard);
+        }
+
+        ICompletionIfSyntax<TState, TEvent> ICompletionGotoInIfSyntax<TState, TEvent>.If(Func<bool> guard)
+        {
+            return IfInternal(guard);
+        }
+
+        IIfSyntax<TState, TEvent> IOnSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
+        {
+            return GuardInternal(guard);
+        }
+
+        IIfSyntax<TState, TEvent> IOnSyntax<TState, TEvent>.If(Func<bool> guard)
+        {
+            return GuardInternal(guard);
+        }
+
+        ICompletionIfSyntax<TState, TEvent> ICompletionOnSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
+        {
+            return GuardInternal(guard);
+        }
+
+        ICompletionIfSyntax<TState, TEvent> ICompletionOnSyntax<TState, TEvent>.If(Func<bool> guard)
+        {
+            return GuardInternal(guard);
+        }
+
+        IOtherwiseSyntax<TState, TEvent> IGotoInIfSyntax<TState, TEvent>.Otherwise()
+        {
+            return OtherwiseInternal();
+        }
+
+        IOtherwiseSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.Otherwise()
+        {
+            return OtherwiseInternal();
+        }
+
+        ICompletionOtherwiseSyntax<TState, TEvent> ICompletionGotoInIfSyntax<TState, TEvent>.Otherwise()
+        {
+            return OtherwiseInternal();
+        }
+
+        private StateBuilder<TState, TEvent> GotoInternal(TState target)
+        {
+            this.SetTargetState(target);
+
+            return this;
         }
 
         private StateBuilder<TState, TEvent> ExecuteInternal(Action action)
@@ -313,21 +364,7 @@ namespace Appccelerate.StateMachine.Machine
             return this;
         }
 
-        IIfSyntax<TState, TEvent> IOnSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
-        {
-            this.SetGuard(guard);
-
-            return this;
-        }
-
-        IIfSyntax<TState, TEvent> IOnSyntax<TState, TEvent>.If(Func<bool> guard)
-        {
-            this.SetGuard(guard);
-
-            return this;
-        }
-
-        IIfSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.If<T>(Func<T, bool> guard)
+        StateBuilder<TState, TEvent> IfInternal(Func<bool> guard)
         {
             this.CreateTransition();
 
@@ -336,7 +373,7 @@ namespace Appccelerate.StateMachine.Machine
             return this;
         }
 
-        IIfSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.If(Func<bool> guard)
+        StateBuilder<TState, TEvent> IfInternal<T>(Func<T, bool> guard)
         {
             this.CreateTransition();
 
@@ -345,11 +382,31 @@ namespace Appccelerate.StateMachine.Machine
             return this;
         }
 
-        IOtherwiseSyntax<TState, TEvent> IIfOrOtherwiseSyntax<TState, TEvent>.Otherwise()
+        StateBuilder<TState, TEvent> OtherwiseInternal()
         {
             this.CreateTransition();
 
             return this;
+        }
+
+        StateBuilder<TState, TEvent> GuardInternal<T>(Func<T, bool> guard)
+        {
+            this.SetGuard(guard);
+
+            return this;
+        }
+
+        StateBuilder<TState, TEvent> GuardInternal(Func<bool> guard)
+        {
+            this.SetGuard(guard);
+
+            return this;
+        }
+
+        private void CreateTransition()
+        {
+            this.currentTransition = this.factory.CreateTransition();
+            this.state.Transitions.Add(this.currentEventId, this.currentTransition);
         }
 
         private void SetGuard<T>(Func<T, bool> guard)

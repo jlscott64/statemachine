@@ -35,7 +35,6 @@ namespace Appccelerate.StateMachine
     public class RegionSpecification
     {
         protected static PassiveStateMachine<S, E> machine;
-        protected static IExtension<S, E> extension;
         protected static IList<S> currentStates;
 
         public enum S
@@ -67,9 +66,6 @@ namespace Appccelerate.StateMachine
         {
             machine = new PassiveStateMachine<S, E>();
             currentStates = new List<S>();
-
-            extension = A.Fake<IExtension<S, E>>();
-            machine.AddExtension(extension);
 
             machine.DefineHierarchyOn(S.A)
                 .WithHistoryType(HistoryType.None)

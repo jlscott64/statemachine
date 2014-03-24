@@ -90,39 +90,12 @@ namespace Appccelerate.StateMachine
         }
 
         /// <summary>
-        /// Occurs when no transition could be executed.
-        /// </summary>
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined
-        {
-            add { this.stateMachine.TransitionDeclined += value; }
-            remove { this.stateMachine.TransitionDeclined -= value; }
-        }
-
-        /// <summary>
         /// Occurs when an exception was thrown inside a transition of the state machine.
         /// </summary>
         public event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown
         {
             add { this.stateMachine.TransitionExceptionThrown += value; }
             remove { this.stateMachine.TransitionExceptionThrown -= value; }
-        }
-
-        /// <summary>
-        /// Occurs when a transition begins.
-        /// </summary>
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin
-        {
-            add { this.stateMachine.TransitionBegin += value; }
-            remove { this.stateMachine.TransitionBegin -= value; }
-        }
-
-        /// <summary>
-        /// Occurs when a transition completed.
-        /// </summary>
-        public event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted
-        {
-            add { this.stateMachine.TransitionCompleted += value; }
-            remove { this.stateMachine.TransitionCompleted -= value; }
         }
 
         /// <summary>
@@ -133,6 +106,8 @@ namespace Appccelerate.StateMachine
         {
             get; private set;
         }
+
+        public TState CurrentState { get { return this.stateMachine.CurrentStateId; } }
 
         /// <summary>
         /// Define the behavior of a state.
@@ -181,8 +156,6 @@ namespace Appccelerate.StateMachine
         {
             this.events.AddLast(new EventInformation<TEvent>(eventId, eventArgument));
 
-            this.stateMachine.ForEach(extension => extension.EventQueued(this.stateMachine, eventId, eventArgument));
-
             this.Execute();
         }
 
@@ -203,8 +176,6 @@ namespace Appccelerate.StateMachine
         public void FirePriority(TEvent eventId, object eventArgument)
         {
             this.events.AddFirst(new EventInformation<TEvent>(eventId, eventArgument));
-
-            this.stateMachine.ForEach(extension => extension.EventQueuedWithPriority(this.stateMachine, eventId, eventArgument));
             
             this.Execute();
         }
@@ -233,18 +204,8 @@ namespace Appccelerate.StateMachine
             this.CheckThatStateMachineIsInitialized();
 
             this.IsRunning = true;
-            
-            this.stateMachine.ForEach(extension => extension.StartedStateMachine(this.stateMachine));
 
             this.Execute();
-        }
-
-        /// <summary>
-        /// Clears all extensions.
-        /// </summary>
-        public void ClearExtensions()
-        {
-            this.stateMachine.ClearExtensions();
         }
 
         /// <summary>
@@ -262,17 +223,6 @@ namespace Appccelerate.StateMachine
         public void Stop()
         {
             this.IsRunning = false;
-
-            this.stateMachine.ForEach(extension => extension.StoppedStateMachine(this.stateMachine));
-        }
-
-        /// <summary>
-        /// Adds an extension.
-        /// </summary>
-        /// <param name="extension">The extension.</param>
-        public void AddExtension(IExtension<TState, TEvent> extension)
-        {
-            this.stateMachine.AddExtension(extension);
         }
 
         /// <summary>

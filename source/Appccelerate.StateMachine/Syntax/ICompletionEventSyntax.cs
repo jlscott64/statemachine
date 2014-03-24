@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// <copyright file="CurrentStateExtension.cs" company="Appccelerate">
+// <copyright file="ICompletionEventSyntax.cs" company="Appccelerate">
 //   Copyright (c) 2008-2013
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,18 +16,20 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-namespace Appccelerate.StateMachine
+namespace Appccelerate.StateMachine.Syntax
 {
-    using Appccelerate.StateMachine.Machine;
-    using Extensions;
-
-    public class CurrentStateExtension : ExtensionBase<int, int>
+    /// <summary>
+    /// Defines the event syntax.
+    /// </summary>
+    /// <typeparam name="TState">The type of the state.</typeparam>
+    /// <typeparam name="TEvent">The type of the event.</typeparam>
+    public interface ICompletionEventSyntax<TState, TEvent>
     {
-        public int CurrentState { get; private set; }
-
-        public override void SwitchedState(IStateMachineInformation<int, int> stateMachine, IState<int, int> oldState, IState<int, int> newState)
-        {
-            this.CurrentState = newState.Id;
-        }
+        /// <summary>
+        /// Defines an event that is accepted.
+        /// </summary>
+        /// <param name="eventId">The event id.</param>
+        /// <returns>On syntax.</returns>
+        IOnSyntax<TState, TEvent> On(TEvent eventId);
     }
 }

@@ -33,15 +33,13 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         where TEvent : IComparable
     {
         private readonly List<IActionHolder> actions;
-        private readonly IExtensionHost<TState, TEvent> extensionHost;
         private readonly IStateMachineInformation<TState, TEvent> stateMachineInformation;
         private readonly INotifier<TState, TEvent> notifier;
 
-        public Transition(IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier, IExtensionHost<TState, TEvent> extensionHost)
+        public Transition(IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier)
         {
             this.stateMachineInformation = stateMachineInformation;
             this.notifier = notifier;
-            this.extensionHost = extensionHost;
 
             this.actions = new List<IActionHolder>();
         }
@@ -66,8 +64,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         {
             Ensure.ArgumentNotNull(context, "context");
 
-            this.notifier.OnTransitionBegin(context);
-
             IEnumerable<IState<TState, TEvent>> newStates;
 
             Action<ITransitionContext<TState, TEvent>> transitionAction = this.PerformActions;
@@ -85,11 +81,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 transitionAction(context);
                 newStates = new[] {context.SourceState};
             }
-
-            this.extensionHost.ForEach(extension => extension.ExecutedTransition(
-                this.stateMachineInformation, 
-                this,
-                context));
 
             return new TransitionResult<TState, TEvent>(true, newStates);
         }
@@ -116,12 +107,8 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 return this.Guard == null || this.Guard.Execute(context.EventArgument);
             }
             catch (Exception exception)
-            {
-                this.extensionHost.ForEach(extention => extention.HandlingGuardException(this.stateMachineInformation, this, context, ref exception));
-                
+            {               
                 HandleException(exception, context);
-
-                this.extensionHost.ForEach(extention => extention.HandledGuardException(this.stateMachineInformation, this, context, exception));
 
                 return false;
             }
@@ -136,12 +123,8 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                     action.Execute(context.EventArgument);
                 }
                 catch (Exception exception)
-                {
-                    this.extensionHost.ForEach(extension => extension.HandlingTransitionException(this.stateMachineInformation, this, context, ref exception));
-                    
+                {                 
                     HandleException(exception, context);
-
-                    this.extensionHost.ForEach(extension => extension.HandledTransitionException(this.stateMachineInformation, this, context, exception));
                 }
             }
         }

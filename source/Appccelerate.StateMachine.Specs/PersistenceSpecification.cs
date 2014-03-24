@@ -60,12 +60,6 @@ namespace Appccelerate.StateMachine
                 loadedMachine = new PassiveStateMachine<State, Event>();
                 DefineMachine(loadedMachine);
                 loadedMachine.Load(loader);
-
-                loadedMachine.TransitionCompleted += (sender, args) =>
-                    {
-                        sourceState = args.StateId;
-                        targetState = args.NewStateId;
-                    };
                 
                 loadedMachine.Start();
                 loadedMachine.Fire(Event.S);

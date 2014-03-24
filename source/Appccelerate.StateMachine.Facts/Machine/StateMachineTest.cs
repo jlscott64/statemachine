@@ -505,21 +505,6 @@ namespace Appccelerate.StateMachine.Machine
             this.CheckNoRemainingRecords();
         }
 
-        [Fact]
-        public void ExtensionsWhenExtensionsAreClearedThenNoExtensionIsRegistered()
-        {
-            bool executed = false;
-            var extension = A.Fake<IExtension<StateMachine.States, StateMachine.Events>>();
-
-            this.testee.AddExtension(extension);
-            this.testee.ClearExtensions();
-
-            this.testee.ForEach(e => executed = true);
-
-            executed
-                .Should().BeFalse();
-        }
-
         /// <summary>
         /// Records the entry into a state
         /// </summary>

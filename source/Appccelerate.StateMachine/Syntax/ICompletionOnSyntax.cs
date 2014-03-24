@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// <copyright file="IEntryActionSyntax.cs" company="Appccelerate">
+// <copyright file="ICompletionOnSyntax.cs" company="Appccelerate">
 //   Copyright (c) 2008-2013
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,34 +21,32 @@ namespace Appccelerate.StateMachine.Syntax
     using System;
 
     /// <summary>
-    /// Defines the entry action syntax.
+    /// Defines the syntax after On.
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface IEntryActionSyntax<TState, TEvent> : IDoActionSyntax<TState, TEvent>
+    public interface ICompletionOnSyntax<TState, TEvent> : ICompletionEventSyntax<TState, TEvent>
     {
         /// <summary>
-        /// Defines an entry action.
+        /// Defines the target state of the transition.
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns>Exit action syntax.</returns>
-        IEntryActionSyntax<TState, TEvent> ExecuteOnEntry(Action action);
+        /// <param name="target">The target.</param>
+        /// <returns>Go to syntax</returns>
+        ICompletionEventSyntax<TState, TEvent> Goto(TState target);
+        
+        /// <summary>
+        /// Defines a transition guard. The transition is only taken if the guard is fulfilled.
+        /// </summary>
+        /// <typeparam name="T">The type of the guard argument.</typeparam>
+        /// <param name="guard">The guard.</param>
+        /// <returns>If syntax.</returns>
+        ICompletionIfSyntax<TState, TEvent> If<T>(Func<T, bool> guard);
 
         /// <summary>
-        /// Defines an entry action.
+        /// Defines a transition guard. The transition is only taken if the guard is fulfilled.
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns>Exit action syntax.</returns>
-        /// <typeparam name="T">Type of the event argument passed to the action.</typeparam>
-        IEntryActionSyntax<TState, TEvent> ExecuteOnEntry<T>(Action<T> action);
-
-        /// <summary>
-        /// Defines an entry action.
-        /// </summary>
-        /// <typeparam name="T">Type of the parameter of the entry action method.</typeparam>
-        /// <param name="action">The action.</param>
-        /// <param name="parameter">The parameter that will be passed to the entry action.</param>
-        /// <returns>Exit action syntax.</returns>
-        IEntryActionSyntax<TState, TEvent> ExecuteOnEntryParametrized<T>(Action<T> action, T parameter);
+        /// <param name="guard">The guard.</param>
+        /// <returns>If syntax.</returns>
+        ICompletionIfSyntax<TState, TEvent> If(Func<bool> guard);
     }
 }

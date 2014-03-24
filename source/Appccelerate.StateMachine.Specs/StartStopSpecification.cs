@@ -16,6 +16,9 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections;
+using System.Collections.Generic;
+
 namespace Appccelerate.StateMachine
 {
     using FluentAssertions;
@@ -33,9 +36,9 @@ namespace Appccelerate.StateMachine
                 machine.Start();
             };
 
-        It should_execute_queued_events = () =>
+        It should_execute_events = () =>
             {
-                extension.RecordedFiredEvents.Should().HaveCount(3);
+                recordedEvents.Should().HaveCount(3);
             };
     }
 
@@ -50,10 +53,30 @@ namespace Appccelerate.StateMachine
             machine.Fire(Event);
         };
 
-        It should_queue_events = () =>
+        It should_not_execute_events = () =>
             {
-                extension.RecordedQueuedEvents.Should().HaveCount(1);
+                recordedEvents.Should().HaveCount(0);
             };
+    }
+
+
+    [Subject(Concern.StartStop)]
+    public class When_stopping_a_running_state_machine_and_then_restarting_it : InitializedTwoStateStateMachineSpecification
+    {
+        Because of = () =>
+        {
+            machine.Start();
+            machine.Stop();
+
+            machine.Fire(Event);
+
+            machine.Start();
+        };
+
+        It should_excute_events = () =>
+        {
+            recordedEvents.Should().HaveCount(1);
+        };
     }
 
     [Subject(Concern.StartStop)]
@@ -65,14 +88,13 @@ namespace Appccelerate.StateMachine
 
         protected static PassiveStateMachine<int, int> machine;
 
-        protected static RecordEventsExtension extension;
+        protected static IList<int> recordedEvents;
 
         Establish context = () =>
         {
             machine = new PassiveStateMachine<int, int>();
 
-            extension = new RecordEventsExtension();
-            machine.AddExtension(extension);
+            recordedEvents = new List<int>();
 
             machine.In(A)
                 .On(Event).Goto(B);

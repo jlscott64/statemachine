@@ -36,6 +36,6 @@ namespace Appccelerate.StateMachine.Syntax
         /// Defines a completion event.
         /// </summary>
         /// <returns>On syntax.</returns>
-        IOnSyntax<TState, TEvent> OnCompletion { get; }
+        ICompletionOnSyntax<TState, TEvent> OnCompletion { get; }
     }
 }
