@@ -31,5 +31,11 @@ namespace Appccelerate.StateMachine.Syntax
         /// <param name="eventId">The event id.</param>
         /// <returns>On syntax.</returns>
         IOnSyntax<TState, TEvent> On(TEvent eventId);
+
+        /// <summary>
+        /// Defines a completion event.
+        /// </summary>
+        /// <returns>On syntax.</returns>
+        IOnSyntax<TState, TEvent> OnCompletion { get; }
     }
 }

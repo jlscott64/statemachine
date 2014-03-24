@@ -161,6 +161,23 @@ namespace Appccelerate.StateMachine.Machine
             return this;
         }
 
+        private class CompletionBuilder : IGotoSyntax<TState, TEvent>
+        {
+            StateBuilder<TState, TEvent> parentBuilder;
+
+            public CompletionBuilder(StateBuilder<TState, TEvent> parentBuilder)
+            {
+                this.parentBuilder = parentBuilder;
+            }
+
+            
+        }
+
+        public IOnSyntax<TState, TEvent> OnCompletion
+        {
+            get { return this; }
+        }
+
         private void CreateTransition()
         {
             this.currentTransition = this.factory.CreateTransition();

@@ -66,4 +66,47 @@ namespace Appccelerate.StateMachine
 
         It should_cancel_the_do_action = () => doActionCancelled.WaitOne(TimeSpan.FromMilliseconds(20)).Should().BeTrue();
     }
+
+
+    [Subject(Concern.DoActions)]
+    public class When_completing_a_states_do_actions
+    {
+        public enum S { A, B }
+        public enum E { A_to_B }
+
+        static ActiveStateMachine<S, E> machine;
+        static ManualResetEvent completed;
+        static ManualResetEvent stateBEntered;
+
+        static void ExecuteUntil(WaitHandle completed)
+        {
+            completed.WaitOne();
+        }
+
+        Establish context = () =>
+        {
+            completed = new ManualResetEvent(false);
+            stateBEntered = new ManualResetEvent(false);
+            
+            machine = new ActiveStateMachine<S, E>();
+
+            machine
+                .In(S.A)
+                .ExecuteWhileActive(_ => ExecuteUntil(completed))
+                .OnCompletion.Goto(S.B);
+
+            machine
+                .In(S.B)
+                .ExecuteOnEntry(() => stateBEntered.Set());
+
+            machine.Initialize(S.A);
+            machine.Start();
+        };
+
+        Because of = () => completed.Set();
+
+        It should_fire_the_completion_transition = () => stateBEntered.WaitOne(TimeSpan.FromMilliseconds(20)).Should().BeTrue();
+
+        Cleanup after = () => machine.Stop();
+    }
 }
