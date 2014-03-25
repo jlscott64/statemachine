@@ -16,6 +16,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Management.Instrumentation;
 using System.Threading;
 
 namespace Appccelerate.StateMachine.Machine
@@ -54,7 +55,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private ITransition<TState, TEvent> currentTransition;
 
-        private TEvent currentEventId;
+        private Action createTransition = () => { throw new Exception("createTransition not initialized."); };  
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StateBuilder&lt;TState, TEvent&gt;"/> class.
@@ -156,27 +157,33 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         /// <param name="eventId">The event that triggers the transition.</param>
         /// <returns>Syntax to build the transition.</returns>
-        IOnSyntax<TState, TEvent> IEventSyntax<TState, TEvent>.On(TEvent eventId)
+        public IOnSyntax<TState, TEvent> On(TEvent eventId)
         {
-            this.currentEventId = eventId;
+            this.createTransition = () =>
+            {
+                this.currentTransition = this.factory.CreateTransition();
+                this.state.Transitions.Add(eventId, this.currentTransition);
+            };
 
-            this.CreateTransition();
-
-            return this;
-        }
-
-        IOnSyntax<TState, TEvent> ICompletionEventSyntax<TState, TEvent>.On(TEvent eventId)
-        {
-            this.currentEventId = eventId;
-
-            this.CreateTransition();
+            createTransition();
 
             return this;
         }
 
         ICompletionOnSyntax<TState, TEvent> IEventSyntax<TState, TEvent>.OnCompletion
         {
-            get { return this; }
+            get
+            {
+                this.createTransition = () =>
+                {
+                    this.currentTransition = this.factory.CreateTransition();
+                    this.state.CompletionTransitions.Add(this.currentTransition);
+                };
+
+                createTransition();
+
+                return this;
+            }
         }
 
         /// <summary>
@@ -366,7 +373,7 @@ namespace Appccelerate.StateMachine.Machine
 
         StateBuilder<TState, TEvent> IfInternal(Func<bool> guard)
         {
-            this.CreateTransition();
+            this.createTransition();
 
             this.SetGuard(guard);
 
@@ -375,7 +382,7 @@ namespace Appccelerate.StateMachine.Machine
 
         StateBuilder<TState, TEvent> IfInternal<T>(Func<T, bool> guard)
         {
-            this.CreateTransition();
+            this.createTransition();
 
             this.SetGuard(guard);
 
@@ -384,7 +391,7 @@ namespace Appccelerate.StateMachine.Machine
 
         StateBuilder<TState, TEvent> OtherwiseInternal()
         {
-            this.CreateTransition();
+            this.createTransition();
 
             return this;
         }
@@ -401,12 +408,6 @@ namespace Appccelerate.StateMachine.Machine
             this.SetGuard(guard);
 
             return this;
-        }
-
-        private void CreateTransition()
-        {
-            this.currentTransition = this.factory.CreateTransition();
-            this.state.Transitions.Add(this.currentEventId, this.currentTransition);
         }
 
         private void SetGuard<T>(Func<T, bool> guard)

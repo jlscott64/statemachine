@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------------------
-// <copyright file="INotifier.cs" company="Appccelerate">
+// <copyright file="IExtensionHost.cs" company="Appccelerate">
 //   Copyright (c) 2008-2013
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,25 +21,18 @@ namespace Appccelerate.StateMachine.Machine
     using System;
 
     /// <summary>
-    /// Provides functionalities to notify events.
+    /// Interface to execute actions on all extensions of the event broker.
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface INotifier<TState, TEvent>
+    public interface IExtensionHost<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
         /// <summary>
-        /// Called when an exception was thrown.
+        /// Executes the specified action for all extensions.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="exception">The exception.</param>
-        void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception);
-
-        /// <summary>
-        /// Called before a transition is executed.
-        /// </summary>
-        /// <param name="transitionContext">The context.</param>
-        void OnTransitionBegin(ITransitionContext<TState, TEvent> transitionContext);
+        /// <param name="action">The action to execute.</param>
+        void ForEach(Action<IExtension<TState, TEvent>> action);
     }
 }

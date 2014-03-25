@@ -128,6 +128,8 @@ namespace Appccelerate.StateMachine.Machine
         /// <value>The type of the history.</value>
         HistoryType HistoryType { get; set; }
 
+        IList<ITransition<TState, TEvent>> CompletionTransitions { get; }
+
         /// <summary>
         /// Give the event context, returns the transition to be fired by this state.
         /// </summary>

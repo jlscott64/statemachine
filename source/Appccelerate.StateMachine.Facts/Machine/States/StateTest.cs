@@ -36,9 +36,10 @@ namespace Appccelerate.StateMachine.Machine.States
         public StateTest()
         {
             this.testee = new State<States, Events>(
-                States.A,
+                States.A, 
                 A.Fake<IStateMachineInformation<States, Events>>(),
-                A.Fake<INotifier<States, Events>>());
+                A.Fake<INotifier<States, Events>>(),
+                A.Fake<IExtensionHost<States, Events>>());
         }
 
         [Fact]

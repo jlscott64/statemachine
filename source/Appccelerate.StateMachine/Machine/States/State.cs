@@ -48,7 +48,11 @@ namespace Appccelerate.StateMachine.Machine.States
         /// </summary>
         private readonly TransitionDictionary<TState, TEvent> transitions;
 
+        private readonly IList<ITransition<TState, TEvent>> completionTransitions; 
+
         private readonly IStateMachineInformation<TState, TEvent> stateMachineInformation;
+
+        private readonly IExtensionHost<TState, TEvent> extensionHost;
 
         /// <summary>
         /// The level of this state within the state hierarchy [1..maxLevel]
@@ -75,15 +79,17 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <param name="stateMachineInformation">The state machine information.</param>
         /// <param name="notifier"></param>
         /// <param name="extensionHost">The extension host.</param>
-        public State(TState id, IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier)
+        public State(TState id, IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier, IExtensionHost<TState, TEvent> extensionHost)
         {
             this.Id = id;
             this.level = 1;
             this.stateMachineInformation = stateMachineInformation;
             this.notifier = notifier;
+            this.extensionHost = extensionHost;
 
             this.regions = new List<IRegion<TState, TEvent>>();
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
+            this.completionTransitions = new List<ITransition<TState, TEvent>>();
 
             this.EntryActions = new List<IActionHolder>();
             this.DoActions = new List<IDoActionHolder>();
@@ -254,6 +260,11 @@ namespace Appccelerate.StateMachine.Machine.States
             get { return this.transitions; }
         }
 
+        public IList<ITransition<TState, TEvent>> CompletionTransitions
+        {
+            get { return this.completionTransitions; }
+        }
+
         /// <summary>
         /// Give the event context, returns the transition to be fired by this state.
         /// </summary>
@@ -272,6 +283,15 @@ namespace Appccelerate.StateMachine.Machine.States
                 {
                     result = transition;
                     break;
+                }
+                else
+                {
+                    var transition1 = transition;
+
+                    this.extensionHost.ForEach(extension => extension.SkippedTransition(
+                        this.stateMachineInformation,
+                        transition1,
+                        context));
                 }
             }
 
@@ -371,7 +391,17 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private void HandleEntryActionException(ITransitionContext<TState, TEvent> context, Exception exception)
         {
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandlingEntryActionException(
+                    this.stateMachineInformation, this, context, ref exception));
+
             HandleException(exception, context);
+
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandledEntryActionException(
+                    this.stateMachineInformation, this, context, exception));
         }
 
         private void StartDoActions(ITransitionContext<TState, TEvent> context)
@@ -399,7 +429,17 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private void HandleDoActionException(ITransitionContext<TState, TEvent> context, Exception exception)
         {
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandlingDoActionException(
+                    this.stateMachineInformation, this, context, ref exception));
+
             HandleException(exception, context);
+
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandledDoActionException(
+                    this.stateMachineInformation, this, context, exception));
         }
 
         private void StopDoActions(ITransitionContext<TState, TEvent> context)
@@ -430,7 +470,17 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private void HandleExitActionException(ITransitionContext<TState, TEvent> context, Exception exception)
         {
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandlingExitActionException(
+                    this.stateMachineInformation, this, context, ref exception));
+
             HandleException(exception, context);
+
+            this.extensionHost.ForEach(
+                extension =>
+                extension.HandledExitActionException(
+                    this.stateMachineInformation, this, context, exception));
         }
 
         public bool HasInitialState()

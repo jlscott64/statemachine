@@ -93,6 +93,9 @@ namespace Appccelerate.StateMachine.Machine
                 .On(StateMachine.Events.B)
                     .If(() => { throw exception; }).Goto(StateMachine.States.B);
 
+            bool transitionDeclined = false;
+            this.testee.TransitionDeclined += (sender, e) => transitionDeclined = true;
+
             this.testee.Initialize(StateMachine.States.A);
             this.testee.EnterInitialState();
 
@@ -100,6 +103,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.AssertException(StateMachine.States.A, StateMachine.Events.B, eventArguments, exception);
             Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.True(transitionDeclined, "transition was not declined.");
         }
 
         /// <summary>

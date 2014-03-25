@@ -55,6 +55,9 @@ namespace Appccelerate.StateMachine
             this.TransitionDeclinedMessages = new List<TransitionEventArgs<States, Events>>();
 
             this.testee.TransitionExceptionThrown += (sender, e) => this.Exceptions.Add(e);
+            this.testee.TransitionBegin += (sender, e) => this.TransitionBeginMessages.Add(e);
+            this.testee.TransitionCompleted += (sender, e) => this.TransitionCompletedMessages.Add(e);
+            this.testee.TransitionDeclined += (sender, e) => this.TransitionDeclinedMessages.Add(e);
         }
 
         private List<EventArgs> Exceptions { get; set; }
@@ -204,6 +207,7 @@ namespace Appccelerate.StateMachine
                     this.testee.FirePriority(Events.C);
                 });
 
+            this.testee.TransitionCompleted += (s, e) => Console.WriteLine("completed " + e.StateId + " to " + e.NewStateId);
             this.testee.TransitionExceptionThrown += (s, e) => Console.WriteLine("Exception: " + e.Exception);
 
             this.testee.In(States.B)
@@ -331,7 +335,16 @@ namespace Appccelerate.StateMachine
         /// <returns>Event that is signaled when <paramref name="numberOfTransitionCompletedMessages"/> transition completed messages were received.</returns>
         private AutoResetEvent SetUpWaitForAllTransitions(int numberOfTransitionCompletedMessages)
         {
+            int numberOfTransitionCompletedMessagesReceived = 0;
             AutoResetEvent allTransitionsCompleted = new AutoResetEvent(false);
+            this.testee.TransitionCompleted += (sender, e) =>
+                                                   {
+                                                       numberOfTransitionCompletedMessagesReceived++;
+                                                       if (numberOfTransitionCompletedMessagesReceived == numberOfTransitionCompletedMessages)
+                                                       {
+                                                           allTransitionsCompleted.Set();
+                                                       }
+                                                   };
 
             return allTransitionsCompleted;
         }

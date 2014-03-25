@@ -304,6 +304,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 set { throw new NotImplementedException(); }
             }
 
+            public IList<ITransition<TState, TEvent>> CompletionTransitions
+            {
+                get { throw new NotImplementedException(); }
+            }
+
             public ITransition<TState, TEvent> GetTransitionToFire(ITransitionContext<TState, TEvent> context)
             {
                 throw new NotImplementedException();

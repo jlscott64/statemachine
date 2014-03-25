@@ -32,10 +32,14 @@ namespace Appccelerate.StateMachine
         const int Event = 2;
 
         static PassiveStateMachine<int, int> machine;
+        static CurrentStateExtension currentStateExtension;
 
         private Establish context = () =>
             {
                 machine = new PassiveStateMachine<int, int>();
+
+                currentStateExtension = new CurrentStateExtension();
+                machine.AddExtension(currentStateExtension);
 
                 machine.In(SourceState)
                     .On(Event)
@@ -52,7 +56,7 @@ namespace Appccelerate.StateMachine
             machine.Fire(Event);
 
         private It should_take_transition_guarded_with_first_matching_guard = () => 
-            machine.CurrentState.Should().Be(DestinationState);
+            currentStateExtension.CurrentState.Should().Be(DestinationState);
     }
 
     [Subject(Concern.Transition)]
@@ -65,10 +69,14 @@ namespace Appccelerate.StateMachine
         const int Event = 2;
 
         static PassiveStateMachine<int, int> machine;
+        static CurrentStateExtension currentStateExtension;
 
         private Establish context = () =>
         {
             machine = new PassiveStateMachine<int, int>();
+
+            currentStateExtension = new CurrentStateExtension();
+            machine.AddExtension(currentStateExtension);
 
             machine.In(SourceState)
                 .On(Event)
@@ -83,6 +91,42 @@ namespace Appccelerate.StateMachine
             machine.Fire(Event);
 
         private It should_take_transition_guarded_with_otherwise = () => 
-            machine.CurrentState.Should().Be(DestinationState);
+            currentStateExtension.CurrentState.Should().Be(DestinationState);
+    }
+
+    [Subject(Concern.Transition)]
+    public class When_firing_an_event_onto_a_started_state_machine_with_no_matching_guard
+    {
+        const int SourceState = 1;
+        const int ErrorState = 3;
+
+        const int Event = 2;
+
+        static PassiveStateMachine<int, int> machine;
+        static CurrentStateExtension currentStateExtension;
+        static bool declined;
+
+        private Establish context = () => 
+        {
+            machine = new PassiveStateMachine<int, int>();
+
+            currentStateExtension = new CurrentStateExtension();
+            machine.AddExtension(currentStateExtension);
+
+            machine.In(SourceState)
+                .On(Event)
+                    .If(() => false).Goto(ErrorState);
+
+            machine.TransitionDeclined += (sender, e) => declined = true;
+
+            machine.Initialize(SourceState);
+            machine.Start();
+        };
+
+        private Because of = () =>
+            machine.Fire(Event);
+
+        private It should_notify_about_declined_transition = () =>
+            declined.Should().BeTrue("TransitionDeclined event should be fired");
     }
 }

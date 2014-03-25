@@ -42,21 +42,23 @@ namespace Appccelerate.StateMachine.Machine
     {
         private readonly IStateMachineInformation<TState, TEvent> stateMachineInformation;
         private readonly INotifier<TState, TEvent> notifier;
+        private readonly IExtensionHost<TState, TEvent> extensionHost;
 
-        public StandardFactory(IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier)
+        public StandardFactory(IStateMachineInformation<TState, TEvent> stateMachineInformation, INotifier<TState, TEvent> notifier, IExtensionHost<TState, TEvent> extensionHost)
         {
             this.stateMachineInformation = stateMachineInformation;
             this.notifier = notifier;
+            this.extensionHost = extensionHost;
         }
 
         public virtual IState<TState, TEvent> CreateState(TState id)
         {
-            return new State<TState, TEvent>(id, this.stateMachineInformation, this.notifier);
+            return new State<TState, TEvent>(id, this.stateMachineInformation, this.notifier, this.extensionHost);
         }
 
         public virtual ITransition<TState, TEvent> CreateTransition()
         {
-            return new Transition<TState, TEvent>(this.stateMachineInformation, this.notifier);
+            return new Transition<TState, TEvent>(this.stateMachineInformation, this.notifier, this.extensionHost);
         }
 
         public virtual IActionHolder CreateActionHolder(Action action)

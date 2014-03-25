@@ -41,6 +41,33 @@ namespace Appccelerate.StateMachine.Machine
         }
 
         /// <summary>
+        /// When no transition for the fired event can be found in the entire
+        /// hierarchy up from the current state then the transition declined event is fired and 
+        /// the state machine remains in its current state.
+        /// </summary>
+        [Fact]
+        public void MissingTransition()
+        {
+            this.testee.In(StateMachine.States.A)
+                .On(StateMachine.Events.B).Goto(StateMachine.States.B);
+
+            bool declined = false;
+
+            this.testee.TransitionDeclined += (sender, e) =>
+                                                  {
+                                                      declined = true;
+                                                  };
+
+            this.testee.Initialize(StateMachine.States.A);
+            this.testee.EnterInitialState();
+
+            this.testee.Fire(StateMachine.Events.C);
+
+            Assert.True(declined, "Declined event was not fired");
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+        }
+
+        /// <summary>
         /// Actions on transitions are performed and the event arguments are passed to them.
         /// </summary>
         [Fact]

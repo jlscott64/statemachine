@@ -35,17 +35,30 @@ namespace Appccelerate.StateMachine
         where TEvent : IComparable
     {
         /// <summary>
+        /// Occurs when no transition could be executed.
+        /// </summary>
+        event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined;
+
+        /// <summary>
         /// Occurs when an exception was thrown inside a transition of the state machine.
         /// </summary>
         event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown;
+
+        /// <summary>
+        /// Occurs when a transition begins.
+        /// </summary>
+        event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin;
+
+        /// <summary>
+        /// Occurs when a transition completed.
+        /// </summary>
+        event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted;
 
         /// <summary>
         /// Gets a value indicating whether this instance is running. The state machine is running if if was started and not yet stopped.
         /// </summary>
         /// <value><c>true</c> if this instance is running; otherwise, <c>false</c>.</value>
         bool IsRunning { get; }
-
-        TState CurrentState { get; }
 
         /// <summary>
         /// Define the behavior of a state.
@@ -111,6 +124,17 @@ namespace Appccelerate.StateMachine
         /// Stops the state machine. Events will be queued until the state machine is started.
         /// </summary>
         void Stop();
+
+        /// <summary>
+        /// Adds an extension.
+        /// </summary>
+        /// <param name="extension">The extension.</param>
+        void AddExtension(IExtension<TState, TEvent> extension);
+
+        /// <summary>
+        /// Clears all extensions.
+        /// </summary>
+        void ClearExtensions();
 
         /// <summary>
         /// Creates a state machine report with the specified generator.
