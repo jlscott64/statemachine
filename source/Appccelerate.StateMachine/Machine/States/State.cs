@@ -260,6 +260,10 @@ namespace Appccelerate.StateMachine.Machine.States
             get { return this.transitions; }
         }
 
+        /// <summary>
+        /// Gets the completion transitions.
+        /// </summary>
+        /// <value>The transitions.</value>
         public IList<ITransition<TState, TEvent>> CompletionTransitions
         {
             get { return this.completionTransitions; }

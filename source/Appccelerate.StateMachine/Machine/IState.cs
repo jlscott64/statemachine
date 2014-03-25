@@ -75,6 +75,12 @@ namespace Appccelerate.StateMachine.Machine
         ITransitionDictionary<TState, TEvent> Transitions { get; }
 
         /// <summary>
+        /// Gets the completion transitions.
+        /// </summary>
+        /// <value>The transitions.</value>
+        IList<ITransition<TState, TEvent>> CompletionTransitions { get; }
+
+        /// <summary>
         /// Gets or sets the level in the hierarchy.
         /// </summary>
         /// <value>The level in the hierarchy.</value>
@@ -127,8 +133,6 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         /// <value>The type of the history.</value>
         HistoryType HistoryType { get; set; }
-
-        IList<ITransition<TState, TEvent>> CompletionTransitions { get; }
 
         /// <summary>
         /// Give the event context, returns the transition to be fired by this state.
