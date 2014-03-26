@@ -64,7 +64,7 @@ namespace Appccelerate.StateMachine
 
         Because of = () => machine.Fire(E.A_to_B);
 
-        It should_cancel_the_do_action = () => doActionCancelled.WaitOne(TimeSpan.FromMilliseconds(20)).Should().BeTrue();
+        It should_cancel_the_do_action = () => doActionCancelled.WaitOne(TimeSpan.FromMilliseconds(100)).Should().BeTrue();
     }
 
 

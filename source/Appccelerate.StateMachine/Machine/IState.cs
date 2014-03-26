@@ -159,5 +159,7 @@ namespace Appccelerate.StateMachine.Machine
 
         bool HasInitialState();
         IRegion<TState, TEvent> AddRegion();
+
+        event EventHandler<StateCompletedEventArgs> Completed;
     }
 }

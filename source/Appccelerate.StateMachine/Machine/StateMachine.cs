@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using Appccelerate.StateMachine.Machine.States;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -194,8 +196,21 @@ namespace Appccelerate.StateMachine.Machine
         public IEntryActionSyntax<TState, TEvent> In(TState state)
         {
             IState<TState, TEvent> newState = this.states[state];
-
+            newState.Completed += OnStateCompleted;
             return new StateBuilder<TState, TEvent>(newState, this.states, this.factory);
+        }
+
+        void OnStateCompleted(object sender, StateCompletedEventArgs args)
+        {
+            var state = (IState<TState, TEvent>) sender;
+            var context = this.factory.CreateTransitionContext(state, new Missable<TEvent>(), null, this);
+            var transition = state.CompletionTransitions.SingleOrDefault(t => t.WillFire(context));
+
+            if (transition != null)
+            {
+                var result = transition.Fire(context);
+                this.ChangeStates(state, result.NewStates);
+            }
         }
 
         /// <summary>
@@ -247,12 +262,12 @@ namespace Appccelerate.StateMachine.Machine
 
             this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
 
-            bool fired = false;
+            var fired = false;
             foreach (var pair in GetTransitionsToFire(eventId, eventArgument))
             {
                 var transition = pair.Item1;
                 var context = pair.Item2;
-                
+
                 var result = transition.Fire(context);
                 this.ChangeStates(context.SourceState, result.NewStates);
 

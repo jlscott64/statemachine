@@ -344,6 +344,8 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 throw new NotImplementedException();
             }
 
+            public event EventHandler<StateCompletedEventArgs> Completed;
+
 
             IEnumerable<IState<TState, TEvent>> IState<TState, TEvent>.LastActiveStates
             {

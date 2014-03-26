@@ -415,7 +415,13 @@ namespace Appccelerate.StateMachine.Machine.States
             cancellation = new CancellationTokenSource();
             var cancellationToken = cancellation.Token;
 
-            var doActionTasks = this.DoActions.Select(actionHolder => this.StartDoAction(actionHolder, context, cancellationToken)).ToArray();
+            var doActionTasks = this.DoActions.Select(actionHolder => this.StartDoAction(actionHolder, context, cancellationToken));
+            Task.WhenAll(doActionTasks).ContinueWith(t => this.DoActionsCompleted(), TaskContinuationOptions.OnlyOnRanToCompletion);
+        }
+
+        private void DoActionsCompleted()
+        {
+            OnCompleted(new StateCompletedEventArgs());
         }
 
         private Task StartDoAction(IDoActionHolder actionHolder, ITransitionContext<TState, TEvent> context, CancellationToken cancellationToken)
@@ -448,7 +454,6 @@ namespace Appccelerate.StateMachine.Machine.States
         private void StopDoActions(ITransitionContext<TState, TEvent> context)
         {
             cancellation.Cancel();
-
         }
 
         private void ExecuteExitActions(ITransitionContext<TState, TEvent> context)
@@ -496,6 +501,14 @@ namespace Appccelerate.StateMachine.Machine.States
             var region = new Region<TState, TEvent>(this);
             this.regions.Add(region);
             return region;
+        }
+
+        public event EventHandler<StateCompletedEventArgs> Completed;
+
+        protected virtual void OnCompleted(StateCompletedEventArgs e)
+        {
+            var handler = Completed;
+            if (handler != null) handler(this, e);
         }
 
         /// <summary>

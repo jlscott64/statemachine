@@ -70,6 +70,7 @@
     <Compile Include="Machine\GuardHolders\ArgumentLessGuardHolder.cs" />
     <Compile Include="Machine\GuardHolders\GuardHoldersExceptionMessages.cs" />
     <Compile Include="Machine\GuardHolders\IGuardHolder.cs" />
+    <Compile Include="Machine\StateCompletedEventArgs.cs" />
     <Compile Include="Machine\States\Region.cs" />
     <Compile Include="Machine\States\IRegion.cs" />
     <Compile Include="Machine\Transitions\Traversal.cs" />
