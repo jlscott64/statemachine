@@ -17,6 +17,7 @@
 //-------------------------------------------------------------------------------
 
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Appccelerate.StateMachine.Machine.ActionHolders
 {
@@ -30,7 +31,8 @@ namespace Appccelerate.StateMachine.Machine.ActionHolders
         /// </summary>
         /// <param name="argument">The state machine event argument.</param>
         /// <param name="cancellation">A cancellation token for halting the do action</param>
-        void Start(object argument, CancellationToken cancellation);
+        /// <returns>The task object for the action</returns>
+        Task Start(object argument, CancellationToken cancellation);
 
         /// <summary>
         /// Describes the action.

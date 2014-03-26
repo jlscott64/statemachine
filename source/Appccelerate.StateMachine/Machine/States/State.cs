@@ -16,7 +16,9 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Appccelerate.StateMachine.Machine.States
 {
@@ -413,22 +415,19 @@ namespace Appccelerate.StateMachine.Machine.States
             cancellation = new CancellationTokenSource();
             var cancellationToken = cancellation.Token;
 
-            foreach (var actionHolder in this.DoActions)
-            {
-                this.StartDoAction(actionHolder, context, cancellationToken);
-            }
+            var doActionTasks = this.DoActions.Select(actionHolder => this.StartDoAction(actionHolder, context, cancellationToken)).ToArray();
         }
 
-        private void StartDoAction(IDoActionHolder actionHolder, ITransitionContext<TState, TEvent> context, CancellationToken cancellation)
+        private Task StartDoAction(IDoActionHolder actionHolder, ITransitionContext<TState, TEvent> context, CancellationToken cancellationToken)
         {
-            try
-            {
-                actionHolder.Start(context.EventArgument, cancellation);
-            }
-            catch (Exception exception)
-            {
-                this.HandleDoActionException(context, exception);
-            }
+            var doActionTask = actionHolder.Start(context.EventArgument, cancellationToken);
+            doActionTask.ContinueWith(t => DoActionFailed(t, actionHolder, context), cancellationToken);
+            return doActionTask;
+        }
+
+        private void DoActionFailed(Task doActionTask, IDoActionHolder actionHolder, ITransitionContext<TState, TEvent> context)
+        {
+            this.HandleDoActionException(context, doActionTask.Exception);
         }
 
         private void HandleDoActionException(ITransitionContext<TState, TEvent> context, Exception exception)

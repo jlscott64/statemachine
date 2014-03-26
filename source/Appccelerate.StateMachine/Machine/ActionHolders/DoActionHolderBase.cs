@@ -10,10 +10,10 @@ namespace Appccelerate.StateMachine.Machine.ActionHolders
     public abstract class DoActionHolderBase : IDoActionHolder
     {
 
-        public void Start(object argument, CancellationToken cancellation)
+        public Task Start(object argument, CancellationToken cancellation)
         {
             var actionCall = GetActionCall(argument, cancellation);
-            Task.Factory.StartNew(actionCall, cancellation);
+            return Task.Factory.StartNew(actionCall, cancellation);
         }
 
         public string Describe()

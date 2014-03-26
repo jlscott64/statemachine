@@ -16,8 +16,6 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using System.Collections;
-
 namespace Appccelerate.StateMachine.Machine
 {
     using System;

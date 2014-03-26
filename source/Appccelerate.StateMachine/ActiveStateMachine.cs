@@ -41,7 +41,7 @@ namespace Appccelerate.StateMachine
         where TEvent : IComparable
     {
         private readonly StateMachine<TState, TEvent> stateMachine;
-        private readonly LinkedList<EventInformation<TEvent>> queue;
+        private readonly LinkedList<Action> queue;
 
         private bool initialized;
         private bool pendingInitialization;
@@ -77,7 +77,7 @@ namespace Appccelerate.StateMachine
                 name ?? this.GetType().FullNameToString(), 
                 factory);
 
-            this.queue = new LinkedList<EventInformation<TEvent>>();
+            this.queue = new LinkedList<Action>();
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Appccelerate.StateMachine
 
             lock (this.queue)
             {
-                this.queue.AddLast(new EventInformation<TEvent>(eventId, eventArgument));
+                this.queue.AddLast(() => this.stateMachine.Fire(eventId, eventArgument));
                 Monitor.Pulse(this.queue);
             }
             
@@ -196,7 +196,7 @@ namespace Appccelerate.StateMachine
 
             lock (this.queue)
             {
-                this.queue.AddFirst(new EventInformation<TEvent>(eventId, eventArgument));
+                this.queue.AddFirst(() => this.stateMachine.Fire(eventId, eventArgument));
                 Monitor.Pulse(this.queue);
             }
 
@@ -346,7 +346,7 @@ namespace Appccelerate.StateMachine
             {
                 this.InitializeStateMachineIfInitializationIsPending();
 
-                EventInformation<TEvent> eventInformation;
+                Action eventInformation;
                 lock (this.queue)
                 {
                     if (this.queue.Count > 0)
@@ -366,7 +366,7 @@ namespace Appccelerate.StateMachine
                     }
                 }
 
-                this.stateMachine.Fire(eventInformation.EventId, eventInformation.EventArgument);
+                eventInformation();
             }
         }
 
