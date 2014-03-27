@@ -110,6 +110,7 @@
     <Compile Include="Reports\CsvTransitionsWriter.cs" />
     <Compile Include="Reports\StateMachineReportGenerator.cs" />
     <Compile Include="Reports\YEdStateMachineReportGenerator.cs" />
+    <Compile Include="StateMachineBase.cs" />
     <Compile Include="Syntax\ICompletionEventSyntax.cs" />
     <Compile Include="Syntax\ICompletionGotoInIfSyntax.cs" />
     <Compile Include="Syntax\ICompletionIfSyntax.cs" />
