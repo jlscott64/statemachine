@@ -91,7 +91,6 @@
     <Compile Include="Machine\StandardFactory.cs" />
     <Compile Include="Machine\StateBuilder.g.cs" />
     <Compile Include="Machine\StateDictionary.cs" />
-    <Compile Include="Machine\StateMachine.cs" />
     <Compile Include="Machine\StateMachineException.cs" />
     <Compile Include="Machine\StateMachineInitializer.cs" />
     <Compile Include="Machine\States\State.cs" />
@@ -110,7 +109,7 @@
     <Compile Include="Reports\CsvTransitionsWriter.cs" />
     <Compile Include="Reports\StateMachineReportGenerator.cs" />
     <Compile Include="Reports\YEdStateMachineReportGenerator.cs" />
-    <Compile Include="StateMachineBase.cs" />
+    <Compile Include="Machine\StateMachine.cs" />
     <Compile Include="Syntax\ICompletionEventSyntax.cs" />
     <Compile Include="Syntax\ICompletionGotoInIfSyntax.cs" />
     <Compile Include="Syntax\ICompletionIfSyntax.cs" />

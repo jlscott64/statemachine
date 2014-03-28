@@ -42,11 +42,20 @@ namespace Appccelerate.StateMachine
         public enum E { A_to_B }
 
         static PassiveStateMachine<S, E> machine;
+        static ManualResetEvent doActionExecuted;
         static ManualResetEvent doActionCancelled;
 
         Establish context = () =>
         {
-            Action<CancellationToken> doAction = cancellationToken => cancellationToken.Register(() => doActionCancelled.Set());
+
+            doActionExecuted = new ManualResetEvent(false);
+            doActionCancelled = new ManualResetEvent(false);
+
+            Action<CancellationToken> doAction = cancellationToken =>
+            {
+                cancellationToken.Register(() => doActionCancelled.Set());
+                doActionExecuted.Set();
+            };
 
             machine = new PassiveStateMachine<S, E>();
 
@@ -58,8 +67,8 @@ namespace Appccelerate.StateMachine
 
             machine.Initialize(S.A);
 
-            doActionCancelled = new ManualResetEvent(false);
             machine.Start();
+            doActionExecuted.WaitOne(100);
         };
 
         Because of = () => machine.Fire(E.A_to_B);

@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using Appccelerate.StateMachine.Machine;
+
 namespace Appccelerate.StateMachine
 {
     using System;
@@ -28,7 +30,7 @@ namespace Appccelerate.StateMachine
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public class PassiveStateMachine<TState, TEvent> : StateMachineBase<TState, TEvent>, IStateMachine<TState, TEvent>
+    public class PassiveStateMachine<TState, TEvent> : StateMachine<TState, TEvent>, IStateMachine<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
