@@ -19,7 +19,6 @@
 namespace Appccelerate.StateMachine
 {
     using System;
-    using System.Collections.Generic;
 
     using Appccelerate.StateMachine.Machine.Events;
 
@@ -33,11 +32,6 @@ namespace Appccelerate.StateMachine
         where TState : IComparable
         where TEvent : IComparable
     {
-        /// <summary>
-        /// List of all queued events.
-        /// </summary>
-        private readonly LinkedList<Action> events;
-
         /// <summary>
         /// Whether this state machine is executing an event. Allows that events can be added while executing.
         /// </summary>
@@ -71,7 +65,6 @@ namespace Appccelerate.StateMachine
         public PassiveStateMachine(string name, IFactory<TState, TEvent> factory)
             :base(name, factory)
         {
-            this.events = new LinkedList<Action>();
         }
 
         /// <summary>
@@ -81,34 +74,6 @@ namespace Appccelerate.StateMachine
         public override bool IsRunning
         {
             get { return isRunning; }
-        }
-
-        /// <summary>
-        /// Fires the specified event.
-        /// </summary>
-        /// <param name="eventId">The event.</param>
-        /// <param name="eventArgument">The event argument.</param>
-        public override void Fire(TEvent eventId, object eventArgument)
-        {
-            this.events.AddLast(() => this.stateMachine.Fire(eventId, eventArgument));
-
-            this.stateMachine.ForEach(extension => extension.EventQueued(this.stateMachine, eventId, eventArgument));
-
-            this.Execute();
-        }
-
-        /// <summary>
-        /// Fires the specified priority event. The event will be handled before any already queued event.
-        /// </summary>
-        /// <param name="eventId">The event.</param>
-        /// <param name="eventArgument">The event argument.</param>
-        public override void FirePriority(TEvent eventId, object eventArgument)
-        {
-            this.events.AddFirst(() => this.stateMachine.Fire(eventId, eventArgument));
-
-            this.stateMachine.ForEach(extension => extension.EventQueuedWithPriority(this.stateMachine, eventId, eventArgument));
-            
-            this.Execute();
         }
 
         /// <summary>
@@ -122,7 +87,7 @@ namespace Appccelerate.StateMachine
 
             this.isRunning = true;
             
-            this.stateMachine.ForEach(extension => extension.StartedStateMachine(this.stateMachine));
+            this.ForEach(extension => extension.StartedStateMachine(this));
 
             this.Execute();
         }
@@ -134,13 +99,13 @@ namespace Appccelerate.StateMachine
         {
             this.isRunning = false;
 
-            this.stateMachine.ForEach(extension => extension.StoppedStateMachine(this.stateMachine));
+            this.ForEach(extension => extension.StoppedStateMachine(this));
         }
 
         /// <summary>
         /// Executes all queued events.
         /// </summary>
-        private void Execute()
+        protected override void Execute()
         {
             if (this.executing || !this.IsRunning)
             {
@@ -162,10 +127,9 @@ namespace Appccelerate.StateMachine
         {
             this.InitializeStateMachineIfInitializationIsPending();
 
-            while (this.events.Count > 0)
+            while (QueuedEventCount > 0)
             {
-                Action eventAction = this.events.First.Value;
-                this.events.RemoveFirst();
+                var eventAction = GetNextEventAction();
                 eventAction();
             }
         }

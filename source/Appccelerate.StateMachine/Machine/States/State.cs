@@ -16,15 +16,13 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Appccelerate.StateMachine.Machine.States
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     using Appccelerate.StateMachine.Machine.ActionHolders;
     using Appccelerate.StateMachine.Machine.Transitions;
@@ -317,7 +315,7 @@ namespace Appccelerate.StateMachine.Machine.States
         {
             Ensure.ArgumentNotNull(context, "context");
 
-            this.StopDoActions(context);
+            this.StopDoActions();
             this.ExecuteExitActions(context);
             this.SetThisStateAsLastStateOfRegion();
         }
@@ -427,11 +425,11 @@ namespace Appccelerate.StateMachine.Machine.States
         private Task StartDoAction(IDoActionHolder actionHolder, ITransitionContext<TState, TEvent> context, CancellationToken cancellationToken)
         {
             var doActionTask = actionHolder.Start(context.EventArgument, cancellationToken);
-            doActionTask.ContinueWith(t => DoActionFailed(t, actionHolder, context), cancellationToken);
+            doActionTask.ContinueWith(t => DoActionFailed(t, context), cancellationToken);
             return doActionTask;
         }
 
-        private void DoActionFailed(Task doActionTask, IDoActionHolder actionHolder, ITransitionContext<TState, TEvent> context)
+        private void DoActionFailed(Task doActionTask, ITransitionContext<TState, TEvent> context)
         {
             this.HandleDoActionException(context, doActionTask.Exception);
         }
@@ -451,7 +449,7 @@ namespace Appccelerate.StateMachine.Machine.States
                     this.stateMachineInformation, this, context, exception));
         }
 
-        private void StopDoActions(ITransitionContext<TState, TEvent> context)
+        private void StopDoActions()
         {
             cancellation.Cancel();
         }

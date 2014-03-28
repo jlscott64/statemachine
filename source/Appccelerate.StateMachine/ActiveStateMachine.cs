@@ -19,7 +19,6 @@
 namespace Appccelerate.StateMachine
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -36,8 +35,6 @@ namespace Appccelerate.StateMachine
         where TState : IComparable
         where TEvent : IComparable
     {
-        private readonly ConcurrentQueue<Action> eventActionQueue;
-        private readonly ConcurrentQueue<Action> highPriortyEventActionQueue;
         private readonly AutoResetEvent eventActionQueued;
 
         private CancellationTokenSource stopToken;
@@ -68,8 +65,6 @@ namespace Appccelerate.StateMachine
         public ActiveStateMachine(string name, IFactory<TState, TEvent> factory)
             :base(name, factory)
         {
-            this.eventActionQueue = new ConcurrentQueue<Action>();
-            this.highPriortyEventActionQueue = new ConcurrentQueue<Action>();
             this.eventActionQueued = new AutoResetEvent(false);
         }
 
@@ -80,32 +75,6 @@ namespace Appccelerate.StateMachine
         public override bool IsRunning
         {
             get { return this.worker != null && !this.worker.IsCompleted; }
-        }
-
-        /// <summary>
-        /// Fires the specified event.
-        /// </summary>
-        /// <param name="eventId">The event.</param>
-        /// <param name="eventArgument">The event argument.</param>
-        public override void Fire(TEvent eventId, object eventArgument)
-        {
-            this.eventActionQueue.Enqueue(() => this.stateMachine.Fire(eventId, eventArgument));
-            this.eventActionQueued.Set();
-
-            this.stateMachine.ForEach(extension => extension.EventQueued(this.stateMachine, eventId, eventArgument));
-        }
-
-        /// <summary>
-        /// Fires the specified priority event. The event will be handled before any already queued event.
-        /// </summary>
-        /// <param name="eventId">The event.</param>
-        /// <param name="eventArgument">The event argument.</param>
-        public override void FirePriority(TEvent eventId, object eventArgument)
-        {
-            this.highPriortyEventActionQueue.Enqueue(() => this.stateMachine.Fire(eventId, eventArgument));
-            this.eventActionQueued.Set();
-
-            this.stateMachine.ForEach(extension => extension.EventQueuedWithPriority(this.stateMachine, eventId, eventArgument));
         }
 
         /// <summary>
@@ -129,7 +98,7 @@ namespace Appccelerate.StateMachine
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default);
 
-            this.stateMachine.ForEach(extension => extension.StartedStateMachine(this.stateMachine));
+            this.ForEach(extension => extension.StartedStateMachine(this));
         }
 
         /// <summary>
@@ -157,7 +126,12 @@ namespace Appccelerate.StateMachine
                 }
             }
 
-            this.stateMachine.ForEach(extension => extension.StoppedStateMachine(this.stateMachine));
+            this.ForEach(extension => extension.StoppedStateMachine(this));
+        }
+
+        protected override void Execute()
+        {
+            this.eventActionQueued.Set();
         }
 
         private void ProcessQueuedEvents(CancellationToken cancellationToken)
@@ -168,20 +142,14 @@ namespace Appccelerate.StateMachine
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                Action eventAction;
+                Action eventAction = GetNextEventAction();
 
-                // Empty the high priority queue first
-                while (this.highPriortyEventActionQueue.TryDequeue(out eventAction))
+                while (eventAction != null && !cancellationToken.IsCancellationRequested)
                 {
                     eventAction();
+                    eventAction = GetNextEventAction();
                 }
-
-                // Then look for a non-priority
-                if (this.eventActionQueue.TryDequeue(out eventAction))
-                {
-                    eventAction();
-                }
-
+                
                 WaitHandle.WaitAny(signals);
             }
         }
