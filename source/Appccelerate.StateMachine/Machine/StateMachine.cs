@@ -566,9 +566,10 @@ namespace Appccelerate.StateMachine.Machine
         /// Fires the <see cref="TransitionCompleted"/> event.
         /// </summary>
         /// <param name="transitionContext">The transition event context.</param>
-        private void OnTransitionCompleted(ITransitionContext<TState, TEvent> transitionContext)
+        /// <param name="currentStateId"></param>
+        private void OnTransitionCompleted(ITransitionContext<TState, TEvent> transitionContext, TState currentStateId)
         {
-            this.RaiseEvent(this.TransitionCompleted, new TransitionCompletedEventArgs<TState, TEvent>(this.CurrentStateId, transitionContext), transitionContext, true);
+            this.RaiseEvent(this.TransitionCompleted, new TransitionCompletedEventArgs<TState, TEvent>(currentStateId, transitionContext), transitionContext, true);
         }
 
         /// <summary>
@@ -628,7 +629,6 @@ namespace Appccelerate.StateMachine.Machine
                 fired = true;
 
                 this.extensions.ForEach(extension => extension.FiredEvent(this, context));
-                this.OnTransitionCompleted(context);
             }
 
             if (!fired)
@@ -646,6 +646,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             var result = transition.Fire(context);
             this.ChangeStates(context.SourceState, result.NewStates);
+            this.OnTransitionCompleted(context, result.NewStates.First().Id);
         }
 
         /// <summary>
