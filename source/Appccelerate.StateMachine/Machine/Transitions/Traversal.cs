@@ -16,6 +16,7 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
 using Appccelerate.StateMachine.Machine.ActionHolders;
 using Appccelerate.StateMachine.Machine.States;
 
@@ -39,7 +40,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
             var finalStates = new List<IState<TState, TEvent>>();
             TraverseToEntrySubstates(enteredStates, targetState, finalStates);
-            
+
             exitedStates.ForEach(s => s.Exit(context));
             if (transitionAction != null) transitionAction(context);
             enteredStates.ForEach(s => s.Entry(context));
@@ -169,7 +170,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
         static void TraverseToInitialSubstates(ICollection<IState<TState, TEvent>> enteredStates, IState<TState, TEvent> state, ICollection<IState<TState, TEvent>> finalStates)
         {
-            if (state.HasInitialState())
+            if (state.InitialStates.Any())
             {
 
                 foreach (var nextState in state.InitialStates)
@@ -223,11 +224,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 get { throw new NotImplementedException(); }
             }
 
-            public IState<TState, TEvent> GetInitialState()
-            {
-                throw new NotImplementedException();
-            }
-
             public IEnumerable<IState<TState, TEvent>> InitialStates
             {
                 get { throw new NotImplementedException(); }
@@ -236,13 +232,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             public IState<TState, TEvent> SuperState
             {
                 get { return null; }
-                set { throw new NotImplementedException(); }
             }
 
             public IRegion<TState, TEvent> Region
             {
                 get { throw new NotImplementedException(); }
-                set { throw new NotImplementedException(); }
             }
 
             public IEnumerable<IState<TState, TEvent>> SubStates
@@ -250,15 +244,9 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 get { throw new NotImplementedException(); }
             }
 
-            public ITransitionDictionary<TState, TEvent> Transitions
-            {
-                get { throw new NotImplementedException(); }
-            }
-
             public int Level
             {
                 get { return 0; }
-                set { throw new NotImplementedException(); }
             }
 
             public IEnumerable<IState<TState, TEvent>> ActiveStates
@@ -269,31 +257,29 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             public IState<TState, TEvent> ActiveState
             {
                 get { throw new NotImplementedException(); }
-                set { throw new NotImplementedException(); }
-            }
-
-            public IEnumerable<IState<TState, TEvent>> LastActiveStates
-            {
-                get { throw new NotImplementedException(); }
             }
 
             public IState<TState, TEvent> LastActiveState
             {
                 get { throw new NotImplementedException(); }
-                set { throw new NotImplementedException(); }
             }
 
-            public IList<IActionHolder> EntryActions
+            public void SetLastActiveState(IState<TState, TEvent> value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<string> DoActionDescriptions
             {
                 get { throw new NotImplementedException(); }
             }
 
-            public IList<IDoActionHolder> DoActions
+            public IEnumerable<string> ExitActionDescriptions
             {
                 get { throw new NotImplementedException(); }
             }
 
-            public IList<IActionHolder> ExitActions
+            public IEnumerable<string> EntryActionDescriptions
             {
                 get { throw new NotImplementedException(); }
             }
@@ -301,17 +287,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             public HistoryType HistoryType
             {
                 get { throw new NotImplementedException(); }
-                set { throw new NotImplementedException(); }
             }
 
             public IList<ITransition<TState, TEvent>> CompletionTransitions
             {
                 get { throw new NotImplementedException(); }
-            }
-
-            public ITransition<TState, TEvent> GetTransitionToFire(ITransitionContext<TState, TEvent> context)
-            {
-                throw new NotImplementedException();
             }
 
             public void Entry(ITransitionContext<TState, TEvent> context)
@@ -324,17 +304,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 
             }
 
-            public void AddSubState(IState<TState, TEvent> subState)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void AddInitialState(IState<TState, TEvent> initialState)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool HasInitialState()
+            public void SetLevel(int value)
             {
                 throw new NotImplementedException();
             }
@@ -344,10 +314,64 @@ namespace Appccelerate.StateMachine.Machine.Transitions
                 throw new NotImplementedException();
             }
 
+            public void SetRegion(IRegion<TState, TEvent> value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<ITransition<TState, TEvent>> GetTransitions(TEvent eventId)
+            {
+                throw new NotImplementedException();
+            }
+
             public event EventHandler<StateCompletedEventArgs> Completed;
 
+            public void AddEntryAction(IActionHolder action)
+            {
+                throw new NotImplementedException();
+            }
 
-            IEnumerable<IState<TState, TEvent>> IState<TState, TEvent>.LastActiveStates
+            public void AddDoAction(IDoActionHolder action)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddExitAction(IActionHolder action)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddTransition(TEvent eventId, ITransition<TState, TEvent> transition)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void AddCompletionTransition(ITransition<TState, TEvent> transition)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<TransitionInfo<TState, TEvent>> GetTransitions()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetHistoryType(HistoryType value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetSuperState(IState<TState, TEvent> value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetId(TState value)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IEnumerable<IState<TState, TEvent>> LastActiveStates
             {
                 get { throw new NotImplementedException(); }
             }

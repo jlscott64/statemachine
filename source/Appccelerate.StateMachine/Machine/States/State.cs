@@ -33,8 +33,7 @@ namespace Appccelerate.StateMachine.Machine.States
     /// </summary>
     /// <typeparam name="TState">The type of the state id.</typeparam>
     /// <typeparam name="TEvent">The type of the event id.</typeparam>
-    public class State<TState, TEvent> 
-        : IState<TState, TEvent>
+    public class State<TState, TEvent> : IState<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
@@ -72,6 +71,10 @@ namespace Appccelerate.StateMachine.Machine.States
         readonly INotifier<TState, TEvent> notifier;
         CancellationTokenSource cancellation;
 
+        readonly IList<IActionHolder> entryActions;
+        readonly IList<IDoActionHolder> doActions;
+        readonly IList<IActionHolder> exitActions;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="State&lt;TState, TEvent&gt;"/> class.
         /// </summary>
@@ -91,9 +94,9 @@ namespace Appccelerate.StateMachine.Machine.States
             this.transitions = new TransitionDictionary<TState, TEvent>(this);
             this.completionTransitions = new List<ITransition<TState, TEvent>>();
 
-            this.EntryActions = new List<IActionHolder>();
-            this.DoActions = new List<IDoActionHolder>();
-            this.ExitActions = new List<IActionHolder>();
+            this.entryActions = new List<IActionHolder>();
+            this.doActions = new List<IDoActionHolder>();
+            this.exitActions = new List<IActionHolder>();
         }
 
         /// <summary>
@@ -103,7 +106,6 @@ namespace Appccelerate.StateMachine.Machine.States
         public IState<TState, TEvent> ActiveState
         {
             get { return (this.regions.Any()) ? this.regions.First().ActiveState : null; }
-            set { this.regions.First().ActiveState = value; }
         }
 
         /// <summary>
@@ -122,7 +124,11 @@ namespace Appccelerate.StateMachine.Machine.States
         public IState<TState, TEvent> LastActiveState
         {
             get { return (this.regions.Any()) ? this.regions.First().LastActiveState : null; }
-            set { this.regions.First().LastActiveState = value; }
+        }
+
+        public void SetLastActiveState(IState<TState, TEvent> value)
+        {
+            this.regions.First().LastActiveState = value;
         }
 
         /// <summary>
@@ -141,22 +147,32 @@ namespace Appccelerate.StateMachine.Machine.States
         public TState Id { get; private set; }
 
         /// <summary>
-        /// Gets the entry actions.
+        /// Gets descriptions of the entry actions.
         /// </summary>
         /// <value>The entry actions.</value>
-        public IList<IActionHolder> EntryActions { get; private set; }
+        public IEnumerable<string> EntryActionDescriptions
+        {
+            get { return entryActions.Select(action => action.Describe()); }
+
+        }
 
         /// <summary>
-        /// Gets the do actions.
+        /// Gets descriptions of the do actions.
         /// </summary>
         /// <value>The do actiona.</value>
-        public IList<IDoActionHolder> DoActions { get; private set; }
+        public IEnumerable<string> DoActionDescriptions
+        {
+            get { return doActions.Select(action => action.Describe()); }
+        }
 
         /// <summary>
-        /// Gets the exit actions.
+        /// Gets descriptions of the exit actions.
         /// </summary>
         /// <value>The exit actions.</value>
-        public IList<IActionHolder> ExitActions { get; private set; }
+        public IEnumerable<string> ExitActionDescriptions
+        {
+            get { return exitActions.Select(action => action.Describe()); }
+        }
 
         /// <summary>
         /// DEPRECATED. Gets the initial sub-state. Null if this state has no sub-states.
@@ -165,16 +181,6 @@ namespace Appccelerate.StateMachine.Machine.States
         public IState<TState, TEvent> GetInitialState()
         {
             return regions.Any() ? this.regions.First().InitialState : null;
-        }
-
-        public void AddSubState(IState<TState, TEvent> subState)
-        {
-            throw new NotImplementedException("Getting rid of this function.");
-        }
-
-        public void AddInitialState(IState<TState, TEvent> initialState)
-        {
-            throw new NotImplementedException("Getting rid of this function.");
         }
 
         /// <summary>
@@ -195,19 +201,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <value>The super-state of this super.</value>
         public IState<TState, TEvent> SuperState
         {
-            get
-            {
-                return this.superState;
-            }
-
-            set
-            {
-                this.CheckSuperStateIsNotThisInstance(value);
-
-                this.superState = value;
-
-                this.SetInitialLevel();
-            }
+            get { return this.superState; }
         }
 
         /// <summary>
@@ -217,17 +211,7 @@ namespace Appccelerate.StateMachine.Machine.States
         /// <value>The level.</value>
         public int Level
         {
-            get
-            {
-                return this.level;
-            }
-            
-            set
-            {
-                this.level = value;
-
-                this.SetLevelOfSubStates();
-            }
+            get { return this.level; }
         }
 
         /// <summary>
@@ -237,10 +221,9 @@ namespace Appccelerate.StateMachine.Machine.States
         public HistoryType HistoryType
         {
             get { return this.historyType; } 
-            set { this.historyType = value; }
         }
 
-        public IRegion<TState, TEvent> Region { get; set; }
+        public IRegion<TState, TEvent> Region { get; private set; }
 
         /// <summary>
         /// Gets the sub-states of this state.
@@ -252,15 +235,6 @@ namespace Appccelerate.StateMachine.Machine.States
         }
 
         /// <summary>
-        /// Gets the transitions that start in this state.
-        /// </summary>
-        /// <value>The transitions.</value>
-        public ITransitionDictionary<TState, TEvent> Transitions
-        {
-            get { return this.transitions; }
-        }
-
-        /// <summary>
         /// Gets the completion transitions.
         /// </summary>
         /// <value>The transitions.</value>
@@ -269,37 +243,9 @@ namespace Appccelerate.StateMachine.Machine.States
             get { return this.completionTransitions; }
         }
 
-        /// <summary>
-        /// Give the event context, returns the transition to be fired by this state.
-        /// </summary>
-        /// <param name="context">The event context.</param>
-        /// <returns>The transition to be fired or null.</returns>
-        public ITransition<TState, TEvent> GetTransitionToFire(ITransitionContext<TState, TEvent> context)
+        public IEnumerable<ITransition<TState, TEvent>> GetTransitions(TEvent eventId)
         {
-            Ensure.ArgumentNotNull(context, "context");
-            ITransition<TState, TEvent> result = null;
-
-            var transitionsForEvent = this.transitions[context.EventId.Value].NotNull();
-
-            foreach (ITransition<TState, TEvent> transition in transitionsForEvent)
-            {
-                if (transition.WillFire(context))
-                {
-                    result = transition;
-                    break;
-                }
-                else
-                {
-                    var transition1 = transition;
-
-                    this.extensionHost.ForEach(extension => extension.SkippedTransition(
-                        this.stateMachineInformation,
-                        transition1,
-                        context));
-                }
-            }
-
-            return result;
+            return this.transitions[eventId].NotNull();
         }
 
         public void Entry(ITransitionContext<TState, TEvent> context)
@@ -354,28 +300,9 @@ namespace Appccelerate.StateMachine.Machine.States
             notifier.OnExceptionThrown(context, exception);
         }
 
-        /// <summary>
-        /// Sets the initial level depending on the level of the super state of this instance.
-        /// </summary>
-        private void SetInitialLevel()
-        {
-            this.Level = this.superState != null ? this.superState.Level + 1 : 1;
-        }
-
-        /// <summary>
-        /// Sets the level of all sub states.
-        /// </summary>
-        private void SetLevelOfSubStates()
-        {
-            foreach (var state in this.SubStates)
-            {
-                state.Level = this.level + 1;
-            }
-        }
-
         private void ExecuteEntryActions(ITransitionContext<TState, TEvent> context)
         {
-            foreach (var actionHolder in this.EntryActions)
+            foreach (var actionHolder in this.entryActions)
             {
                 this.ExecuteEntryAction(actionHolder, context);
             }
@@ -413,7 +340,7 @@ namespace Appccelerate.StateMachine.Machine.States
             cancellation = new CancellationTokenSource();
             var cancellationToken = cancellation.Token;
 
-            var doActionTasks = this.DoActions.Select(actionHolder => this.StartDoAction(actionHolder, context, cancellationToken));
+            var doActionTasks = this.doActions.Select(actionHolder => this.StartDoAction(actionHolder, context, cancellationToken));
             Task.WhenAll(doActionTasks).ContinueWith(t => this.DoActionsCompleted(), TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
@@ -456,7 +383,7 @@ namespace Appccelerate.StateMachine.Machine.States
 
         private void ExecuteExitActions(ITransitionContext<TState, TEvent> context)
         {
-            foreach (var actionHolder in this.ExitActions)
+            foreach (var actionHolder in this.exitActions)
             {
                 this.ExecuteExitAction(actionHolder, context);
             }
@@ -489,9 +416,56 @@ namespace Appccelerate.StateMachine.Machine.States
                     this.stateMachineInformation, this, context, exception));
         }
 
-        public bool HasInitialState()
+        public IEnumerable<TransitionInfo<TState, TEvent>> GetTransitions()
         {
-            return this.InitialStates.Any();
+            return this.transitions.GetTransitions();
+        }
+
+        public event EventHandler<StateCompletedEventArgs> Completed;
+
+        public void AddEntryAction(IActionHolder action)
+        {
+            this.entryActions.Add(action);
+        }
+
+        public void AddDoAction(IDoActionHolder action)
+        {
+            this.doActions.Add(action);
+        }
+
+        public void AddExitAction(IActionHolder action)
+        {
+            this.exitActions.Add(action);
+        }
+
+        public void AddTransition(TEvent eventId, ITransition<TState, TEvent> transition)
+        {
+            this.transitions.Add(eventId, transition);
+        }
+
+        public void AddCompletionTransition(ITransition<TState, TEvent> transition)
+        {
+            this.completionTransitions.Add(transition);
+        }
+
+        public void SetHistoryType(HistoryType value)
+        {
+            this.historyType = value;
+        }
+
+        public void SetSuperState(IState<TState, TEvent> value)
+        {
+            this.superState = value;
+        }
+
+        public void SetId(TState value)
+        {
+            this.Id = value;
+        }
+
+        public void SetLevel(int value)
+        {
+            this.level = value;
         }
 
         public IRegion<TState, TEvent> AddRegion()
@@ -501,50 +475,15 @@ namespace Appccelerate.StateMachine.Machine.States
             return region;
         }
 
-        public event EventHandler<StateCompletedEventArgs> Completed;
+        public void SetRegion(IRegion<TState, TEvent> value)
+        {
+            this.Region = value;
+        }
 
         protected virtual void OnCompleted(StateCompletedEventArgs e)
         {
             var handler = Completed;
             if (handler != null) handler(this, e);
-        }
-
-        /// <summary>
-        /// Throws an exception if the new super state is this instance.
-        /// </summary>
-        /// <param name="newSuperState">The value.</param>
-        // ReSharper disable once UnusedParameter.Local
-        private void CheckSuperStateIsNotThisInstance(IState<TState, TEvent> newSuperState)
-        {
-            if (this == newSuperState)
-            {
-                throw new ArgumentException(StatesExceptionMessages.StateCannotBeItsOwnSuperState(this.ToString()));
-            }
-        }
-
-        /// <summary>
-        /// Throws an exception if the new initial state is this instance.
-        /// </summary>
-        /// <param name="newInitialState">The value.</param>
-        // ReSharper disable once UnusedParameter.Local
-        private void CheckInitialStateIsNotThisInstance(IState<TState, TEvent> newInitialState)
-        {
-            if (this == newInitialState)
-            {
-                throw new ArgumentException(StatesExceptionMessages.StateCannotBeTheInitialSubStateToItself(this.ToString()));
-            }
-        }
-
-        /// <summary>
-        /// Throws an exception if the new initial state is not a sub-state of this instance.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        private void CheckInitialStateIsASubState(IState<TState, TEvent> value)
-        {
-            if (value.SuperState != this)
-            {
-                throw new ArgumentException(StatesExceptionMessages.StateCannotBeTheInitialStateOfSuperStateBecauseItIsNotADirectSubState(value.ToString(), this.ToString()));
-            }
         }
     }
 }

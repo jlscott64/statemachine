@@ -85,7 +85,7 @@ namespace Appccelerate.StateMachine.Reports
                 "{0}{1}: initial state = {2} history type = {3}{4}",
                 indentation,
                 state,
-                state.GetInitialState() != null ? state.GetInitialState().ToString() : "None",
+                state.InitialStates.Any() ? state.InitialStates.First().ToString() : "None",
                 state.HistoryType,
                 Environment.NewLine);
             indentation += "    ";
@@ -93,13 +93,13 @@ namespace Appccelerate.StateMachine.Reports
             report.AppendFormat(
                 "{0}entry action: {1}{2}", 
                 indentation,
-                FormatHelper.ConvertToString(state.EntryActions.Select(action => action.Describe()), ", "), 
+                FormatHelper.ConvertToString(state.EntryActionDescriptions, ", "), 
                 Environment.NewLine);
             
             report.AppendFormat(
                 "{0}exit action: {1}{2}", 
                 indentation,
-                FormatHelper.ConvertToString(state.ExitActions.Select(action => action.Describe()), ", "), 
+                FormatHelper.ConvertToString(state.ExitActionDescriptions, ", "), 
                 Environment.NewLine);
         }
 
@@ -134,7 +134,7 @@ namespace Appccelerate.StateMachine.Reports
 
             indentation += "    ";
 
-            foreach (var transition in state.Transitions.GetTransitions())
+            foreach (var transition in state.GetTransitions())
             {
                 ReportTransition(report, indentation, transition);
             }

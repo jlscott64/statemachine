@@ -40,7 +40,7 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         protected INotifier<States, Events> Notifier { get; private set; }
 
         protected IState<States, Events> Source { get; set; }
-        
+
         protected IState<States, Events> Target { get; set; }
         
         protected ITransitionContext<States, Events> TransitionContext { get; set; }

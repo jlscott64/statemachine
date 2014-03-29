@@ -23,7 +23,7 @@ namespace Appccelerate.StateMachine
 
     public static class ListExtensionMethods
     {
-         public static void ForEach<T>(this IList<T> list, Action<T> action)
+         public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
          {
              foreach (T item in list)
              {

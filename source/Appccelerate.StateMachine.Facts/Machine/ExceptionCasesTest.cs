@@ -97,7 +97,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.TransitionDeclined += (sender, e) => transitionDeclined = true;
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 
@@ -123,7 +123,7 @@ namespace Appccelerate.StateMachine.Machine
                                                          });
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 
@@ -147,7 +147,7 @@ namespace Appccelerate.StateMachine.Machine
                                     });
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 
@@ -169,7 +169,7 @@ namespace Appccelerate.StateMachine.Machine
                 .On(StateMachine.Events.B).Goto(StateMachine.States.B);
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 

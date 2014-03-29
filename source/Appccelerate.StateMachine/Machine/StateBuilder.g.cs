@@ -16,13 +16,11 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using System.Management.Instrumentation;
-using System.Threading;
-
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
     using System.Linq;
+    using System.Threading;
 
     using Appccelerate.StateMachine.Machine.Events;
     using Appccelerate.StateMachine.Syntax;
@@ -79,7 +77,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             Ensure.ArgumentNotNull(action, "action");
 
-            this.state.EntryActions.Add(this.factory.CreateActionHolder(action));    
+            this.state.AddEntryAction(this.factory.CreateActionHolder(action));    
             
             return this;
         }
@@ -88,7 +86,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             Ensure.ArgumentNotNull(action, "action");
 
-            this.state.EntryActions.Add(this.factory.CreateActionHolder(action));
+            this.state.AddEntryAction(this.factory.CreateActionHolder(action));
 
             return this;
         }
@@ -104,14 +102,14 @@ namespace Appccelerate.StateMachine.Machine
         {
             Ensure.ArgumentNotNull(action, "action");
 
-            this.state.EntryActions.Add(this.factory.CreateActionHolder(action, parameter));
+            this.state.AddEntryAction(this.factory.CreateActionHolder(action, parameter));
 
             return this;
         }
 
         public IDoActionSyntax<TState, TEvent> ExecuteWhileActive(Action<CancellationToken> action)
         {
-            this.state.DoActions.Add(this.factory.CreateDoActionHolder(action));
+            this.state.AddDoAction(this.factory.CreateDoActionHolder(action));
             return this;
         }
 
@@ -124,7 +122,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             Ensure.ArgumentNotNull(action, "action");
 
-            this.state.ExitActions.Add(this.factory.CreateActionHolder(action));
+            this.state.AddExitAction(this.factory.CreateActionHolder(action));
             
             return this;
         }
@@ -133,7 +131,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             Ensure.ArgumentNotNull(action, "action");
 
-            this.state.ExitActions.Add(this.factory.CreateActionHolder(action));
+            this.state.AddExitAction(this.factory.CreateActionHolder(action));
 
             return this;
         }
@@ -147,7 +145,7 @@ namespace Appccelerate.StateMachine.Machine
         /// <returns>Exit action syntax.</returns>
         IExitActionSyntax<TState, TEvent> IExitActionSyntax<TState, TEvent>.ExecuteOnExitParametrized<T>(Action<T> action, T parameter)
         {
-            this.state.ExitActions.Add(this.factory.CreateActionHolder(action, parameter));
+            this.state.AddExitAction(this.factory.CreateActionHolder(action, parameter));
 
             return this;
         }
@@ -162,7 +160,7 @@ namespace Appccelerate.StateMachine.Machine
             this.createTransition = () =>
             {
                 this.currentTransition = this.factory.CreateTransition();
-                this.state.Transitions.Add(eventId, this.currentTransition);
+                this.state.AddTransition(eventId, this.currentTransition);
             };
 
             createTransition();
@@ -177,7 +175,7 @@ namespace Appccelerate.StateMachine.Machine
                 this.createTransition = () =>
                 {
                     this.currentTransition = this.factory.CreateTransition();
-                    this.state.CompletionTransitions.Add(this.currentTransition);
+                    this.state.AddCompletionTransition(this.currentTransition);
                 };
 
                 createTransition();
@@ -429,7 +427,7 @@ namespace Appccelerate.StateMachine.Machine
 
         private void CheckGuards()
         {
-            var transitionsByEvent = this.state.Transitions.GetTransitions().GroupBy(t => t.EventId).ToList();
+            var transitionsByEvent = this.state.GetTransitions().GroupBy(t => t.EventId).ToList();
             var withMoreThenOneTransitionWithoutGuard = transitionsByEvent.Where(g => g.Count(t => t.Guard == null) > 1);
 
             if (withMoreThenOneTransitionWithoutGuard.Any())

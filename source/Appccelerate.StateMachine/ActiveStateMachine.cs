@@ -79,42 +79,25 @@ namespace Appccelerate.StateMachine
             get { return this.worker != null && !this.worker.IsCompleted; }
         }
 
-        /// <summary>
-        /// Starts the state machine. Events will be processed.
-        /// If the state machine is not started then the events will be queued until the state machine is started.
-        /// Already queued events are processed.
-        /// </summary>
-        public override void Start()
+        protected override bool IsStopping
         {
-            this.CheckThatStateMachineIsInitialized();
+            get { return this.IsRunning && this.stopToken.IsCancellationRequested; }
+        }
 
-            if (this.IsRunning)
-            {
-                return;
-            }
-
+        protected override void DoStart()
+        {
             this.stopToken = new CancellationTokenSource();
             this.worker = Task.Factory.StartNew(
                 () => this.ProcessQueuedEvents(this.stopToken.Token),
                 this.stopToken.Token,
                 TaskCreationOptions.LongRunning,
                 TaskScheduler.Default);
-
-            this.ForEach(extension => extension.StartedStateMachine(this));
         }
 
-        /// <summary>
-        /// Stops the state machine. Events will be queued until the state machine is started.
-        /// </summary>
-        public override void Stop()
+        protected override void DoStop()
         {
-            if (!this.IsRunning || this.stopToken.IsCancellationRequested)
-            {
-                return;
-            }
-            
             this.stopToken.Cancel();
-            
+
             try
             {
                 this.worker.Wait();
@@ -127,8 +110,6 @@ namespace Appccelerate.StateMachine
                     throw;
                 }
             }
-
-            this.ForEach(extension => extension.StoppedStateMachine(this));
         }
 
         protected override void Execute()
@@ -138,8 +119,6 @@ namespace Appccelerate.StateMachine
 
         private void ProcessQueuedEvents(CancellationToken cancellationToken)
         {
-            this.InitializeStateMachineIfInitializationIsPending();
-
             var signals = new[] {this.eventActionQueued, cancellationToken.WaitHandle};
 
             while (!cancellationToken.IsCancellationRequested)

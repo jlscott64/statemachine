@@ -17,7 +17,6 @@
 //-------------------------------------------------------------------------------
 
 
-
 namespace Appccelerate.StateMachine
 {
     using System;
@@ -49,7 +48,7 @@ namespace Appccelerate.StateMachine
 
         public IInitialSubStateSyntax<TState> WithHistoryType(HistoryType historyType)
         {
-            this.superState.HistoryType = historyType;
+            this.superState.SetHistoryType(historyType);
 
             return this;
         }
@@ -73,9 +72,11 @@ namespace Appccelerate.StateMachine
         ISubStateSyntax<TState> WithSubState(IState<TState, TEvent> subState)
         {
             this.CheckThatStateHasNotAlreadyASuperState(subState);
+            CheckSuperStateIsNotItself(subState, this.superState);
 
-            subState.SuperState = this.superState;
-            subState.Region = this.region;
+            subState.SetSuperState(this.superState);
+            SetLevel(subState, this.superState.Level + 1);
+            subState.SetRegion(this.region);
             this.region.AddState(subState);
 
             return this;
@@ -91,6 +92,24 @@ namespace Appccelerate.StateMachine
                     ExceptionMessages.CannotSetStateAsASuperStateBecauseASuperStateIsAlreadySet(
                         this.superState.Id, 
                         subState));
+            }
+        }
+
+        private static void SetLevel(IState<TState, TEvent> state, int level)
+        {
+            state.SetLevel(level);
+            foreach (var subState in state.SubStates)
+            {
+                SetLevel(subState, level + 1);
+            }
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static void CheckSuperStateIsNotItself(IState<TState, TEvent> state, IState<TState, TEvent> newSuperState)
+        {
+            if (state == newSuperState)
+            {
+                throw new ArgumentException(StatesExceptionMessages.StateCannotBeItsOwnSuperState(state.ToString()));
             }
         }
     }

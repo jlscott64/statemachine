@@ -16,33 +16,28 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
     using System.Collections.Generic;
     using Appccelerate.StateMachine.Machine.States;
     using Appccelerate.StateMachine.Machine.ActionHolders;
-    
+    using Appccelerate.StateMachine.Machine.Transitions;
+
     /// <summary>
     /// Represents a state of the state machine.
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public interface IState<TState, TEvent> where TState : IComparable
-        where TEvent : IComparable
+    public interface IState<TState, TEvent>
+        where TState : IComparable
+        where TEvent : IComparable 
     {
         /// <summary>
         /// Gets the id of this state.
         /// </summary>
         /// <value>The id of this state.</value>
         TState Id { get; }
-
-        /// <summary>
-        /// DEPRECATED. Gets the initial sub-state. Null if this state has no sub-states.
-        /// </summary>
-        /// <returns>The initial sub-state. Null if this state has no sub-states.</returns>
-        IState<TState, TEvent> GetInitialState();
 
         /// <summary>
         /// Gets the initial sub-states. Empty if this state has no sub-states.
@@ -54,25 +49,19 @@ namespace Appccelerate.StateMachine.Machine
         /// Gets or sets the super-state. Null if this is a root state.
         /// </summary>
         /// <value>The super-state.</value>
-        IState<TState, TEvent> SuperState { get; set; }
+        IState<TState, TEvent> SuperState { get; }
 
         /// <summary>
         /// Gets or sets the region the state belongs to. Null if this is a simple state.
         /// </summary>
         /// <value>The region.</value>
-        IRegion<TState, TEvent> Region { get; set; }
+        IRegion<TState, TEvent> Region { get; }
 
         /// <summary>
         /// Gets the sub-states.
         /// </summary>
         /// <value>The sub-states.</value>
         IEnumerable<IState<TState, TEvent>> SubStates { get; }
-
-        /// <summary>
-        /// Gets the transitions.
-        /// </summary>
-        /// <value>The transitions.</value>
-        ITransitionDictionary<TState, TEvent> Transitions { get; }
 
         /// <summary>
         /// Gets the completion transitions.
@@ -84,7 +73,7 @@ namespace Appccelerate.StateMachine.Machine
         /// Gets or sets the level in the hierarchy.
         /// </summary>
         /// <value>The level in the hierarchy.</value>
-        int Level { get; set; }
+        int Level { get; }
 
         /// <summary>
         /// Gets the current active states of this state.
@@ -96,7 +85,7 @@ namespace Appccelerate.StateMachine.Machine
         /// Gets or sets the current active state of this state.
         /// </summary>
         /// <value>The current state of the active.</value>
-        IState<TState, TEvent> ActiveState { get; set; }
+        IState<TState, TEvent> ActiveState { get; }
 
         /// <summary>
         /// Gets the current active states of this state.
@@ -108,42 +97,31 @@ namespace Appccelerate.StateMachine.Machine
         /// Gets or sets the last active state of this state.
         /// </summary>
         /// <value>The last state of the active.</value>
-        IState<TState, TEvent> LastActiveState { get; set; }
+        IState<TState, TEvent> LastActiveState { get; }
 
         /// <summary>
-        /// Gets the entry actions.
+        /// Gets descriptions of the entry actions.
         /// </summary>
         /// <value>The entry actions.</value>
-        IList<IActionHolder> EntryActions { get; }
+        IEnumerable<string> EntryActionDescriptions { get; }
 
         /// <summary>
-        /// Gets the do actions.
+        /// Gets descriptions of the do actions.
         /// </summary>
         /// <value>The do actions.</value>
-        IList<IDoActionHolder> DoActions { get; }
+        IEnumerable<string> DoActionDescriptions { get; }
 
         /// <summary>
-        /// Gets the exit actions.
+        /// Gets descriptions of the exit actions.
         /// </summary>
         /// <value>The exit actions.</value>
-        IList<IActionHolder> ExitActions { get; }
+        IEnumerable<string> ExitActionDescriptions { get; }
 
         /// <summary>
         /// Gets or sets the history type of this state.
         /// </summary>
         /// <value>The type of the history.</value>
-        HistoryType HistoryType { get; set; }
-
-        /// <summary>
-        /// Give the event context, returns the transition to be fired by this state.
-        /// </summary>
-        /// <param name="context">The event context.</param>
-        /// <returns>The transition to be fired or null.</returns>
-        ITransition<TState, TEvent> GetTransitionToFire(ITransitionContext<TState, TEvent> context);
-
-        void Entry(ITransitionContext<TState, TEvent> context);
-
-        void Exit(ITransitionContext<TState, TEvent> context);
+        HistoryType HistoryType { get; }
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -153,13 +131,29 @@ namespace Appccelerate.StateMachine.Machine
         /// </returns>
         string ToString();
 
-        void AddSubState(IState<TState, TEvent> subState);
-
-        void AddInitialState(IState<TState, TEvent> initialState);
-
-        bool HasInitialState();
+        IEnumerable<TransitionInfo<TState, TEvent>> GetTransitions();
+        IEnumerable<ITransition<TState, TEvent>> GetTransitions(TEvent eventId);
+        void AddEntryAction(IActionHolder action);
+        void AddDoAction(IDoActionHolder action);
+        void AddExitAction(IActionHolder action);
+        void AddTransition(TEvent eventId, ITransition<TState, TEvent> transition);
+        void AddCompletionTransition(ITransition<TState, TEvent> transition);
+        void SetHistoryType(HistoryType value);
+        void SetSuperState(IState<TState, TEvent> value);
+        void SetId(TState value);
+        void SetLevel(int value);
         IRegion<TState, TEvent> AddRegion();
+        void SetRegion(IRegion<TState, TEvent> value);
+
 
         event EventHandler<StateCompletedEventArgs> Completed;
+        void Entry(ITransitionContext<TState, TEvent> context);
+        void Exit(ITransitionContext<TState, TEvent> context);
+
+        /// <summary>
+        /// DEPRICATED.  GET RID OF THIS
+        /// </summary>
+        /// <param name="value"></param>
+        void SetLastActiveState(IState<TState, TEvent> value);
     }
 }

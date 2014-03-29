@@ -171,7 +171,7 @@ namespace Appccelerate.StateMachine.Machine
         public void InitializeToTopLevelState()
         {
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
             
@@ -187,7 +187,7 @@ namespace Appccelerate.StateMachine.Machine
         public void InitializeToNestedState()
         {
             this.testee.Initialize(StateMachine.States.D1B);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             Assert.Equal(StateMachine.States.D1B, this.testee.CurrentStateId);
 
@@ -205,7 +205,7 @@ namespace Appccelerate.StateMachine.Machine
         public void InitializeStateWithSubStates()
         {
             this.testee.Initialize(StateMachine.States.D);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             Assert.Equal(StateMachine.States.D1A, this.testee.CurrentStateId);
 
@@ -242,7 +242,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Load(loader);
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             this.testee.Fire(StateMachine.Events.D); // should go to loaded last active state D2, not initial state D1
             this.ClearRecords();
             this.testee.Fire(StateMachine.Events.A);
@@ -260,7 +260,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransition()
         {
             this.testee.Initialize(StateMachine.States.E);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.ClearRecords();
 
@@ -282,7 +282,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionBetweenStatesWithSameSuperState()
         {
             this.testee.Initialize(StateMachine.States.B1);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.ClearRecords();
 
@@ -304,7 +304,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionBetweenStatesOnDifferentLevelsDownwards()
         {
             this.testee.Initialize(StateMachine.States.B2);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             
             this.ClearRecords();
             
@@ -329,7 +329,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionBetweenStatesOnDifferentLevelsUpwards()
         {
             this.testee.Initialize(StateMachine.States.D1B);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.ClearRecords();
 
@@ -353,7 +353,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionWithInitialSubState()
         {
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.ClearRecords();
 
@@ -375,7 +375,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionWithHistoryTypeNone()
         {
             this.testee.Initialize(StateMachine.States.B2);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             this.testee.Fire(StateMachine.Events.A);
 
             this.ClearRecords();
@@ -396,7 +396,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionWithHistoryTypeShallow()
         {
             this.testee.Initialize(StateMachine.States.C1B);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             this.testee.Fire(StateMachine.Events.A);
 
             this.ClearRecords();
@@ -420,7 +420,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionWithHistoryTypeDeep()
         {
             this.testee.Initialize(StateMachine.States.D1B);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             this.testee.Fire(StateMachine.Events.A);
 
             this.ClearRecords();
@@ -443,7 +443,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionHandledBySuperState()
         {
             this.testee.Initialize(StateMachine.States.C1B);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             
             this.ClearRecords();
 
@@ -465,7 +465,7 @@ namespace Appccelerate.StateMachine.Machine
         public void InternalTransition()
         {
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             this.ClearRecords();
 
             this.testee.Fire(StateMachine.Events.A);
@@ -477,7 +477,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteSelfTransition()
         {
             this.testee.Initialize(StateMachine.States.E);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             this.ClearRecords();
 
             this.testee.Fire(StateMachine.Events.E);
@@ -493,7 +493,7 @@ namespace Appccelerate.StateMachine.Machine
         public void ExecuteTransitionToNephew()
         {
             this.testee.Initialize(StateMachine.States.C1A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
             this.ClearRecords();
 
             this.testee.Fire(StateMachine.Events.C1B);

@@ -78,26 +78,13 @@ namespace Appccelerate.StateMachine
             get { return isRunning; }
         }
 
-        /// <summary>
-        /// Starts the state machine. Events will be processed.
-        /// If the state machine is not started then the events will be queued until the state machine is started.
-        /// Already queued events are processed.
-        /// </summary>
-        public override void Start()
+        protected override void DoStart()
         {
-            this.CheckThatStateMachineIsInitialized();
-
             this.isRunning = true;
-            
-            this.ForEach(extension => extension.StartedStateMachine(this));
-
             this.Execute();
         }
 
-        /// <summary>
-        /// Stops the state machine. Events will be queued until the state machine is started.
-        /// </summary>
-        public override void Stop()
+        protected override void DoStop()
         {
             this.isRunning = false;
 
@@ -127,8 +114,6 @@ namespace Appccelerate.StateMachine
 
         private void ProcessQueuedEvents()
         {
-            this.InitializeStateMachineIfInitializationIsPending();
-
             while (QueuedEventCount > 0)
             {
                 var eventAction = GetNextEventAction();

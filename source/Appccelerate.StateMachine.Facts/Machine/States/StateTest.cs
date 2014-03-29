@@ -31,7 +31,7 @@ namespace Appccelerate.StateMachine.Machine.States
 
     public class StateTest
     {
-        private readonly State<States, Events> testee;
+        private readonly IState<States, Events> testee;
 
         public StateTest()
         {
@@ -45,7 +45,7 @@ namespace Appccelerate.StateMachine.Machine.States
         [Fact]
         public void HierarchyWhenDefiningAStateAsItsOwnSuperStateThenAnExceptionIsThrown()
         {
-            Action action = () => this.testee.SuperState = this.testee;
+            Action action = () => this.testee.SetSuperState(this.testee);
 
             action
                 .ShouldThrow<ArgumentException>().WithMessage(ExceptionMessages.StateCannotBeItsOwnSuperState(this.testee.ToString()));
@@ -61,7 +61,7 @@ namespace Appccelerate.StateMachine.Machine.States
             var region = this.testee.AddRegion();
             region.AddState(subState);
 
-            this.testee.Level = Level;
+            this.testee.SetLevel(Level);
 
             subState.Level
                 .Should().Be(Level + 1);

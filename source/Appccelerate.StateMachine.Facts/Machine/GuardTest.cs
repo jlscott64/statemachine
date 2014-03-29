@@ -36,7 +36,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee = new StateMachine<StateMachine.States, StateMachine.Events>();
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
         }
 
         [Fact]

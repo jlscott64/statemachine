@@ -59,7 +59,7 @@ namespace Appccelerate.StateMachine.Machine
                                                   };
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.C);
 
@@ -84,7 +84,7 @@ namespace Appccelerate.StateMachine.Machine
                     .Execute((int argument) => { action2Argument = argument; });
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B, EventArgument);
 
@@ -106,7 +106,7 @@ namespace Appccelerate.StateMachine.Machine
                     .Execute(() => { action2Executed = true; });
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B, EventArgument);
 
@@ -127,7 +127,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.In(StateMachine.States.A)
                 .On(StateMachine.Events.A).Execute(() => executed = true);
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.A);
 
@@ -144,7 +144,7 @@ namespace Appccelerate.StateMachine.Machine
                 .On(StateMachine.Events.B).Execute(() => executed = true);
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B);
 
@@ -161,7 +161,7 @@ namespace Appccelerate.StateMachine.Machine
                 .On(StateMachine.Events.B).Execute<int>(v => value = v);
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B, ExpectedValue);
 

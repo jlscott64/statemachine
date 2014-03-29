@@ -47,7 +47,7 @@ namespace Appccelerate.StateMachine.Machine.Events
 
         IGuardHolder CreateGuardHolder<T>(Func<T, bool> guard);
         
-        ITransitionContext<TState, TEvent> CreateTransitionContext(IState<TState, TEvent> state, Missable<TEvent> eventId, object eventArgument, INotifier<TState, TEvent> notifier);
+        ITransitionContext<TState, TEvent> CreateTransitionContext(IState<TState, TEvent> state, Missable<TEvent> eventId, object eventArgument);
 
         StateMachineInitializer<TState, TEvent> CreateStateMachineInitializer(IState<TState, TEvent> initialState, ITransitionContext<TState, TEvent> context);
         IDoActionHolder CreateDoActionHolder(Action<CancellationToken> action);

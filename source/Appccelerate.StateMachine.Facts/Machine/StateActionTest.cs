@@ -44,7 +44,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Initialize(StateMachine.States.A);
 
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             Assert.True(entered, "entry action was not executed.");
         }
@@ -61,7 +61,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Initialize(StateMachine.States.A);
 
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             entered1.Should().BeTrue("entry action was not executed.");
             entered2.Should().BeTrue("entry action was not executed.");
@@ -77,7 +77,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Initialize(StateMachine.States.A);
 
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             Assert.Equal(3, i);
         }
@@ -92,7 +92,7 @@ namespace Appccelerate.StateMachine.Machine
                 .On(StateMachine.Events.B).Goto(StateMachine.States.B);
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B);
 
@@ -111,7 +111,7 @@ namespace Appccelerate.StateMachine.Machine
                 .On(StateMachine.Events.B).Goto(StateMachine.States.B);
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B);
 
@@ -129,7 +129,7 @@ namespace Appccelerate.StateMachine.Machine
                 .On(StateMachine.Events.B).Goto(StateMachine.States.B);
 
             this.testee.Initialize(StateMachine.States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(StateMachine.Events.B);
 

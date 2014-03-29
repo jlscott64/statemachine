@@ -63,9 +63,11 @@ namespace Appccelerate.StateMachine
         ISubStateSyntax<TState> WithSubState(IState<TState, TEvent> subState)
         {
             this.CheckThatStateHasNotAlreadyASuperState(subState);
+            CheckSuperStateIsNotItself(subState, this.owingState);
 
-            subState.SuperState = this.owingState;
-            subState.Region = this.region;
+            subState.SetSuperState(this.owingState);
+            SetLevel(subState, this.owingState.Level + 1);
+            subState.SetRegion(this.region);
             this.region.AddState(subState);
 
             return this;
@@ -81,6 +83,24 @@ namespace Appccelerate.StateMachine
                     ExceptionMessages.CannotSetStateAsASuperStateBecauseASuperStateIsAlreadySet(
                         this.owingState.Id, 
                         subState));
+            }
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static void CheckSuperStateIsNotItself(IState<TState, TEvent> state, IState<TState, TEvent> newSuperState)
+        {
+            if (state == newSuperState)
+            {
+                throw new ArgumentException(StatesExceptionMessages.StateCannotBeItsOwnSuperState(state.ToString()));
+            }
+        }
+
+        private static void SetLevel(IState<TState, TEvent> state, int level)
+        {
+            state.SetLevel(level);
+            foreach (var subState in state.SubStates)
+            {
+                SetLevel(subState, level + 1);
             }
         }
     }

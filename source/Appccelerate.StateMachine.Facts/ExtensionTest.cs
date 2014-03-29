@@ -71,7 +71,7 @@ namespace Appccelerate.StateMachine
             const States InitialState = States.A;
 
             this.testee.Initialize(InitialState);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             A.CallTo(() => this.extension.EnteringInitialState(this.testee, InitialState))
                 .MustHaveHappened();
@@ -92,7 +92,7 @@ namespace Appccelerate.StateMachine
             this.overrideExtension.OverriddenState = States.B;
 
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             States? actualState = this.testee.CurrentStateId;
 
@@ -107,7 +107,7 @@ namespace Appccelerate.StateMachine
         {
             this.testee.In(States.A).On(Events.B).Goto(States.B);
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             Events eventId = Events.B;
             var eventArgument = new object();
@@ -138,7 +138,7 @@ namespace Appccelerate.StateMachine
                 .On(Events.C).Goto(States.C);
        
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             const Events NewEvent = Events.C;
             var newEventArgument = new object();
@@ -166,7 +166,7 @@ namespace Appccelerate.StateMachine
 
             this.testee.In(States.A).On(Events.B).If(() => { throw exception; }).Execute(() => { });
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(Events.B);
 
@@ -198,7 +198,7 @@ namespace Appccelerate.StateMachine
 
             this.testee.In(States.A).On(Events.B).If(() => { throw exception; }).Execute(() => { });
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.overrideExtension.OverriddenException = overriddenException;
 
@@ -224,7 +224,7 @@ namespace Appccelerate.StateMachine
             
             this.testee.In(States.A).On(Events.B).Execute(() => { throw exception; });
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(Events.B);
 
@@ -256,7 +256,7 @@ namespace Appccelerate.StateMachine
 
             this.testee.In(States.A).On(Events.B).Execute(() => { throw exception; });
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.overrideExtension.OverriddenException = overriddenException;
 
@@ -283,7 +283,7 @@ namespace Appccelerate.StateMachine
             this.testee.In(States.A).On(Events.B).Goto(States.B);
             this.testee.In(States.B).ExecuteOnEntry(() => { throw exception; });
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(Events.B);
 
@@ -316,7 +316,7 @@ namespace Appccelerate.StateMachine
             this.testee.In(States.A).On(Events.B).Goto(States.B);
             this.testee.In(States.B).ExecuteOnEntry(() => { throw exception; });
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.overrideExtension.OverriddenException = overriddenException;
 
@@ -345,7 +345,7 @@ namespace Appccelerate.StateMachine
                 .On(Events.B).Goto(States.B);
                 
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.testee.Fire(Events.B);
 
@@ -379,7 +379,7 @@ namespace Appccelerate.StateMachine
                 .ExecuteOnExit(() => { throw exception; })
                 .On(Events.B).Goto(States.B);
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             this.overrideExtension.OverriddenException = overriddenException;
 
@@ -405,7 +405,7 @@ namespace Appccelerate.StateMachine
 
             this.testee.In(States.A).ExecuteOnEntry(() => { throw exception; });
             this.testee.Initialize(States.A);
-            this.testee.EnterInitialState();
+            this.testee.Start();
 
             A.CallTo(() => this.extension.HandlingEntryActionException(
                     this.testee,

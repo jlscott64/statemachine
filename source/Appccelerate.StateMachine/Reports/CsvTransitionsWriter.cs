@@ -72,7 +72,7 @@ namespace Appccelerate.StateMachine.Reports
 
         private void ReportTransitionsOfState(IState<TState, TEvent> state)
         {
-            foreach (var transition in state.Transitions.GetTransitions())
+            foreach (var transition in state.GetTransitions())
             {
                 this.ReportTransition(transition);
             }

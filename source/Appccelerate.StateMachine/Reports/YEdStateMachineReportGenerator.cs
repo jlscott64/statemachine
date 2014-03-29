@@ -119,15 +119,15 @@ namespace Appccelerate.StateMachine.Reports
 
         private static string CreateExitActionsDescription(IState<TState, TEvent> state)
         {
-            return state.ExitActions.Any()
-                       ? (state.ExitActions.Aggregate(Environment.NewLine + "(", (aggregate, action) => (aggregate.Length > 3 ? aggregate + ", " : aggregate) + action.Describe()) + ")")
+            return state.ExitActionDescriptions.Any()
+                       ? (state.ExitActionDescriptions.Aggregate(Environment.NewLine + "(", (aggregate, description) => (aggregate.Length > 3 ? aggregate + ", " : aggregate) + description) + ")")
                        : string.Empty;
         }
 
         private static string CreateEntryActionDescription(IState<TState, TEvent> state)
         {
-            return state.EntryActions.Any() 
-                       ? (state.EntryActions.Aggregate("(", (aggregate, action) => (aggregate.Length > 1 ? aggregate + ", " : aggregate) + action.Describe()) + ")" + Environment.NewLine) 
+            return state.EntryActionDescriptions.Any()
+                       ? (state.EntryActionDescriptions.Aggregate("(", (aggregate, description) => (aggregate.Length > 1 ? aggregate + ", " : aggregate) + description) + ")" + Environment.NewLine) 
                        : string.Empty;
         }
 
@@ -145,7 +145,7 @@ namespace Appccelerate.StateMachine.Reports
         {
             foreach (var state in states)
             {
-                foreach (var transition in state.Transitions.GetTransitions())
+                foreach (var transition in state.GetTransitions())
                 {
                     this.AddEdge(graph, transition);
                 }
@@ -243,7 +243,8 @@ namespace Appccelerate.StateMachine.Reports
 
         private bool DetermineWhetherThisIsAnInitialState(IState<TState, TEvent> state)
         {
-            return (this.initialStateId.IsInitialized && state.Id.Equals(this.initialStateId.Value)) || (state.SuperState != null && state.SuperState.GetInitialState() == state);
+            return (this.initialStateId.IsInitialized && state.Id.Equals(this.initialStateId.Value))
+                || (state.SuperState != null && state.SuperState.InitialStates.Contains(state));
         }
     }
 }
