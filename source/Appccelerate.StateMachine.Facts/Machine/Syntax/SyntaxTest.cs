@@ -81,7 +81,7 @@ namespace Appccelerate.StateMachine.Machine.Syntax
         [Fact]
         public void DefineHierarchySyntax()
         {
-            var stateMachine = new StateMachine<int, int>();
+            var stateMachine = new TestStateMachine<int, int>();
             
             stateMachine.DefineHierarchyOn(1)
                 .WithHistoryType(HistoryType.Deep)

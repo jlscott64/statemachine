@@ -31,7 +31,7 @@ namespace Appccelerate.StateMachine.Machine
 
         public StateActionTest()
         {
-            this.testee = new StateMachine<StateMachine.States, StateMachine.Events>();
+            this.testee = new TestStateMachine<StateMachine.States, StateMachine.Events>();
         }
 
         [Fact]

@@ -37,7 +37,7 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         public TransitionsTest()
         {
-            this.testee = new StateMachine<StateMachine.States, StateMachine.Events>();
+            this.testee = new TestStateMachine<StateMachine.States, StateMachine.Events>();
         }
 
         /// <summary>

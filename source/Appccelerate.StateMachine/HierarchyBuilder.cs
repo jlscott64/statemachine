@@ -16,7 +16,6 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-
 namespace Appccelerate.StateMachine
 {
     using System;
@@ -32,10 +31,9 @@ namespace Appccelerate.StateMachine
         where TState : IComparable
         where TEvent : IComparable
     {
-        private readonly IStateDictionary<TState, TEvent> states;
-
         private readonly IState<TState, TEvent> superState;
         private readonly IRegion<TState, TEvent> region;
+        private readonly IStateDictionary<TState, TEvent> states;
 
         public HierarchyBuilder(IStateDictionary<TState, TEvent> states, TState superStateId)
         {
@@ -69,17 +67,13 @@ namespace Appccelerate.StateMachine
             return WithSubState(subState);
         }
 
-        ISubStateSyntax<TState> WithSubState(IState<TState, TEvent> subState)
+        // ReSharper disable once UnusedParameter.Local
+        private static void CheckSuperStateIsNotItself(IState<TState, TEvent> state, IState<TState, TEvent> newSuperState)
         {
-            this.CheckThatStateHasNotAlreadyASuperState(subState);
-            CheckSuperStateIsNotItself(subState, this.superState);
-
-            subState.SetSuperState(this.superState);
-            SetLevel(subState, this.superState.Level + 1);
-            subState.SetRegion(this.region);
-            this.region.AddState(subState);
-
-            return this;
+            if (state == newSuperState)
+            {
+                throw new ArgumentException(StatesExceptionMessages.StateCannotBeItsOwnSuperState(state.ToString()));
+            }
         }
 
         private void CheckThatStateHasNotAlreadyASuperState(IState<TState, TEvent> subState)
@@ -104,13 +98,17 @@ namespace Appccelerate.StateMachine
             }
         }
 
-        // ReSharper disable once UnusedParameter.Local
-        private static void CheckSuperStateIsNotItself(IState<TState, TEvent> state, IState<TState, TEvent> newSuperState)
+        ISubStateSyntax<TState> WithSubState(IState<TState, TEvent> subState)
         {
-            if (state == newSuperState)
-            {
-                throw new ArgumentException(StatesExceptionMessages.StateCannotBeItsOwnSuperState(state.ToString()));
-            }
+            this.CheckThatStateHasNotAlreadyASuperState(subState);
+            CheckSuperStateIsNotItself(subState, this.superState);
+
+            subState.SetSuperState(this.superState);
+            SetLevel(subState, this.superState.Level + 1);
+            subState.SetRegion(this.region);
+            this.region.AddState(subState);
+
+            return this;
         }
     }
 }

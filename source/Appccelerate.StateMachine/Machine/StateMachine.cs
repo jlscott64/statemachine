@@ -27,20 +27,20 @@ using Appccelerate.StateMachine.Syntax;
 
 namespace Appccelerate.StateMachine.Machine
 {
-    public class StateMachine<TState, TEvent> : IStateMachineInformation<TState, TEvent>, 
+    public abstract class StateMachine<TState, TEvent> : IStateMachineInformation<TState, TEvent>, 
                 INotifier<TState, TEvent>, 
                 IExtensionHost<TState, TEvent> 
         where TState : IComparable
         where TEvent : IComparable
     {
-        private readonly string name;
         private readonly IList<IState<TState, TEvent>> currentStates = new List<IState<TState, TEvent>>();
+        private readonly ConcurrentQueue<Action> eventActionQueue;
         private readonly List<IExtension<TState, TEvent>> extensions;
         private readonly IFactory<TState, TEvent> factory;
-        private readonly Initializable<TState> initialStateId;
-        private readonly IStateDictionary<TState, TEvent> states;
-        private readonly ConcurrentQueue<Action> eventActionQueue;
         private readonly ConcurrentQueue<Action> highPriortyEventActionQueue;
+        private readonly Initializable<TState> initialStateId;
+        private readonly string name;
+        private readonly IStateDictionary<TState, TEvent> states;
 
         /// <summary>
         /// Whether the state machine is initialized.
@@ -48,17 +48,17 @@ namespace Appccelerate.StateMachine.Machine
         private bool initialized;
 
 
-        public StateMachine()
+        protected StateMachine()
             : this(default(string))
         {
         }
 
-        public StateMachine(string name)
+        protected StateMachine(string name)
             : this(name, null)
         {
         }
 
-        public StateMachine(string name, IFactory<TState, TEvent> factory)
+        protected StateMachine(string name, IFactory<TState, TEvent> factory)
         {
             this.name = name;
             this.factory = factory ?? new StandardFactory<TState, TEvent>(this, this, this);
@@ -91,10 +91,7 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         public event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted;
 
-        public virtual bool IsRunning
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public abstract bool IsRunning { get; }
 
         /// <summary>
         /// Define the behavior of a state.
@@ -125,7 +122,7 @@ namespace Appccelerate.StateMachine.Machine
         /// <returns>Syntax to build hierarchy.</returns>
         public IInitialSubStateSyntax<TState> DefineRegionOn(TState stateId)
         {
-            return new RegionBuilder<TState, TEvent>(this.states, stateId);
+            return new HierarchyBuilder<TState, TEvent>(this.states, stateId);
         }
 
         /// <summary>
@@ -210,16 +207,11 @@ namespace Appccelerate.StateMachine.Machine
             }
 
             this.DoStart();
+            this.Execute();
 
             this.ForEach(extension => extension.StartedStateMachine(this));
         }
 
-
-        protected virtual void DoStart()
-        {
-            // TODO: JLS: Should be abstract
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// Stops the state machine. Events will be queued until the state machine is started.
@@ -234,11 +226,6 @@ namespace Appccelerate.StateMachine.Machine
             DoStop();
 
             this.ForEach(extension => extension.StoppedStateMachine(this));
-        }
-
-        protected virtual void DoStop()
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -313,30 +300,14 @@ namespace Appccelerate.StateMachine.Machine
             this.initialized = true;
         }
 
-        private void LoadCurrentState(IStateMachineLoader<TState> stateMachineLoader)
-        {
-            Initializable<TState> loadedCurrentState = stateMachineLoader.LoadCurrentState();
-            if (loadedCurrentState.IsInitialized) currentStates.Add(this.states[loadedCurrentState.Value]);
-        }
-
-        private void LoadHistoryStates(IStateMachineLoader<TState> stateMachineLoader)
-        {
-            IDictionary<TState, TState> historyStates = stateMachineLoader.LoadHistoryStates();
-            foreach (KeyValuePair<TState, TState> historyState in historyStates)
-            {
-                var superState = this.states[historyState.Key];
-                IState<TState, TEvent> lastActiveState = this.states[historyState.Value];
-
-                if (!superState.SubStates.Contains(lastActiveState))
-                {
-                    throw new InvalidOperationException(ExceptionMessages.CannotSetALastActiveStateThatIsNotASubState);
-                }
-
-                superState.SetLastActiveState(lastActiveState);
-            }
-        }
-
         public IState<TState, TEvent> LastActiveState { get; set; }
+
+        protected int QueuedEventCount
+        {
+            get { return this.eventActionQueue.Count + this.highPriortyEventActionQueue.Count; }
+        }
+
+        protected virtual bool IsStopping { get { return false; } }
 
         /// <summary>
         /// Executes the specified <paramref name="action"/> for all extensions.
@@ -371,10 +342,9 @@ namespace Appccelerate.StateMachine.Machine
         {
             get {
                 this.AssertThatStateMachineIsInitialized();
-                this.AssertThatStateMachineHasEnteredInitialState();
 
                 // ReSharper disable once PossibleNullReferenceException
-                return this.currentStates.FirstOrDefault().Id; 
+                return this.currentStates.Select(cs => cs.Id).Concat(new[] {this.initialStateId.Value}).First(); 
             }
         }
 
@@ -396,12 +366,21 @@ namespace Appccelerate.StateMachine.Machine
             get { return this.name; }
         }
 
-        protected int QueuedEventCount
+        private void AssertThatStateMachineIsInitialized()
         {
-            get { return this.eventActionQueue.Count + this.highPriortyEventActionQueue.Count; }
+            if (!this.initialized)
+            {
+                throw new InvalidOperationException(ExceptionMessages.StateMachineNotInitialized);
+            }
         }
 
-        protected virtual bool IsStopping { get { return false; } }
+        private void AssertThatStateMachineIsNotAlreadyInitialized()
+        {
+            if (this.initialized)
+            {
+                throw new InvalidOperationException(ExceptionMessages.StateMachineIsAlreadyInitialized);
+            }
+        }
 
         void ChangeState(IState<TState, TEvent> oldState, IState<TState, TEvent> newState)
         {
@@ -424,29 +403,45 @@ namespace Appccelerate.StateMachine.Machine
                 this.ChangeState(oldState, newState);
         }
 
-        private void AssertThatStateMachineIsNotAlreadyInitialized()
+        protected void DoFire(TEvent eventId, object eventArgument)
         {
-            if (this.initialized)
+            this.AssertThatStateMachineIsInitialized();
+
+            this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
+
+            var fired = false;
+            foreach (var pair in GetTransitionsToFire(eventId, eventArgument))
             {
-                throw new InvalidOperationException(ExceptionMessages.StateMachineIsAlreadyInitialized);
+                var transition = pair.Item1;
+                var context = pair.Item2;
+
+                DoFire(transition, context);
+
+                fired = true;
+
+                this.extensions.ForEach(extension => extension.FiredEvent(this, context));
+            }
+
+            if (!fired)
+            {
+                var missableEventId = new Missable<TEvent>(eventId);
+
+                foreach (var context in this.currentStates.Select(state => this.factory.CreateTransitionContext(state, missableEventId, eventArgument)))
+                {
+                    this.OnTransitionDeclined(context);
+                }
             }
         }
 
-        private void AssertThatStateMachineHasEnteredInitialState()
+        void DoFire(ITransition<TState, TEvent> transition, ITransitionContext<TState, TEvent> context)
         {
-            if (this.currentStates.Any())
-            {
-                throw new InvalidOperationException(ExceptionMessages.StateMachineHasNotYetEnteredInitialState);
-            }
+            var result = transition.Fire(context);
+            this.ChangeStates(context.SourceState, result.NewStates);
+            this.OnTransitionCompleted(context, result.NewStates.First().Id);
         }
 
-        private void AssertThatStateMachineIsInitialized()
-        {
-            if (!this.initialized)
-            {
-                throw new InvalidOperationException(ExceptionMessages.StateMachineNotInitialized);
-            }
-        }
+        protected abstract void DoStart();
+        protected abstract void DoStop();
 
         /// <summary>
         /// Enters the initial state that was previously set with <see cref="Initialize(TState)"/>.
@@ -463,6 +458,54 @@ namespace Appccelerate.StateMachine.Machine
             this.ChangeStates(null, initializer.EnterInitialStates());
 
             this.extensions.ForEach(extension => extension.EnteredInitialState(this, stateId, context));
+        }
+
+        protected abstract void Execute();
+
+        protected Action GetNextEventAction()
+        {
+            Action eventAction;
+
+            // Check the high priority queue first
+            if (this.highPriortyEventActionQueue.TryDequeue(out eventAction))
+            {
+                return eventAction;
+            }
+
+            // Then look for a non-priority
+            if (this.eventActionQueue.TryDequeue(out eventAction))
+            {
+                return eventAction;
+            }
+
+            return null;
+        }
+
+        ITransition<TState, TEvent> GetTransitionToFire(IState<TState, TEvent> state, ITransitionContext<TState, TEvent> context)
+        {
+            ITransition<TState, TEvent> result = null;
+
+            var transitionsForEvent = state.GetTransitions(context.EventId.Value);
+
+            foreach (ITransition<TState, TEvent> transition in transitionsForEvent)
+            {
+                if (transition.WillFire(context))
+                {
+                    result = transition;
+                    break;
+                }
+                else
+                {
+                    var transition1 = transition;
+
+                    this.ForEach(extension => extension.SkippedTransition(
+                        this,
+                        transition1,
+                        context));
+                }
+            }
+
+            return result;
         }
 
         private IEnumerable<Tuple<ITransition<TState, TEvent>, ITransitionContext<TState, TEvent>>> GetTransitionsToFire(TEvent eventId, object eventArgument)
@@ -521,31 +564,27 @@ namespace Appccelerate.StateMachine.Machine
             }
         }
 
-        ITransition<TState, TEvent> GetTransitionToFire(IState<TState, TEvent> state, ITransitionContext<TState, TEvent> context)
+        private void LoadCurrentState(IStateMachineLoader<TState> stateMachineLoader)
         {
-            ITransition<TState, TEvent> result = null;
+            Initializable<TState> loadedCurrentState = stateMachineLoader.LoadCurrentState();
+            if (loadedCurrentState.IsInitialized) currentStates.Add(this.states[loadedCurrentState.Value]);
+        }
 
-            var transitionsForEvent = state.GetTransitions(context.EventId.Value);
-
-            foreach (ITransition<TState, TEvent> transition in transitionsForEvent)
+        private void LoadHistoryStates(IStateMachineLoader<TState> stateMachineLoader)
+        {
+            IDictionary<TState, TState> historyStates = stateMachineLoader.LoadHistoryStates();
+            foreach (KeyValuePair<TState, TState> historyState in historyStates)
             {
-                if (transition.WillFire(context))
-                {
-                    result = transition;
-                    break;
-                }
-                else
-                {
-                    var transition1 = transition;
+                var superState = this.states[historyState.Key];
+                IState<TState, TEvent> lastActiveState = this.states[historyState.Value];
 
-                    this.ForEach(extension => extension.SkippedTransition(
-                        this,
-                        transition1,
-                        context));
+                if (!superState.SubStates.Contains(lastActiveState))
+                {
+                    throw new InvalidOperationException(ExceptionMessages.CannotSetALastActiveStateThatIsNotASubState);
                 }
+
+                superState.SetLastActiveState(lastActiveState);
             }
-
-            return result;
         }
 
         void OnStateCompleted(object sender, StateCompletedEventArgs args)
@@ -581,6 +620,18 @@ namespace Appccelerate.StateMachine.Machine
             this.RaiseEvent(this.TransitionDeclined, new TransitionEventArgs<TState, TEvent>(transitionContext), transitionContext, true);
         }
 
+        protected void PumpEvents()
+        {
+            Action eventAction;
+
+            while (this.IsRunning
+                   && !this.IsStopping
+                   && (eventAction = this.GetNextEventAction()) != null)
+            {
+                eventAction();
+            }
+        }
+
         private void RaiseEvent<T>(EventHandler<T> eventHandler, T arguments, ITransitionContext<TState, TEvent> context, bool raiseEventOnException) where T : EventArgs
         {
             try
@@ -612,43 +663,6 @@ namespace Appccelerate.StateMachine.Machine
             }
         }
 
-        protected void DoFire(TEvent eventId, object eventArgument)
-        {
-            this.AssertThatStateMachineIsInitialized();
-
-            this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
-
-            var fired = false;
-            foreach (var pair in GetTransitionsToFire(eventId, eventArgument))
-            {
-                var transition = pair.Item1;
-                var context = pair.Item2;
-
-                DoFire(transition, context);
-
-                fired = true;
-
-                this.extensions.ForEach(extension => extension.FiredEvent(this, context));
-            }
-
-            if (!fired)
-            {
-                var missableEventId = new Missable<TEvent>(eventId);
-
-                foreach (var context in this.currentStates.Select(state => this.factory.CreateTransitionContext(state, missableEventId, eventArgument)))
-                {
-                    this.OnTransitionDeclined(context);
-                }
-            }
-        }
-
-        void DoFire(ITransition<TState, TEvent> transition, ITransitionContext<TState, TEvent> context)
-        {
-            var result = transition.Fire(context);
-            this.ChangeStates(context.SourceState, result.NewStates);
-            this.OnTransitionCompleted(context, result.NewStates.First().Id);
-        }
-
         /// <summary>
         /// Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
         /// </summary>
@@ -658,30 +672,6 @@ namespace Appccelerate.StateMachine.Machine
         public override string ToString()
         {
             return this.Name ?? this.GetType().FullName;
-        }
-
-        protected Action GetNextEventAction()
-        {
-            Action eventAction;
-
-            // Check the high priority queue first
-            if (this.highPriortyEventActionQueue.TryDequeue(out eventAction))
-            {
-                return eventAction;
-            }
-
-            // Then look for a non-priority
-            if (this.eventActionQueue.TryDequeue(out eventAction))
-            {
-                return eventAction;
-            }
-
-            return null;
-        }
-
-        protected virtual void Execute()
-        {
-            throw new NotImplementedException();
         }
     }
 }

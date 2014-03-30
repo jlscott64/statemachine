@@ -42,14 +42,6 @@ namespace Appccelerate.StateMachine.Machine.States
                 A.Fake<IExtensionHost<States, Events>>());
         }
 
-        [Fact]
-        public void HierarchyWhenDefiningAStateAsItsOwnSuperStateThenAnExceptionIsThrown()
-        {
-            Action action = () => this.testee.SetSuperState(this.testee);
-
-            action
-                .ShouldThrow<ArgumentException>().WithMessage(ExceptionMessages.StateCannotBeItsOwnSuperState(this.testee.ToString()));
-        }
 
         [Fact]
         public void HierarchyWhenSettingLevelThenTheLevelOfAllChildrenIsUpdated()

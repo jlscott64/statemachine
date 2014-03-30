@@ -74,7 +74,6 @@
     <Compile Include="Machine\States\Region.cs" />
     <Compile Include="Machine\States\IRegion.cs" />
     <Compile Include="Machine\Transitions\Traversal.cs" />
-    <Compile Include="RegionBuilder.cs" />
     <Compile Include="Machine\IExtension.cs" />
     <Compile Include="Machine\IExtensionHost.cs" />
     <Compile Include="Machine\Initializable.cs" />

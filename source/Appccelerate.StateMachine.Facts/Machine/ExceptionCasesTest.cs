@@ -46,7 +46,7 @@ namespace Appccelerate.StateMachine.Machine
 
         public ExceptionCasesTest()
         {
-            this.testee = new StateMachine<StateMachine.States, StateMachine.Events>();
+            this.testee = new TestStateMachine<StateMachine.States, StateMachine.Events>();
 
             this.testee.TransitionExceptionThrown += (sender, eventArgs) =>
                                                          {

@@ -15,6 +15,7 @@
 //   limitations under the License.
 // </copyright>
 //-------------------------------------------------------------------------------
+
 namespace Appccelerate.StateMachine.Reports
 {
     using Appccelerate.StateMachine.Machine;
@@ -29,7 +30,7 @@ namespace Appccelerate.StateMachine.Reports
 
         public StateMachineReportGeneratorTest()
         {
-            this.machine = new StateMachine<States, Events>("Test Machine");
+            this.machine = new TestStateMachine<States, Events>("Test Machine");
         }
 
         [Fact]

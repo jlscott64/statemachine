@@ -40,7 +40,7 @@ namespace Appccelerate.StateMachine
         /// </summary>
         public ExtensionTest()
         {
-            this.testee = new StateMachine<States, Events>();
+            this.testee = new TestStateMachine<States, Events>();
 
             this.extension = A.Fake<IExtension<States, Events>>();
             this.overrideExtension = new OverrideExtension();

@@ -96,6 +96,11 @@ namespace Appccelerate.StateMachine
         /// </summary>
         protected override void Execute()
         {
+            ProcessQueuedEvents();
+        }
+
+        private void ProcessQueuedEvents()
+        {
             if (this.executing || !this.IsRunning)
             {
                 return;
@@ -104,20 +109,11 @@ namespace Appccelerate.StateMachine
             this.executing = true;
             try
             {
-                this.ProcessQueuedEvents();
+                this.PumpEvents();
             }
             finally
             {
                 this.executing = false;
-            }
-        }
-
-        private void ProcessQueuedEvents()
-        {
-            while (QueuedEventCount > 0)
-            {
-                var eventAction = GetNextEventAction();
-                eventAction();
             }
         }
     }

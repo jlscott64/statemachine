@@ -33,7 +33,7 @@ namespace Appccelerate.StateMachine.Machine
 
         public GuardTest()
         {
-            this.testee = new StateMachine<StateMachine.States, StateMachine.Events>();
+            this.testee = new TestStateMachine<StateMachine.States, StateMachine.Events>();
 
             this.testee.Initialize(StateMachine.States.A);
             this.testee.Start();

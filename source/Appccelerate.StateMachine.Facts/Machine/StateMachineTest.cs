@@ -53,7 +53,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.records = new List<Record>();
 
-            this.testee = new StateMachine<StateMachine.States, StateMachine.Events>();
+            this.testee = new TestStateMachine<StateMachine.States, StateMachine.Events>();
 
             this.testee.DefineHierarchyOn(StateMachine.States.B)
                 .WithHistoryType(HistoryType.None)

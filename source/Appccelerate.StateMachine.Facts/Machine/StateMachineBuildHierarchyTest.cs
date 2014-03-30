@@ -37,7 +37,7 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         public StateMachineBuildHierarchyTest()
         {
-            this.testee = new StateMachine<StateMachine.States, StateMachine.Events>();
+            this.testee = new TestStateMachine<StateMachine.States, StateMachine.Events>();
         }
 
         /// <summary>

@@ -123,14 +123,8 @@ namespace Appccelerate.StateMachine
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                Action eventAction = GetNextEventAction();
+                PumpEvents();
 
-                while (eventAction != null && !cancellationToken.IsCancellationRequested)
-                {
-                    eventAction();
-                    eventAction = GetNextEventAction();
-                }
-                
                 WaitHandle.WaitAny(signals);
             }
         }

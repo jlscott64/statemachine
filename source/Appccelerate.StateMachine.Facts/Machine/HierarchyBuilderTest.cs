@@ -41,6 +41,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.superState = A.Fake<IState<string, int>>();
             A.CallTo(() => this.superState.Id).Returns(SuperState);
+
             this.states = A.Fake<IStateDictionary<string, int>>();
             A.CallTo(() => this.states[SuperState]).Returns(this.superState);
 
@@ -55,8 +56,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.testee.WithHistoryType(historyType);
 
-            this.superState.HistoryType
-                .Should().Be(historyType);
+            A.CallTo(() => this.superState.SetHistoryType(historyType)).MustHaveHappened();
         }
 
         [Fact(Skip="JLS Broke")]
@@ -99,6 +99,16 @@ namespace Appccelerate.StateMachine.Machine
                 .WithMessage(ExceptionMessages.CannotSetStateAsASuperStateBecauseASuperStateIsAlreadySet(
                     SuperState,
                     subState));
+        }
+
+        [Fact]
+        public void ThrowsExceptionIfSuperStateAddedAsItsOwnSubState()
+        {
+            A.CallTo(() => this.superState.SuperState).Returns(null);
+
+            this.testee.Invoking(t => t.WithSubState(this.superState.Id))
+                .ShouldThrow<ArgumentException>()
+                .WithMessage(ExceptionMessages.StateCannotBeItsOwnSuperState(this.superState.ToString()));
         }
     }
 }

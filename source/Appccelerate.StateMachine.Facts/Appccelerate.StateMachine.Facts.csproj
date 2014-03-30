@@ -93,6 +93,7 @@
     <Compile Include="StateMachineAssertionsExtensionMethods.cs" />
     <Compile Include="StateMachineTestBase.cs" />
     <Compile Include="States.cs" />
+    <Compile Include="TestStateMachine.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
