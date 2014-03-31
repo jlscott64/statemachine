@@ -68,7 +68,6 @@
     <Compile Include="Machine\StateActionTest.cs" />
     <Compile Include="Machine\StateMachineBuildHierarchyTest.cs" />
     <Compile Include="Machine\StateMachineTest.cs" />
-    <Compile Include="Machine\States\StateTest.cs" />
     <Compile Include="Machine\Syntax\SyntaxTest.cs" />
     <Compile Include="Machine\TransitionsTest.cs" />
     <Compile Include="Machine\Transitions\ExceptionThrowingActionTransitionTest.cs" />
@@ -101,6 +100,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Machine\States\" />
     <Folder Include="Reports\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

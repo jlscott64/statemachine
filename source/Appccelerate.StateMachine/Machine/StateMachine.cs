@@ -16,6 +16,9 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+
+using System.Text;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -35,15 +38,15 @@ namespace Appccelerate.StateMachine.Machine
         private readonly string name;
 
         private readonly IFactory<TState, TEvent> factory;
-        private readonly Executer<TState, TEvent> executer;
+        private readonly Executer executer;
 
         private readonly IStateDictionary<TState, TEvent> states;
         private readonly IList<IState<TState, TEvent>> currentStates;
+        private readonly Initializable<TState> initialStateId;
 
-        private TState initialStateId;
         private bool initialized;
 
-        public StateMachine(string name, IFactory<TState, TEvent> factory, Executer<TState, TEvent> executer)
+        public StateMachine(string name, IFactory<TState, TEvent> factory, Executer executer)
         {
             this.name = name;
 
@@ -52,7 +55,28 @@ namespace Appccelerate.StateMachine.Machine
 
             this.states = new StateDictionary<TState, TEvent>(this.factory);
             this.currentStates = new List<IState<TState, TEvent>>();
+            this.initialStateId = new Initializable<TState>();
         }
+
+        /// <summary>
+        /// Occurs when no transition could be executed.
+        /// </summary>
+        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined;
+
+        /// <summary>
+        /// Occurs when an exception was thrown inside a transition of the state machine.
+        /// </summary>
+        public event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown;
+
+        /// <summary>
+        /// Occurs when a transition begins.
+        /// </summary>
+        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin;
+
+        /// <summary>
+        /// Occurs when a transition completed.
+        /// </summary>
+        public event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted;
 
         public bool IsRunning
         {
@@ -107,9 +131,11 @@ namespace Appccelerate.StateMachine.Machine
         /// <param name="eventArgument">The event argument.</param>
         public virtual void Fire(TEvent eventId, object eventArgument)
         {
+            this.AssertThatStateMachineIsInitialized();
+
             executer.Enqueue(() => this.DoFire(eventId, eventArgument));
 
-            this.executer.Execute();
+            this.Execute();
         }
 
         /// <summary>
@@ -128,9 +154,11 @@ namespace Appccelerate.StateMachine.Machine
         /// <param name="eventArgument">The event argument.</param>
         public virtual void FirePriority(TEvent eventId, object eventArgument)
         {
+            this.AssertThatStateMachineIsInitialized();
+
             executer.PriorityEnqueue(() => this.DoFire(eventId, eventArgument));
 
-            this.executer.Execute();
+            this.Execute();
         }
 
         /// <summary>
@@ -141,7 +169,7 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.AssertThatStateMachineIsNotAlreadyInitialized();
 
-            this.initialStateId = this.states[initialState].Id;
+            this.initialStateId.Value = this.states[initialState].Id;
             executer.PriorityEnqueue(this.EnterInitialState);
 
             this.initialized = true;
@@ -156,7 +184,10 @@ namespace Appccelerate.StateMachine.Machine
 
         public void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception)
         {
+            RethrowExceptionIfNoHandlerRegistered(exception, this.TransitionExceptionThrown);
 
+            this.RaiseEvent(this.TransitionExceptionThrown,
+                new TransitionExceptionEventArgs<TState, TEvent>(context, exception), context, false);
         }
 
         /// <summary>
@@ -214,19 +245,41 @@ namespace Appccelerate.StateMachine.Machine
 
         protected void DoFire(TEvent eventId, object eventArgument)
         {
+            this.AssertThatStateMachineIsInitialized();
+
+            var fired = false;
             foreach (var pair in GetTransitionsToFire(eventId, eventArgument))
             {
                 var transition = pair.Item1;
                 var context = pair.Item2;
 
                 DoFire(transition, context);
+
+                fired = true;
+            }
+
+            if (!fired)
+            {
+                var missableEventId = new Missable<TEvent>(eventId);
+
+                foreach (
+                    var context in
+                        this.currentStates.Select(
+                            state => this.factory.CreateTransitionContext(state, missableEventId, eventArgument)))
+                {
+                    this.OnTransitionDeclined(context);
+                }
             }
         }
 
         private void DoFire(ITransition<TState, TEvent> transition, ITransitionContext<TState, TEvent> context)
         {
+            this.OnTransitionBegin(context);
+
             var result = transition.Fire(context);
             this.ChangeStates(context.SourceState, result.NewStates);
+
+            this.OnTransitionCompleted(context, result.NewStates.First().Id);
         }
 
         /// <summary>
@@ -234,9 +287,17 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         private void EnterInitialState()
         {
+            this.AssertThatStateMachineIsInitialized();
+            var stateId = this.initialStateId.Value;
+
             var context = this.factory.CreateTransitionContext(null, new Missable<TEvent>(), Missing.Value);
-            var initializer = this.factory.CreateStateMachineInitializer(this.states[this.initialStateId], context);
+            var initializer = this.factory.CreateStateMachineInitializer(this.states[stateId], context);
             this.ChangeStates(null, initializer.EnterInitialStates());
+        }
+
+        protected void Execute()
+        {
+            executer.Execute();
         }
 
         /// <summary>
@@ -247,7 +308,9 @@ namespace Appccelerate.StateMachine.Machine
         public void Start()
         {
             this.AssertThatStateMachineIsInitialized();
-            executer.Start();
+            if (executer.Start())
+            {
+            }
         }
 
         /// <summary>
@@ -255,7 +318,9 @@ namespace Appccelerate.StateMachine.Machine
         /// </summary>
         public void Stop()
         {
-            executer.Stop();
+            if (executer.Stop())
+            {
+            }
         }
 
         private ITransition<TState, TEvent> GetTransitionToFire(IState<TState, TEvent> state,
@@ -346,13 +411,128 @@ namespace Appccelerate.StateMachine.Machine
             {
                 executer.PriorityEnqueue(() => this.DoFire(transition, context));
 
-                this.executer.Execute();
+                this.Execute();
             }
         }
 
+        /// <summary>
+        /// Fires the <see cref="TransitionBegin"/> event.
+        /// </summary>
+        /// <param name="transitionContext">The transition context.</param>
+        private void OnTransitionBegin(ITransitionContext<TState, TEvent> transitionContext)
+        {
+            this.RaiseEvent(this.TransitionBegin, new TransitionEventArgs<TState, TEvent>(transitionContext),
+                transitionContext, true);
+        }
+
+        /// <summary>
+        /// Fires the <see cref="TransitionCompleted"/> event.
+        /// </summary>
+        /// <param name="transitionContext">The transition event context.</param>
+        /// <param name="currentStateId"></param>
+        private void OnTransitionCompleted(ITransitionContext<TState, TEvent> transitionContext, TState currentStateId)
+        {
+            this.RaiseEvent(this.TransitionCompleted,
+                new TransitionCompletedEventArgs<TState, TEvent>(currentStateId, transitionContext), transitionContext,
+                true);
+        }
+
+        /// <summary>
+        /// Fires the <see cref="TransitionDeclined"/> event.
+        /// </summary>
+        /// <param name="transitionContext">The transition event context.</param>
+        private void OnTransitionDeclined(ITransitionContext<TState, TEvent> transitionContext)
+        {
+            this.RaiseEvent(this.TransitionDeclined, new TransitionEventArgs<TState, TEvent>(transitionContext),
+                transitionContext, true);
+        }
+
+        private void RaiseEvent<T>(EventHandler<T> eventHandler, T arguments, ITransitionContext<TState, TEvent> context,
+            bool raiseEventOnException) where T : EventArgs
+        {
+            try
+            {
+                if (eventHandler == null)
+                {
+                    return;
+                }
+
+                eventHandler(this, arguments);
+            }
+            catch (Exception e)
+            {
+                if (!raiseEventOnException)
+                {
+                    throw;
+                }
+
+                ((INotifier<TState, TEvent>) this).OnExceptionThrown(context, e);
+            }
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static void RethrowExceptionIfNoHandlerRegistered<T>(Exception exception,
+            EventHandler<T> exceptionHandler) where T : EventArgs
+        {
+            if (exceptionHandler == null)
+            {
+                throw new StateMachineException("No exception listener is registered. Exception: ", exception);
+            }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.String"/> that represents the current <see cref="T:System.Object"/>.
+        /// </returns>
         public override string ToString()
         {
             return this.Name ?? this.GetType().FullName;
+        }
+
+        public static string NameOrDefault(Type containerType, string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                return name;
+            }
+
+            var stringBuilder = new StringBuilder();
+            BuildTypeName(containerType, stringBuilder);
+
+            return stringBuilder.ToString();
+        }
+
+        private static void BuildTypeName(Type type, StringBuilder stringBuilder)
+        {   
+            if (type.IsGenericTypeDefinition)
+            {
+                var genericTypeName = type.FullName;
+                var length = genericTypeName.LastIndexOf('`');
+                length = length != -1 ? length : genericTypeName.Length;
+                stringBuilder.Append(genericTypeName.Substring(0, length));
+            }
+            else if (type.IsGenericType)
+            {
+                BuildTypeName(type.GetGenericTypeDefinition(), stringBuilder);
+                stringBuilder.Append("<");
+
+                var delimiter = "";
+                foreach (var typeParameter in type.GetGenericArguments())
+                {
+                    stringBuilder.Append(delimiter);
+                    delimiter = ",";
+
+                    BuildTypeName(typeParameter, stringBuilder);
+                }
+
+                stringBuilder.Append(">");
+            }
+            else
+            {
+                stringBuilder.Append(type.FullName);
+            }
         }
     }
 }

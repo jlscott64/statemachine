@@ -5,7 +5,7 @@ using Appccelerate.StateMachine.Machine;
 
 namespace Appccelerate.StateMachine
 {
-    public class ActiveExecuter<TState, TEvent> : Executer<TState, TEvent>
+    public class ActiveExecuter<TState, TEvent> : Executer
         where TState : IComparable
         where TEvent : IComparable
     {

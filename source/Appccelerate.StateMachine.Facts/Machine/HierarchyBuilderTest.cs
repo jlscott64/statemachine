@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using Appccelerate.StateMachine.Machine.States;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
@@ -36,11 +38,15 @@ namespace Appccelerate.StateMachine.Machine
         private readonly IStateDictionary<string, int> states;
 
         private readonly IState<string, int> superState;
+        private readonly IRegion<string, int> region;
 
         public HierarchyBuilderTest()
         {
+            this.region = A.Fake<IRegion<string, int>>();
+
             this.superState = A.Fake<IState<string, int>>();
             A.CallTo(() => this.superState.Id).Returns(SuperState);
+            A.CallTo(() => this.superState.AddRegion()).Returns(this.region).Once();
 
             this.states = A.Fake<IStateDictionary<string, int>>();
             A.CallTo(() => this.states[SuperState]).Returns(this.superState);
@@ -59,31 +65,33 @@ namespace Appccelerate.StateMachine.Machine
             A.CallTo(() => this.superState.SetHistoryType(historyType)).MustHaveHappened();
         }
 
-        [Fact(Skip="JLS Broke")]
-        public void SetsInitialSubStateOfSuperState()
+        [Fact]
+        public void SetsInitialStateOfRegion()
         {
             const string SubState = "SubState";
             var subState = A.Fake<IState<string, int>>();
-            //subState.SuperState = null;
+
+            A.CallTo(() => subState.SuperState).Returns(null);
             A.CallTo(() => this.states[SubState]).Returns(subState);
 
             this.testee.WithInitialSubState(SubState);
 
-            //A.CallTo(() => this.superState.SetInitialState(subState)).MustHaveHappened();
+            A.CallTo(() => this.region.SetInitialState(subState)).MustHaveHappened();
         }
 
-        [Fact(Skip = "JLS Broke")]
-        public void AddsSubStatesToSuperState()
+        [Fact]
+        public void AddsSubStatesToRegion()
         {
             const string AnotherSubState = "AnotherSubState";
             var anotherSubState = A.Fake<IState<string, int>>();
-            //anotherSubState.SuperState = null;
+
+            A.CallTo(() => anotherSubState.SuperState).Returns(null);
             A.CallTo(() => this.states[AnotherSubState]).Returns(anotherSubState);
 
             this.testee
                 .WithSubState(AnotherSubState);
 
-            //A.CallTo(() => this.superState.AddSubState(anotherSubState)).MustHaveHappened();
+            A.CallTo(() => this.region.AddState(anotherSubState)).MustHaveHappened();
         }
 
         [Fact]
@@ -109,6 +117,23 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Invoking(t => t.WithSubState(this.superState.Id))
                 .ShouldThrow<ArgumentException>()
                 .WithMessage(ExceptionMessages.StateCannotBeItsOwnSuperState(this.superState.ToString()));
+        }
+
+        [Fact]
+        public void HierarchyWhenSettingLevelThenTheLevelOfAllChildrenIsUpdated()
+        {
+            const int Level = 2;
+            A.CallTo(() => this.superState.Level).Returns(Level);
+
+            const string SubState = "SubState";
+            var subState = A.Fake<IState<string, int>>();
+
+            A.CallTo(() => subState.SuperState).Returns(null);
+            A.CallTo(() => this.states[SubState]).Returns(subState);
+
+            this.testee.WithSubState(SubState);
+
+            A.CallTo(() => subState.SetLevel(Level + 1)).MustHaveHappened();
         }
     }
 }

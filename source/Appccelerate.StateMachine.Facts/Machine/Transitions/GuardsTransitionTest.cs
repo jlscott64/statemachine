@@ -35,36 +35,21 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         }
 
         [Fact]
-        public void Executes_WhenGuardIsMet()
+        public void WillFire_WhenGuardIsMet()
         {
             var guard = Builder<States, Events>.CreateGuardHolder().ReturningTrue().Build();
             this.Testee.Guard = guard;
 
-            this.Testee.Fire(this.TransitionContext);
-
-            A.CallTo(() => this.Target.Entry(this.TransitionContext)).MustHaveHappened(Repeated.Exactly.Once);
+            this.Testee.WillFire(this.TransitionContext).Should().BeTrue();
         }
 
         [Fact]
-        public void DoesNotExecute_WhenGuardIsNotMet()
+        public void WillNotFire_WhenGuardIsNotMet()
         {
             var guard = Builder<States, Events>.CreateGuardHolder().ReturningFalse().Build();
             this.Testee.Guard = guard;
 
-            this.Testee.Fire(this.TransitionContext);
-
-            A.CallTo(() => this.Target.Entry(this.TransitionContext)).MustNotHaveHappened();
-        }
-
-        [Fact]
-        public void ReturnsNotFiredTransitionResult_WhenGuardIsNotMet()
-        {
-            var guard = Builder<States, Events>.CreateGuardHolder().ReturningFalse().Build();
-            this.Testee.Guard = guard;
-
-            ITransitionResult<States, Events> result = this.Testee.Fire(this.TransitionContext);
-
-            result.Should().BeNotFiredTransitionResult<States, Events>();
+            this.Testee.WillFire(this.TransitionContext).Should().BeFalse();
         }
     }
 }

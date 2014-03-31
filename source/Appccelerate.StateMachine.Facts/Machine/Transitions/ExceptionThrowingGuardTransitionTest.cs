@@ -20,12 +20,11 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
     using FakeItEasy;
-    using FluentAssertions;
     using Xunit;
 
     public class ExceptionThrowingGuardTransitionTest : TransitionTestBase
     {
-        private Exception exception;
+        private readonly Exception exception;
 
         public ExceptionThrowingGuardTransitionTest()
         {
@@ -43,17 +42,9 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         }
 
         [Fact]
-        public void ReturnsNotFiredTransitionResult()
-        {
-            ITransitionResult<States, Events> result = this.Testee.Fire(this.TransitionContext);
-
-            result.Fired.Should().BeFalse();
-        }
-
-        [Fact]
         public void NotifiesException()
         {
-            this.Testee.Fire(this.TransitionContext);
+            this.Testee.WillFire(this.TransitionContext);
 
             A.CallTo(() => this.Notifier.OnExceptionThrown(this.TransitionContext, this.exception)).MustHaveHappened();
         }

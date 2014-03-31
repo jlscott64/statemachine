@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace Appccelerate.StateMachine.Machine
 {
-    public abstract class Executer<TState, TEvent> where TState : IComparable where TEvent : IComparable
+    public abstract class Executer
     {
         private readonly ConcurrentQueue<Action> eventActionQueue;
         private readonly ConcurrentQueue<Action> highPriortyEventActionQueue;

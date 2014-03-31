@@ -55,6 +55,11 @@ namespace Appccelerate.StateMachine.Machine
 
             bool declined = false;
 
+            this.testee.TransitionDeclined += (sender, e) =>
+                                                  {
+                                                      declined = true;
+                                                  };
+
             this.testee.Initialize(StateMachine.States.A);
             this.testee.Start();
 

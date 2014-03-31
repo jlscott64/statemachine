@@ -3,7 +3,7 @@ using Appccelerate.StateMachine.Machine;
 
 namespace Appccelerate.StateMachine
 {
-    public class PassiveExecuter<TState, TEvent> : Executer<TState, TEvent>
+    public class PassiveExecuter<TState, TEvent> : Executer
         where TState : IComparable where TEvent : IComparable
     {
         /// <summary>
