@@ -40,6 +40,7 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ActiveExecuter.cs" />
     <Compile Include="ActiveStateMachine.cs" />
     <Compile Include="EnumerableExtensionMethods.cs" />
     <Compile Include="EventInformation.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="Machine\Events\TransitionEventArgs.cs" />
     <Compile Include="Machine\Events\TransitionExceptionEventArgs.cs" />
     <Compile Include="Machine\ExceptionMessages.cs" />
+    <Compile Include="Machine\Executer.cs" />
     <Compile Include="Machine\GuardHolders\ArgumentGuardHolder.cs" />
     <Compile Include="Machine\GuardHolders\ArgumentLessGuardHolder.cs" />
     <Compile Include="Machine\GuardHolders\GuardHoldersExceptionMessages.cs" />
@@ -99,6 +101,7 @@
     <Compile Include="Machine\Transitions\TransitionInfo.cs" />
     <Compile Include="Machine\Transitions\TransitionResult.cs" />
     <Compile Include="Machine\Transitions\TransitionsExceptionMessages.cs" />
+    <Compile Include="PassiveExecuter.cs" />
     <Compile Include="PassiveStateMachine.cs" />
     <Compile Include="Persistence\IStateMachineLoader.cs" />
     <Compile Include="Persistence\IStateMachineSaver.cs" />

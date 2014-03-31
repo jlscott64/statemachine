@@ -16,8 +16,6 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
-using System.Linq;
-
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using System;
@@ -65,8 +63,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         public ITransitionResult<TState, TEvent> Fire(ITransitionContext<TState, TEvent> context)
         {
             Ensure.ArgumentNotNull(context, "context");
-
-            this.notifier.OnTransitionBegin(context);
 
             IEnumerable<IState<TState, TEvent>> newStates;
 

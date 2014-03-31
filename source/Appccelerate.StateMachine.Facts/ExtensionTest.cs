@@ -31,7 +31,7 @@ namespace Appccelerate.StateMachine
     /// </summary>
     public class ExtensionTest
     {
-        private readonly StateMachine<States, Events> testee;
+        private readonly TestStateMachine<States, Events> testee;
         private readonly IExtension<States, Events> extension;
         private readonly OverrideExtension overrideExtension;
 

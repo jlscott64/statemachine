@@ -34,7 +34,7 @@ namespace Appccelerate.StateMachine.Machine
     /// </summary>
     public class ExceptionCasesTest
     {
-        private readonly StateMachine<StateMachine.States, StateMachine.Events> testee;
+        private readonly TestStateMachine<StateMachine.States, StateMachine.Events> testee;
 
         private StateMachine.States? recordedStateId;
 

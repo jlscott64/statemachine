@@ -30,7 +30,7 @@ namespace Appccelerate.StateMachine.Machine
         /// <summary>
         /// Object under test.
         /// </summary>
-        private readonly StateMachine<StateMachine.States, StateMachine.Events> testee;
+        private readonly TestStateMachine<StateMachine.States, StateMachine.Events> testee;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TransitionsTest"/> class.

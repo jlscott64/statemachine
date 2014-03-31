@@ -16,7 +16,10 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
 using Appccelerate.StateMachine.Machine;
+using Appccelerate.StateMachine.Persistence;
+using Appccelerate.StateMachine.Syntax;
 
 namespace Appccelerate.StateMachine
 {
@@ -30,17 +33,11 @@ namespace Appccelerate.StateMachine
     /// </summary>
     /// <typeparam name="TState">The type of the state.</typeparam>
     /// <typeparam name="TEvent">The type of the event.</typeparam>
-    public class PassiveStateMachine<TState, TEvent> : StateMachine<TState, TEvent>, IStateMachine<TState, TEvent>
+    public class PassiveStateMachine<TState, TEvent> : IStateMachine<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
-        /// <summary>
-        /// Whether this state machine is executing an event. Allows that events can be added while executing.
-        /// </summary>
-        private bool executing;
-
-
-        bool isRunning;
+        private readonly StateMachine<TState, TEvent> stateMachine;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PassiveStateMachine&lt;TState, TEvent&gt;"/> class.
@@ -65,56 +62,119 @@ namespace Appccelerate.StateMachine
         /// <param name="name">The name of the state machine. Used in log messages.</param>
         /// <param name="factory">The factory used to build up internals. Pass your own factory to change the behavior of the state machine.</param>
         public PassiveStateMachine(string name, IFactory<TState, TEvent> factory)
-            :base(name, factory)
         {
+            var passiveExecuter = new PassiveExecuter<TState, TEvent>();
+            name = StateMachine<TState, TEvent>.NameOrDefault(this.GetType(), name);
+            stateMachine = new StateMachine<TState, TEvent>(name ?? this.GetType().FullName, factory, passiveExecuter);
         }
 
-        /// <summary>
-        /// Gets a value indicating whether this instance is running. The state machine is running if if was started and not yet stopped.
-        /// </summary>
-        /// <value><c>true</c> if this instance is running; otherwise, <c>false</c>.</value>
-        public override bool IsRunning
+        public override string ToString()
         {
-            get { return isRunning; }
+            return stateMachine.Name;
         }
 
-        protected override void DoStart()
+        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined
         {
-            this.isRunning = true;
-            this.Execute();
+            add { stateMachine.TransitionDeclined += value; }
+            remove { stateMachine.TransitionDeclined -= value; }
         }
 
-        protected override void DoStop()
+        public event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown
         {
-            this.isRunning = false;
-
-            this.ForEach(extension => extension.StoppedStateMachine(this));
+            add { stateMachine.TransitionExceptionThrown += value; }
+            remove { stateMachine.TransitionExceptionThrown -= value; }
         }
 
-        /// <summary>
-        /// Executes all queued events.
-        /// </summary>
-        protected override void Execute()
+        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin
         {
-            ProcessQueuedEvents();
+            add { stateMachine.TransitionBegin += value; }
+            remove { stateMachine.TransitionBegin -= value; }
         }
 
-        private void ProcessQueuedEvents()
+        public event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted
         {
-            if (this.executing || !this.IsRunning)
-            {
-                return;
-            }
+            add { stateMachine.TransitionCompleted += value; }
+            remove { stateMachine.TransitionCompleted -= value; }
+        }
 
-            this.executing = true;
-            try
-            {
-                this.PumpEvents();
-            }
-            finally
-            {
-                this.executing = false;
-            }
+        public bool IsRunning
+        {
+            get { return stateMachine.IsRunning; }
+        }
+
+        public IEntryActionSyntax<TState, TEvent> In(TState state)
+        {
+            return stateMachine.In(state);
+        }
+
+        public IHierarchySyntax<TState> DefineHierarchyOn(TState superStateId)
+        {
+            return stateMachine.DefineHierarchyOn(superStateId);
+        }
+
+        public IInitialSubStateSyntax<TState> DefineRegionOn(TState stateId)
+        {
+            return stateMachine.DefineRegionOn(stateId);
+        }
+
+        public void Fire(TEvent eventId)
+        {
+            stateMachine.Fire(eventId);
+        }
+
+        public void Fire(TEvent eventId, object eventArgument)
+        {
+            stateMachine.Fire(eventId, eventArgument);
+        }
+
+        public void FirePriority(TEvent eventId)
+        {
+            stateMachine.FirePriority(eventId);
+        }
+
+        public void FirePriority(TEvent eventId, object eventArgument)
+        {
+            stateMachine.FirePriority(eventId, eventArgument);
+        }
+
+        public void Initialize(TState initialState)
+        {
+            stateMachine.Initialize(initialState);
+        }
+
+        public void Start()
+        {
+            stateMachine.Start();
+        }
+
+        public void Stop()
+        {
+            stateMachine.Stop();
+        }
+
+        public void AddExtension(IExtension<TState, TEvent> extension)
+        {
+            stateMachine.AddExtension(extension);
+        }
+
+        public void ClearExtensions()
+        {
+            stateMachine.ClearExtensions();
+        }
+
+        public void Report(IStateMachineReport<TState, TEvent> reportGenerator)
+        {
+            stateMachine.Report(reportGenerator);
+        }
+
+        public void Save(IStateMachineSaver<TState> stateMachineSaver)
+        {
+            stateMachine.Save(stateMachineSaver);
+        }
+
+        public void Load(IStateMachineLoader<TState> stateMachineLoader)
+        {
+            stateMachine.Load(stateMachineLoader);
         }
     }
 }

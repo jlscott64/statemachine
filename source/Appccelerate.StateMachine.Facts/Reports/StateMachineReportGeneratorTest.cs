@@ -26,7 +26,7 @@ namespace Appccelerate.StateMachine.Reports
 
     public class StateMachineReportGeneratorTest
     {
-        private readonly StateMachine<States, Events> machine;
+        private readonly TestStateMachine<States, Events> machine;
 
         public StateMachineReportGeneratorTest()
         {

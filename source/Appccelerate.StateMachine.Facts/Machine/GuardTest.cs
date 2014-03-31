@@ -29,7 +29,7 @@ namespace Appccelerate.StateMachine.Machine
     {
         private const string EventArgument = "test";
 
-        private readonly StateMachine<StateMachine.States, StateMachine.Events> testee;
+        private readonly TestStateMachine<StateMachine.States, StateMachine.Events> testee;
 
         public GuardTest()
         {

@@ -27,7 +27,7 @@ namespace Appccelerate.StateMachine.Machine
     /// </summary>
     public class StateActionTest
     {
-        private readonly StateMachine<StateMachine.States, StateMachine.Events> testee;
+        private readonly TestStateMachine<StateMachine.States, StateMachine.Events> testee;
 
         public StateActionTest()
         {
