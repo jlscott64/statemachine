@@ -63,7 +63,7 @@ namespace Appccelerate.StateMachine
         /// <param name="factory">The factory used to build up internals. Pass your own factory to change the behavior of the state machine.</param>
         public PassiveStateMachine(string name, IFactory<TState, TEvent> factory)
         {
-            var passiveExecuter = new PassiveExecuter<TState, TEvent>();
+            var passiveExecuter = new PassiveExecuter();
             name = StateMachine<TState, TEvent>.NameOrDefault(this.GetType(), name);
             stateMachine = new StateMachine<TState, TEvent>(name ?? this.GetType().FullName, factory, passiveExecuter);
         }

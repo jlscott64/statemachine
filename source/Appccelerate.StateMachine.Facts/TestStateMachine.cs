@@ -21,7 +21,7 @@ namespace Appccelerate.StateMachine
 
         public TestStateMachine(string name)
         {
-            var passiveExecuter = new PassiveExecuter<TState, TEvent>();
+            var passiveExecuter = new PassiveExecuter();
             stateMachine = new StateMachine<TState, TEvent>(name ?? this.GetType().FullName, null, passiveExecuter);
         }
 

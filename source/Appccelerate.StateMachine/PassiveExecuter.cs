@@ -1,10 +1,8 @@
-using System;
 using Appccelerate.StateMachine.Machine;
 
 namespace Appccelerate.StateMachine
 {
-    public class PassiveExecuter<TState, TEvent> : Executer
-        where TState : IComparable where TEvent : IComparable
+    public class PassiveExecuter : Executer
     {
         /// <summary>
         /// Whether this state machine is executing an event. Allows that events can be added while executing.

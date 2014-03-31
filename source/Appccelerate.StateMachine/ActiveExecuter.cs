@@ -5,9 +5,7 @@ using Appccelerate.StateMachine.Machine;
 
 namespace Appccelerate.StateMachine
 {
-    public class ActiveExecuter<TState, TEvent> : Executer
-        where TState : IComparable
-        where TEvent : IComparable
+    public class ActiveExecuter : Executer
     {
         private readonly AutoResetEvent eventActionQueued;
         private CancellationTokenSource stopToken;

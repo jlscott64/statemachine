@@ -46,11 +46,11 @@ namespace Appccelerate.StateMachine.Machine
 
         public IEnumerable<IState<TState, TEvent>> EnterInitialStates()
         {
-            IState<TState, TEvent> sourceState = null;
-            var targetState = this.initialState;
-
             var traversal = new Traversal<TState, TEvent>();
-            return traversal.ExecuteTraversal(context, sourceState, targetState, null);
+            return traversal.ExecuteTraversal(context, 
+                sourceState: null, 
+                targetState: this.initialState, 
+                transitionAction: null);
         }
     }
 }
