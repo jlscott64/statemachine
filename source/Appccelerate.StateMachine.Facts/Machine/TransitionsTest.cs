@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using FluentAssertions;
@@ -64,7 +66,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Fire(StateMachine.Events.C);
 
             Assert.True(declined, "Declined event was not fired");
-            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStates.First());
         }
 
         /// <summary>
@@ -132,7 +134,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Fire(StateMachine.Events.A);
 
             Assert.True(executed, "internal transition was not executed.");
-            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStates.First());
         }
 
         [Fact]

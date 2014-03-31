@@ -24,50 +24,6 @@ namespace Appccelerate.StateMachine
     using global::Machine.Specifications;
 
     [Subject("Passive state machine creation")]
-    public class When_instantiating_a_passive_state_machine_without_constructor_arguments
-    {
-        private static PassiveStateMachine<string, int> machine;
-        private static StateMachineNameReporter reporter;
-
-        Establish context = () =>
-            {
-                machine = new PassiveStateMachine<string, int>();
-
-                reporter = new StateMachineNameReporter();
-            };
-
-        Because of = () =>
-            machine.Report(reporter);
-
-        It should_use_default_name_for_state_machine = () =>
-            reporter.StateMachineName
-                .Should().Be("Appccelerate.StateMachine.PassiveStateMachine<System.String,System.Int32>");
-    }
-
-    [Subject("Passive state machine creation")]
-    public class When_instantiating_a_passive_state_machine_with_custom_name
-    {
-        const string Name = "custom name";
-
-        private static PassiveStateMachine<string, int> machine;
-        private static StateMachineNameReporter reporter;
-
-        Establish context = () =>
-        {
-            machine = new PassiveStateMachine<string, int>(Name);
-
-            reporter = new StateMachineNameReporter();
-        };
-
-        Because of = () =>
-            machine.Report(reporter);
-
-        It should_use_custom_name_for_state_machine = () =>
-            reporter.StateMachineName
-                .Should().Be(Name);
-    }
-
-    [Subject("Passive state machine creation")]
     public class When_instantiating_a_passive_state_machine_with_custom_factory
     {
         const string Name = "custom name";

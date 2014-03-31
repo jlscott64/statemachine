@@ -19,7 +19,6 @@
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
     using Appccelerate.StateMachine.Machine.ActionHolders;
-    using FakeItEasy;
     using FluentAssertions;
     using Xunit;
 
@@ -43,20 +42,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
             this.Testee.Fire(this.TransitionContext);
 
             executed.Should().BeTrue("actions should be executed");
-        }
-
-        [Fact]
-        public void TellsExtensionsAboutExecutedTransition()
-        {
-            var extension = A.Fake<IExtension<States, Events>>();
-            this.ExtensionHost.Extension = extension;
-
-            this.Testee.Fire(this.TransitionContext);
-
-            A.CallTo(() => extension.ExecutedTransition(
-                this.StateMachineInformation,
-                A<ITransition<States, Events>>.That.Matches(t => t.Source == this.Source && t.Target == this.Target),
-                this.TransitionContext));
         }
     }
 }

@@ -16,13 +16,12 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
+
 namespace Appccelerate.StateMachine
 {
     using System;
-
-    using Appccelerate.StateMachine.Machine;
     using Appccelerate.StateMachine.Machine.Events;
-    using Appccelerate.StateMachine.Persistence;
     using Appccelerate.StateMachine.Syntax;
 
     /// <summary>
@@ -59,6 +58,8 @@ namespace Appccelerate.StateMachine
         /// </summary>
         /// <value><c>true</c> if this instance is running; otherwise, <c>false</c>.</value>
         bool IsRunning { get; }
+
+        IEnumerable<TState> CurrentStates { get; }
 
         /// <summary>
         /// Define the behavior of a state.
@@ -124,35 +125,5 @@ namespace Appccelerate.StateMachine
         /// Stops the state machine. Events will be queued until the state machine is started.
         /// </summary>
         void Stop();
-
-        /// <summary>
-        /// Adds an extension.
-        /// </summary>
-        /// <param name="extension">The extension.</param>
-        void AddExtension(IExtension<TState, TEvent> extension);
-
-        /// <summary>
-        /// Clears all extensions.
-        /// </summary>
-        void ClearExtensions();
-
-        /// <summary>
-        /// Creates a state machine report with the specified generator.
-        /// </summary>
-        /// <param name="reportGenerator">The report generator.</param>
-        void Report(IStateMachineReport<TState, TEvent> reportGenerator);
-
-        /// <summary>
-        /// Saves the current state and history states to a persisted state. Can be restored using <see cref="Load"/>.
-        /// </summary>
-        /// <param name="stateMachineSaver">Data to be persisted is passed to the saver.</param>
-        void Save(IStateMachineSaver<TState> stateMachineSaver);
-
-        /// <summary>
-        /// Loads the current state and history states from a persisted state (<see cref="Save"/>).
-        /// The loader should return exactly the data that was passed to the saver.
-        /// </summary>
-        /// <param name="stateMachineLoader">Loader providing persisted data.</param>
-        void Load(IStateMachineLoader<TState> stateMachineLoader);
     }
 }

@@ -16,15 +16,13 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Appccelerate.StateMachine
 {
     using System;
 
     using Appccelerate.StateMachine.Machine;
-    using Appccelerate.StateMachine.Persistence;
-
-    using FakeItEasy;
-
     using FluentAssertions;
     using global::Machine.Specifications;
 
@@ -35,15 +33,10 @@ namespace Appccelerate.StateMachine
 
         static PassiveStateMachine<int, int> machine;
         static bool entryActionExecuted;
-        static CurrentStateExtension testExtension;
 
         Establish context = () =>
             {
-                testExtension = new CurrentStateExtension();
-
                 machine = new PassiveStateMachine<int, int>();
-
-                machine.AddExtension(testExtension);
 
                 machine.In(TestState)
                     .ExecuteOnEntry(() => entryActionExecuted = true);
@@ -56,7 +49,7 @@ namespace Appccelerate.StateMachine
             };
 
         It should_set_current_state_of_state_machine_to_state_to_which_it_is_initialized = () => 
-            testExtension.CurrentState.Should().Be(TestState);
+            machine.CurrentStates.First().Should().Be(TestState);
 
         It should_execute_entry_action_of_state_to_which_state_machine_is_initialized = () => 
             entryActionExecuted.Should().BeTrue();
@@ -69,15 +62,10 @@ namespace Appccelerate.StateMachine
 
         static PassiveStateMachine<int, int> machine;
         static bool entryActionExecuted;
-        static CurrentStateExtension testExtension;
 
         Establish context = () =>
             {
-                testExtension = new CurrentStateExtension();
-
                 machine = new PassiveStateMachine<int, int>();
-
-                machine.AddExtension(testExtension);
 
                 machine.In(TestState)
                     .ExecuteOnEntry(() => entryActionExecuted = true);
@@ -156,37 +144,6 @@ namespace Appccelerate.StateMachine
                 .Should().BeAssignableTo<InvalidOperationException>();
             receivedException.Message
                 .Should().Be(ExceptionMessages.StateMachineNotInitialized);
-        };
-    }
-
-    [Subject(Concern.Initialization)]
-    public class When_a_loaded_state_machine_is_initialized
-    {
-        private const int TestState = 1;
-
-        static IStateMachine<int, int> machine;
-        static IStateMachineLoader<int> loader;
-        static Exception receivedException;
-
-        Establish context = () =>
-        {
-            machine = new PassiveStateMachine<int, int>();
-
-            loader = A.Fake<IStateMachineLoader<int>>();
-            machine.Load(loader);
-        };
-
-        Because of = () =>
-        {
-            receivedException = Catch.Exception(() => machine.Initialize(0));
-        };
-
-        It should_throw_an_invalid_operation_exception = () =>
-        {
-            receivedException
-                .Should().BeAssignableTo<InvalidOperationException>();
-            receivedException.Message
-                .Should().Be(ExceptionMessages.StateMachineIsAlreadyInitialized);
         };
     }
 }

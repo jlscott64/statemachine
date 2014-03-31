@@ -35,7 +35,5 @@ namespace Appccelerate.StateMachine.Machine
         /// <param name="context">The context.</param>
         /// <param name="exception">The exception.</param>
         void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception);
-
-        void OnTransitionBegin(ITransitionContext<TState, TEvent> transitionContext);
     }
 }

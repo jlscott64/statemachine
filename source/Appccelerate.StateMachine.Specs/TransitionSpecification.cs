@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Appccelerate.StateMachine
 {
     using FluentAssertions;
@@ -36,14 +38,9 @@ namespace Appccelerate.StateMachine
 
         static PassiveStateMachine<int, int> machine;
 
-        static CurrentStateExtension currentStateExtension;
-
         Establish context = () =>
             {
                 machine = new PassiveStateMachine<int, int>();
-
-                currentStateExtension = new CurrentStateExtension();
-                machine.AddExtension(currentStateExtension);
 
                 machine.In(SourceState)
                     .ExecuteOnExit(() => exitActionExecuted = true)
@@ -63,7 +60,7 @@ namespace Appccelerate.StateMachine
 
         It should_execute_transition_by_switching_state = () =>
             {
-                currentStateExtension.CurrentState.Should().Be(DestinationState);
+                machine.CurrentStates.First().Should().Be(DestinationState);
             };
 
         It should_execute_transition_actions = () =>

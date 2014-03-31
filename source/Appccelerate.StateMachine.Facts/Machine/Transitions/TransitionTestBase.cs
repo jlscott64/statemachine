@@ -18,7 +18,6 @@
 
 namespace Appccelerate.StateMachine.Machine.Transitions
 {
-    using System;
     using FakeItEasy;
 
     public class TransitionTestBase
@@ -33,10 +32,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
         protected readonly Transition<States, Events> Testee;
 
-        protected TestableExtensionHost ExtensionHost { get; private set; }
-
-        protected IStateMachineInformation<States, Events> StateMachineInformation { get; private set; }
-
         protected INotifier<States, Events> Notifier { get; private set; }
 
         protected IState<States, Events> Source { get; set; }
@@ -47,24 +42,9 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
         public TransitionTestBase()
         {
-            this.StateMachineInformation = A.Fake<IStateMachineInformation<States, Events>>();
             this.Notifier = A.Fake<INotifier<States, Events>>();
-            this.ExtensionHost = new TestableExtensionHost();
 
-            this.Testee = new Transition<States, Events>(this.StateMachineInformation, this.Notifier, this.ExtensionHost);
-        } 
-
-        public class TestableExtensionHost : IExtensionHost<States, Events>
-        {
-            public IExtension<States, Events> Extension { private get; set; } 
-
-            public void ForEach(Action<IExtension<States, Events>> action)
-            {
-                if (this.Extension != null)
-                {
-                    action(this.Extension);
-                }
-            }
+            this.Testee = new Transition<States, Events>(this.Notifier);
         }
     }
 }

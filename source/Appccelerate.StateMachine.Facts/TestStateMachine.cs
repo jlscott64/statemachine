@@ -2,16 +2,13 @@ using System;
 using System.Collections.Generic;
 using Appccelerate.StateMachine.Machine;
 using Appccelerate.StateMachine.Machine.Events;
-using Appccelerate.StateMachine.Persistence;
 using Appccelerate.StateMachine.Syntax;
 
 namespace Appccelerate.StateMachine
 {
     public class TestStateMachine<TState, TEvent> :
         IStateMachine<TState, TEvent>,
-        IStateMachineInformation<TState, TEvent>,
-        INotifier<TState, TEvent>,
-        IExtensionHost<TState, TEvent>
+        INotifier<TState, TEvent>
         where TState : IComparable
         where TEvent : IComparable
     {
@@ -55,6 +52,11 @@ namespace Appccelerate.StateMachine
         public bool IsRunning
         {
             get { return stateMachine.IsRunning; }
+        }
+
+        public IEnumerable<TState> CurrentStates
+        {
+            get { return stateMachine.CurrentStates; }
         }
 
         public IEntryActionSyntax<TState, TEvent> In(TState state)
@@ -107,59 +109,14 @@ namespace Appccelerate.StateMachine
             stateMachine.Stop();
         }
 
-        public void AddExtension(IExtension<TState, TEvent> extension)
-        {
-            stateMachine.AddExtension(extension);
-        }
-
-        public void ClearExtensions()
-        {
-            stateMachine.ClearExtensions();
-        }
-
-        public void Report(IStateMachineReport<TState, TEvent> reportGenerator)
-        {
-            stateMachine.Report(reportGenerator);
-        }
-
-        public void Save(IStateMachineSaver<TState> stateMachineSaver)
-        {
-            stateMachine.Save(stateMachineSaver);
-        }
-
-        public void Load(IStateMachineLoader<TState> stateMachineLoader)
-        {
-            stateMachine.Load(stateMachineLoader);
-        }
-
         public string Name
         {
             get { return stateMachine.Name; }
         }
 
-        public TState CurrentStateId
-        {
-            get { return stateMachine.CurrentStateId; }
-        }
-
-        public IEnumerable<TState> CurrentStateIds
-        {
-            get { return stateMachine.CurrentStateIds; }
-        }
-
         public void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception)
         {
             stateMachine.OnExceptionThrown(context, exception);
-        }
-
-        public void OnTransitionBegin(ITransitionContext<TState, TEvent> transitionContext)
-        {
-            stateMachine.OnTransitionBegin(transitionContext);
-        }
-
-        public void ForEach(Action<IExtension<TState, TEvent>> action)
-        {
-            stateMachine.ForEach(action);
         }
     }
 }

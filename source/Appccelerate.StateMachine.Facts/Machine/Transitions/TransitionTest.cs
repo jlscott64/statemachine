@@ -48,13 +48,5 @@ namespace Appccelerate.StateMachine.Machine.Transitions
 
             A.CallTo(() => this.Source.Exit(this.TransitionContext)).MustHaveHappened(Repeated.Exactly.Once);
         }
-
-        [Fact]
-        public void NotifiesTransitionBegin()
-        {
-            this.Testee.Fire(this.TransitionContext);
-
-            A.CallTo(() => this.Notifier.OnTransitionBegin(this.TransitionContext)).MustHaveHappened();
-        }
     }
 }

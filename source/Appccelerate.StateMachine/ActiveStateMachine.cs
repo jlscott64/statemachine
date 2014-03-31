@@ -16,12 +16,14 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Appccelerate.StateMachine
 {
     using System;
     using Appccelerate.StateMachine.Machine.Events;
     using Appccelerate.StateMachine.Machine;
-    using Appccelerate.StateMachine.Persistence;
     using Appccelerate.StateMachine.Syntax;
 
     /// <summary>
@@ -100,6 +102,11 @@ namespace Appccelerate.StateMachine
             get { return stateMachine.IsRunning; }
         }
 
+        public IEnumerable<TState> CurrentStates
+        {
+            get { return stateMachine.CurrentStates; }
+        }
+
         public IEntryActionSyntax<TState, TEvent> In(TState state)
         {
             return stateMachine.In(state);
@@ -148,31 +155,6 @@ namespace Appccelerate.StateMachine
         public void Stop()
         {
             stateMachine.Stop();
-        }
-
-        public void AddExtension(IExtension<TState, TEvent> extension)
-        {
-            stateMachine.AddExtension(extension);
-        }
-
-        public void ClearExtensions()
-        {
-            stateMachine.ClearExtensions();
-        }
-
-        public void Report(IStateMachineReport<TState, TEvent> reportGenerator)
-        {
-            stateMachine.Report(reportGenerator);
-        }
-
-        public void Save(IStateMachineSaver<TState> stateMachineSaver)
-        {
-            stateMachine.Save(stateMachineSaver);
-        }
-
-        public void Load(IStateMachineLoader<TState> stateMachineLoader)
-        {
-            stateMachine.Load(stateMachineLoader);
         }
     }
 }

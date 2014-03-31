@@ -27,14 +27,12 @@ namespace Appccelerate.StateMachine.Machine
     using System.Reflection;
 
     using Appccelerate.StateMachine.Machine.Events;
-    using Appccelerate.StateMachine.Persistence;
     using Appccelerate.StateMachine.Syntax;
 
     public class StateMachine<TState, TEvent>
         : IStateMachine<TState, TEvent>,
-            IStateMachineInformation<TState, TEvent>,
-            INotifier<TState, TEvent>,
-            IExtensionHost<TState, TEvent> where TState : IComparable
+            INotifier<TState, TEvent>
+        where TState : IComparable
         where TEvent : IComparable
     {
         private readonly string name;
@@ -46,22 +44,18 @@ namespace Appccelerate.StateMachine.Machine
         private readonly IList<IState<TState, TEvent>> currentStates;
         private readonly Initializable<TState> initialStateId;
 
-        private readonly List<IExtension<TState, TEvent>> extensions;
-
         private bool initialized;
 
         public StateMachine(string name, IFactory<TState, TEvent> factory, Executer<TState, TEvent> executer)
         {
             this.name = name;
 
-            this.factory = factory ?? new StandardFactory<TState, TEvent>(this, this, this);
+            this.factory = factory ?? new StandardFactory<TState, TEvent>(this);
             this.executer = executer;
 
             this.states = new StateDictionary<TState, TEvent>(this.factory);
             this.currentStates = new List<IState<TState, TEvent>>();
             this.initialStateId = new Initializable<TState>();
-
-            this.extensions = new List<IExtension<TState, TEvent>>();
         }
 
         /// <summary>
@@ -141,8 +135,6 @@ namespace Appccelerate.StateMachine.Machine
 
             executer.Enqueue(() => this.DoFire(eventId, eventArgument));
 
-            this.ForEach(extension => extension.EventQueued(this, eventId, eventArgument));
-
             this.Execute();
         }
 
@@ -166,8 +158,6 @@ namespace Appccelerate.StateMachine.Machine
 
             executer.PriorityEnqueue(() => this.DoFire(eventId, eventArgument));
 
-            this.ForEach(extension => extension.EventQueuedWithPriority(this, eventId, eventArgument));
-
             this.Execute();
         }
 
@@ -179,85 +169,9 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.AssertThatStateMachineIsNotAlreadyInitialized();
 
-            this.extensions.ForEach(extension => extension.InitializingStateMachine(this, ref initialState));
-
             this.initialStateId.Value = this.states[initialState].Id;
             executer.PriorityEnqueue(this.EnterInitialState);
 
-            this.initialized = true;
-
-            this.extensions.ForEach(extension => extension.InitializedStateMachine(this, initialState));
-        }
-
-        /// <summary>
-        /// Adds the <paramref name="extension"/>.
-        /// </summary>
-        /// <param name="extension">The extension.</param>
-        public void AddExtension(IExtension<TState, TEvent> extension)
-        {
-            this.extensions.Add(extension);
-        }
-
-        /// <summary>
-        /// Clears all extensions.
-        /// </summary>
-        public void ClearExtensions()
-        {
-            this.extensions.Clear();
-        }
-
-        /// <summary>
-        /// Creates a report with the specified generator.
-        /// </summary>
-        /// <param name="reportGenerator">The report generator.</param>
-        public void Report(IStateMachineReport<TState, TEvent> reportGenerator)
-        {
-            Ensure.ArgumentNotNull(reportGenerator, "reportGenerator");
-
-            reportGenerator.Report(this.ToString(), this.states.GetStates(), this.initialStateId);
-        }
-
-        /// <summary>
-        /// Saves the current state and history states to a persisted state. Can be restored using <see cref="Load"/>.
-        /// </summary>
-        /// <param name="stateMachineSaver">Data to be persisted is passed to the saver.</param>
-        public void Save(IStateMachineSaver<TState> stateMachineSaver)
-        {
-            Ensure.ArgumentNotNull(stateMachineSaver, "stateMachineSaver");
-
-            stateMachineSaver.SaveCurrentState(this.currentStates.Any()
-                ? new Initializable<TState> {Value = this.CurrentStateId}
-                : new Initializable<TState>());
-
-            IEnumerable<IState<TState, TEvent>> superStatesWithLastActiveState = this.states.GetStates()
-                .Where(s => s.SubStates.Any())
-                .Where(s => s.LastActiveState != null)
-                .ToList();
-
-            var historyStates = superStatesWithLastActiveState.ToDictionary(
-                s => s.Id,
-                s => s.LastActiveState.Id);
-
-            stateMachineSaver.SaveHistoryStates(historyStates);
-        }
-
-        /// <summary>
-        /// Loads the current state and history states from a persisted state (<see cref="Save"/>).
-        /// The loader should return exactly the data that was passed to the saver.
-        /// </summary>
-        /// <param name="stateMachineLoader">Loader providing persisted data.</param>
-        public void Load(IStateMachineLoader<TState> stateMachineLoader)
-        {
-            Ensure.ArgumentNotNull(stateMachineLoader, "stateMachineLoader");
-            this.AssertThatStateMachineIsNotAlreadyInitialized();
-
-            this.LoadCurrentState(stateMachineLoader);
-            this.LoadHistoryStates(stateMachineLoader);
-
-            if (!currentStates.Any())
-            {
-                executer.PriorityEnqueue(this.EnterInitialState);
-            }
             this.initialized = true;
         }
 
@@ -266,15 +180,6 @@ namespace Appccelerate.StateMachine.Machine
         protected int QueuedEventCount
         {
             get { return executer.QueuedEventCount; }
-        }
-
-        /// <summary>
-        /// Executes the specified <paramref name="action"/> for all extensions.
-        /// </summary>
-        /// <param name="action">The action to execute.</param>
-        public void ForEach(Action<IExtension<TState, TEvent>> action)
-        {
-            this.extensions.ForEach(action);
         }
 
         public void OnExceptionThrown(ITransitionContext<TState, TEvent> context, Exception exception)
@@ -286,25 +191,10 @@ namespace Appccelerate.StateMachine.Machine
         }
 
         /// <summary>
-        /// Gets the id of the current state.
-        /// </summary>
-        /// <value>The id of the current state.</value>
-        public TState CurrentStateId
-        {
-            get
-            {
-                this.AssertThatStateMachineIsInitialized();
-
-                // ReSharper disable once PossibleNullReferenceException
-                return this.currentStates.Select(cs => cs.Id).Concat(new[] {this.initialStateId.Value}).First();
-            }
-        }
-
-        /// <summary>
         /// Gets the ids of the current states.
         /// </summary>
         /// <value>The ids of the current states.</value>
-        public IEnumerable<TState> CurrentStateIds
+        public IEnumerable<TState> CurrentStates
         {
             get { return this.currentStates.Select(s => s.Id).ToArray(); }
         }
@@ -345,8 +235,6 @@ namespace Appccelerate.StateMachine.Machine
             {
                 currentStates[indexOf] = newState;
             }
-
-            this.extensions.ForEach(extension => extension.SwitchedState(this, oldState, newState));
         }
 
         private void ChangeStates(IState<TState, TEvent> oldState, IEnumerable<IState<TState, TEvent>> newStates)
@@ -359,8 +247,6 @@ namespace Appccelerate.StateMachine.Machine
         {
             this.AssertThatStateMachineIsInitialized();
 
-            this.extensions.ForEach(extension => extension.FiringEvent(this, ref eventId, ref eventArgument));
-
             var fired = false;
             foreach (var pair in GetTransitionsToFire(eventId, eventArgument))
             {
@@ -370,8 +256,6 @@ namespace Appccelerate.StateMachine.Machine
                 DoFire(transition, context);
 
                 fired = true;
-
-                this.extensions.ForEach(extension => extension.FiredEvent(this, context));
             }
 
             if (!fired)
@@ -390,12 +274,13 @@ namespace Appccelerate.StateMachine.Machine
 
         private void DoFire(ITransition<TState, TEvent> transition, ITransitionContext<TState, TEvent> context)
         {
+            this.OnTransitionBegin(context);
+
             var result = transition.Fire(context);
             this.ChangeStates(context.SourceState, result.NewStates);
 
             this.OnTransitionCompleted(context, result.NewStates.First().Id);
         }
-
 
         /// <summary>
         /// Enters the initial state that was previously set with <see cref="Initialize(TState)"/>.
@@ -405,13 +290,9 @@ namespace Appccelerate.StateMachine.Machine
             this.AssertThatStateMachineIsInitialized();
             var stateId = this.initialStateId.Value;
 
-            this.extensions.ForEach(extension => extension.EnteringInitialState(this, stateId));
-
             var context = this.factory.CreateTransitionContext(null, new Missable<TEvent>(), Missing.Value);
             var initializer = this.factory.CreateStateMachineInitializer(this.states[stateId], context);
             this.ChangeStates(null, initializer.EnterInitialStates());
-
-            this.extensions.ForEach(extension => extension.EnteredInitialState(this, stateId, context));
         }
 
         protected void Execute()
@@ -429,7 +310,6 @@ namespace Appccelerate.StateMachine.Machine
             this.AssertThatStateMachineIsInitialized();
             if (executer.Start())
             {
-                this.ForEach(extension => extension.StartedStateMachine(this));
             }
         }
 
@@ -440,7 +320,6 @@ namespace Appccelerate.StateMachine.Machine
         {
             if (executer.Stop())
             {
-                this.ForEach(extension => extension.StoppedStateMachine(this));
             }
         }
 
@@ -457,15 +336,6 @@ namespace Appccelerate.StateMachine.Machine
                 {
                     result = transition;
                     break;
-                }
-                else
-                {
-                    var transition1 = transition;
-
-                    this.ForEach(extension => extension.SkippedTransition(
-                        this,
-                        transition1,
-                        context));
                 }
             }
 
@@ -531,29 +401,6 @@ namespace Appccelerate.StateMachine.Machine
             }
         }
 
-        private void LoadCurrentState(IStateMachineLoader<TState> stateMachineLoader)
-        {
-            Initializable<TState> loadedCurrentState = stateMachineLoader.LoadCurrentState();
-            if (loadedCurrentState.IsInitialized) currentStates.Add(this.states[loadedCurrentState.Value]);
-        }
-
-        private void LoadHistoryStates(IStateMachineLoader<TState> stateMachineLoader)
-        {
-            IDictionary<TState, TState> historyStates = stateMachineLoader.LoadHistoryStates();
-            foreach (KeyValuePair<TState, TState> historyState in historyStates)
-            {
-                var superState = this.states[historyState.Key];
-                IState<TState, TEvent> lastActiveState = this.states[historyState.Value];
-
-                if (!superState.SubStates.Contains(lastActiveState))
-                {
-                    throw new InvalidOperationException(ExceptionMessages.CannotSetALastActiveStateThatIsNotASubState);
-                }
-
-                superState.SetLastActiveState(lastActiveState);
-            }
-        }
-
         private void OnStateCompleted(object sender, StateCompletedEventArgs args)
         {
             var state = (IState<TState, TEvent>) sender;
@@ -572,7 +419,7 @@ namespace Appccelerate.StateMachine.Machine
         /// Fires the <see cref="TransitionBegin"/> event.
         /// </summary>
         /// <param name="transitionContext">The transition context.</param>
-        public void OnTransitionBegin(ITransitionContext<TState, TEvent> transitionContext)
+        private void OnTransitionBegin(ITransitionContext<TState, TEvent> transitionContext)
         {
             this.RaiseEvent(this.TransitionBegin, new TransitionEventArgs<TState, TEvent>(transitionContext),
                 transitionContext, true);

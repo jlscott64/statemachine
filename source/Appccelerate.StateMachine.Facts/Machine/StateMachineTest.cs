@@ -22,11 +22,6 @@ namespace Appccelerate.StateMachine.Machine
     using System.Diagnostics;
     using System.Linq;
     using System.Text;
-
-    using Appccelerate.StateMachine.Persistence;
-
-    using FakeItEasy;
-
     using FluentAssertions;
 
     using Xunit;
@@ -173,7 +168,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Initialize(StateMachine.States.A);
             this.testee.Start();
 
-            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStates.First());
             
             this.CheckRecord<EntryRecord>(StateMachine.States.A);
             this.CheckNoRemainingRecords();
@@ -189,7 +184,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Initialize(StateMachine.States.D1B);
             this.testee.Start();
 
-            Assert.Equal(StateMachine.States.D1B, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.D1B, this.testee.CurrentStates.First());
 
             this.CheckRecord<EntryRecord>(StateMachine.States.D);
             this.CheckRecord<EntryRecord>(StateMachine.States.D1);
@@ -207,47 +202,12 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Initialize(StateMachine.States.D);
             this.testee.Start();
 
-            Assert.Equal(StateMachine.States.D1A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.D1A, this.testee.CurrentStates.First());
 
             this.CheckRecord<EntryRecord>(StateMachine.States.D);
             this.CheckRecord<EntryRecord>(StateMachine.States.D1);
             this.CheckRecord<EntryRecord>(StateMachine.States.D1A);
             this.CheckNoRemainingRecords();
-        }
-
-        [Fact]
-        public void SetsCurrentStateOnLoadingFromPersistedState()
-        {
-            var loader = A.Fake<IStateMachineLoader<StateMachine.States>>();
-
-            A.CallTo(() => loader.LoadCurrentState())
-                .Returns(new Initializable<StateMachine.States> { Value = StateMachine.States.C });
-
-            this.testee.Load(loader);
-
-            this.testee.CurrentStateId
-                .Should().Be(StateMachine.States.C);
-        }
-
-        [Fact]
-        public void SetsHistoryStatesOnLoadingFromPersistedState()
-        {
-            var loader = A.Fake<IStateMachineLoader<StateMachine.States>>();
-
-            A.CallTo(() => loader.LoadHistoryStates())
-                .Returns(new Dictionary<StateMachine.States, StateMachine.States>
-                             {
-                                 { StateMachine.States.D, StateMachine.States.D2 }
-                             });
-
-            this.testee.Load(loader);
-            this.testee.Initialize(StateMachine.States.A);
-            this.testee.Start();
-            this.testee.Fire(StateMachine.Events.D); // should go to loaded last active state D2, not initial state D1
-            this.ClearRecords();
-            this.testee.Fire(StateMachine.Events.A);
-
-            this.CheckRecord<ExitRecord>(StateMachine.States.D2);
         }
 
         /// <summary>
@@ -266,7 +226,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.A);
 
-            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.E);
             this.CheckRecord<EntryRecord>(StateMachine.States.A);
@@ -288,7 +248,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.B2);
 
-            Assert.Equal(StateMachine.States.B2, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.B2, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.B1);
             this.CheckRecord<EntryRecord>(StateMachine.States.B2);
@@ -310,7 +270,7 @@ namespace Appccelerate.StateMachine.Machine
             
             this.testee.Fire(StateMachine.Events.C1B);
 
-            Assert.Equal(StateMachine.States.C1B, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.C1B, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.B2);
             this.CheckRecord<ExitRecord>(StateMachine.States.B);
@@ -335,7 +295,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.B1);
 
-            Assert.Equal(StateMachine.States.B1, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.B1, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.D1B);
             this.CheckRecord<ExitRecord>(StateMachine.States.D1);
@@ -359,7 +319,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.B);
 
-            Assert.Equal(StateMachine.States.B1, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.B1, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.A);
             this.CheckRecord<EntryRecord>(StateMachine.States.B);
@@ -403,7 +363,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.C);
 
-            Assert.Equal(StateMachine.States.C1A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.C1A, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.A);
             this.CheckRecord<EntryRecord>(StateMachine.States.C);
@@ -427,7 +387,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.D);
 
-            Assert.Equal(StateMachine.States.D1B, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.D1B, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.A);
             this.CheckRecord<EntryRecord>(StateMachine.States.D);
@@ -449,7 +409,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.A);
 
-            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.C1B);
             this.CheckRecord<ExitRecord>(StateMachine.States.C1);
@@ -470,7 +430,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.A);
 
-            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStates.First());
         }
 
         [Fact]
@@ -482,7 +442,7 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.E);
 
-            Assert.Equal(StateMachine.States.E, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.E, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.E);
             this.CheckRecord<EntryRecord>(StateMachine.States.E);
@@ -498,26 +458,11 @@ namespace Appccelerate.StateMachine.Machine
 
             this.testee.Fire(StateMachine.Events.C1B);
 
-            Assert.Equal(StateMachine.States.C1B, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.C1B, this.testee.CurrentStates.First());
 
             this.CheckRecord<ExitRecord>(StateMachine.States.C1A);
             this.CheckRecord<EntryRecord>(StateMachine.States.C1B);
             this.CheckNoRemainingRecords();
-        }
-
-        [Fact]
-        public void ExtensionsWhenExtensionsAreClearedThenNoExtensionIsRegistered()
-        {
-            bool executed = false;
-            var extension = A.Fake<IExtension<StateMachine.States, StateMachine.Events>>();
-
-            this.testee.AddExtension(extension);
-            this.testee.ClearExtensions();
-
-            this.testee.ForEach(e => executed = true);
-
-            executed
-                .Should().BeFalse();
         }
 
         /// <summary>
@@ -556,10 +501,12 @@ namespace Appccelerate.StateMachine.Machine
         {
             Record record = this.records.FirstOrDefault();
 
+            // ReSharper disable once UnusedVariable
             var x = record.As<T>();
 
             record.Should().NotBeNull();
             record.Should().BeAssignableTo<T>();
+
             // ReSharper disable once PossibleNullReferenceException
             record.State.Should().Be(state, record.Message);
             

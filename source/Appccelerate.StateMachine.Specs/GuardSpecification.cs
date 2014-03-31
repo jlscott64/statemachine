@@ -16,6 +16,8 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Appccelerate.StateMachine
 {
     using FluentAssertions;
@@ -32,14 +34,10 @@ namespace Appccelerate.StateMachine
         const int Event = 2;
 
         static PassiveStateMachine<int, int> machine;
-        static CurrentStateExtension currentStateExtension;
 
         private Establish context = () =>
             {
                 machine = new PassiveStateMachine<int, int>();
-
-                currentStateExtension = new CurrentStateExtension();
-                machine.AddExtension(currentStateExtension);
 
                 machine.In(SourceState)
                     .On(Event)
@@ -55,8 +53,8 @@ namespace Appccelerate.StateMachine
         private Because of = () => 
             machine.Fire(Event);
 
-        private It should_take_transition_guarded_with_first_matching_guard = () => 
-            currentStateExtension.CurrentState.Should().Be(DestinationState);
+        private It should_take_transition_guarded_with_first_matching_guard = () =>
+            machine.CurrentStates.First().Should().Be(DestinationState);
     }
 
     [Subject(Concern.Transition)]
@@ -69,14 +67,10 @@ namespace Appccelerate.StateMachine
         const int Event = 2;
 
         static PassiveStateMachine<int, int> machine;
-        static CurrentStateExtension currentStateExtension;
 
         private Establish context = () =>
         {
             machine = new PassiveStateMachine<int, int>();
-
-            currentStateExtension = new CurrentStateExtension();
-            machine.AddExtension(currentStateExtension);
 
             machine.In(SourceState)
                 .On(Event)
@@ -90,8 +84,8 @@ namespace Appccelerate.StateMachine
         private Because of = () => 
             machine.Fire(Event);
 
-        private It should_take_transition_guarded_with_otherwise = () => 
-            currentStateExtension.CurrentState.Should().Be(DestinationState);
+        private It should_take_transition_guarded_with_otherwise = () =>
+            machine.CurrentStates.First().Should().Be(DestinationState);
     }
 
     [Subject(Concern.Transition)]
@@ -103,15 +97,11 @@ namespace Appccelerate.StateMachine
         const int Event = 2;
 
         static PassiveStateMachine<int, int> machine;
-        static CurrentStateExtension currentStateExtension;
         static bool declined;
 
         private Establish context = () => 
         {
             machine = new PassiveStateMachine<int, int>();
-
-            currentStateExtension = new CurrentStateExtension();
-            machine.AddExtension(currentStateExtension);
 
             machine.In(SourceState)
                 .On(Event)

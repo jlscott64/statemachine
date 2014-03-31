@@ -43,19 +43,6 @@ namespace Appccelerate.StateMachine.Machine.Transitions
         }
 
         [Fact]
-        public void CallsExtensionToHandleException()
-        {
-            var extension = A.Fake<IExtension<States, Events>>();
-
-            this.ExtensionHost.Extension = extension;
-
-            this.Testee.Fire(this.TransitionContext);
-
-            A.CallTo(() => extension.HandlingTransitionException(this.StateMachineInformation, this.Testee, this.TransitionContext, ref this.exception)).MustHaveHappened();
-            A.CallTo(() => extension.HandledTransitionException(this.StateMachineInformation, this.Testee, this.TransitionContext, this.exception)).MustHaveHappened();
-        }
-
-        [Fact]
         public void ReturnsFiredTransitionResult()
         {
             ITransitionResult<States, Events> result = this.Testee.Fire(this.TransitionContext);

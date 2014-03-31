@@ -44,11 +44,9 @@
     <Compile Include="ActiveStateMachine.cs" />
     <Compile Include="EnumerableExtensionMethods.cs" />
     <Compile Include="EventInformation.cs" />
-    <Compile Include="Extensions\ExtensionBase.cs" />
     <Compile Include="HierarchyBuilder.cs" />
     <Compile Include="HistoryType.cs" />
     <Compile Include="IStateMachine.cs" />
-    <Compile Include="IStateMachineInformation.cs" />
     <Compile Include="ListExtensionMethods.cs" />
     <Compile Include="Machine\ActionHolders\ActionHoldersExceptionMessages.cs" />
     <Compile Include="Machine\ActionHolders\ArgumentDoActionHolder.cs" />
@@ -76,19 +74,15 @@
     <Compile Include="Machine\States\Region.cs" />
     <Compile Include="Machine\States\IRegion.cs" />
     <Compile Include="Machine\Transitions\Traversal.cs" />
-    <Compile Include="Machine\IExtension.cs" />
-    <Compile Include="Machine\IExtensionHost.cs" />
     <Compile Include="Machine\Initializable.cs" />
     <Compile Include="Machine\INotifier.cs" />
     <Compile Include="Machine\IState.cs" />
     <Compile Include="Machine\IStateDictionary.cs" />
-    <Compile Include="Machine\IStateMachineReport.cs" />
     <Compile Include="Machine\ITransition.cs" />
     <Compile Include="Machine\ITransitionContext.cs" />
     <Compile Include="Machine\ITransitionDictionary.cs" />
     <Compile Include="Machine\ITransitionResult.cs" />
     <Compile Include="Machine\Missable.cs" />
-    <Compile Include="Machine\RecordType.cs" />
     <Compile Include="Machine\StandardFactory.cs" />
     <Compile Include="Machine\StateBuilder.g.cs" />
     <Compile Include="Machine\StateDictionary.cs" />
@@ -103,14 +97,7 @@
     <Compile Include="Machine\Transitions\TransitionsExceptionMessages.cs" />
     <Compile Include="PassiveExecuter.cs" />
     <Compile Include="PassiveStateMachine.cs" />
-    <Compile Include="Persistence\IStateMachineLoader.cs" />
-    <Compile Include="Persistence\IStateMachineSaver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reports\CsvStateMachineReportGenerator.cs" />
-    <Compile Include="Reports\CsvStatesWriter.cs" />
-    <Compile Include="Reports\CsvTransitionsWriter.cs" />
-    <Compile Include="Reports\StateMachineReportGenerator.cs" />
-    <Compile Include="Reports\YEdStateMachineReportGenerator.cs" />
     <Compile Include="Machine\StateMachine.cs" />
     <Compile Include="Syntax\ICompletionEventSyntax.cs" />
     <Compile Include="Syntax\ICompletionGotoInIfSyntax.cs" />
@@ -142,6 +129,9 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Syntax\Syntax Interfaces.cd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

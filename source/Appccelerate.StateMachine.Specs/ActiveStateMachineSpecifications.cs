@@ -29,50 +29,6 @@ namespace Appccelerate.StateMachine
     using global::Machine.Specifications;
 
     [Subject("Active state machine creation")]
-    public class When_instantiating_an_active_state_machine_without_constructor_arguments
-    {
-        private static ActiveStateMachine<string, int> machine;
-        private static StateMachineNameReporter reporter;
-
-        Establish context = () =>
-            {
-                machine = new ActiveStateMachine<string, int>();
-
-                reporter = new StateMachineNameReporter();
-            };
-
-        Because of = () =>
-            machine.Report(reporter);
-
-        It should_use_default_name_for_state_machine = () =>
-            reporter.StateMachineName
-                .Should().Be("Appccelerate.StateMachine.ActiveStateMachine<System.String,System.Int32>");
-    }
-
-    [Subject("Active state machine creation")]
-    public class When_instantiating_an_active_state_machine_with_custom_name
-    {
-        const string Name = "custom name";
-
-        private static ActiveStateMachine<string, int> machine;
-        private static StateMachineNameReporter reporter;
-
-        Establish context = () =>
-        {
-            machine = new ActiveStateMachine<string, int>(Name);
-
-            reporter = new StateMachineNameReporter();
-        };
-
-        Because of = () =>
-            machine.Report(reporter);
-
-        It should_use_custom_name_for_state_machine = () =>
-            reporter.StateMachineName
-                .Should().Be(Name);
-    }
-
-    [Subject("Active state machine creation")]
     public class When_instantiating_an_active_state_machine_with_custom_factory
     {
         const string Name = "custom name";

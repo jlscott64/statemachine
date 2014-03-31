@@ -16,15 +16,11 @@
 // </copyright>
 //-------------------------------------------------------------------------------
 
+using System.Linq;
+
 namespace Appccelerate.StateMachine.Machine
 {
     using System;
-    using System.Collections.Generic;
-
-    using Appccelerate.StateMachine.Persistence;
-
-    using FakeItEasy;
-
     using FluentAssertions;
 
     using Xunit;
@@ -63,7 +59,7 @@ namespace Appccelerate.StateMachine.Machine
         [Fact]
         public void ExceptionIfNotInitialized()
         {
-            Assert.Throws<InvalidOperationException>(() => this.testee.CurrentStateId);
+            Assert.Throws<InvalidOperationException>(() => this.testee.CurrentStates.First());
             Assert.Throws<InvalidOperationException>(() => this.testee.Fire(StateMachine.Events.A));
         }
 
@@ -102,7 +98,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 
             this.AssertException(StateMachine.States.A, StateMachine.Events.B, eventArguments, exception);
-            Assert.Equal(StateMachine.States.A, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.A, this.testee.CurrentStates.First());
             Assert.True(transitionDeclined, "transition was not declined.");
         }
 
@@ -128,7 +124,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 
             this.AssertException(StateMachine.States.A, StateMachine.Events.B, eventArguments, exception);
-            Assert.Equal(StateMachine.States.B, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.B, this.testee.CurrentStates.First());
         }
 
         [Fact]
@@ -152,7 +148,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 
             this.AssertException(StateMachine.States.A, StateMachine.Events.B, eventArguments, exception);
-            Assert.Equal(StateMachine.States.B, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.B, this.testee.CurrentStates.First());
         }
 
         [Fact]
@@ -174,7 +170,7 @@ namespace Appccelerate.StateMachine.Machine
             this.testee.Fire(StateMachine.Events.B, eventArguments);
 
             this.AssertException(StateMachine.States.A, StateMachine.Events.B, eventArguments, exception);
-            Assert.Equal(StateMachine.States.B, this.testee.CurrentStateId);
+            Assert.Equal(StateMachine.States.B, this.testee.CurrentStates.First());
         }
 
         /// <summary>
@@ -235,37 +231,6 @@ namespace Appccelerate.StateMachine.Machine
             Action action = () => this.testee.In(StateMachine.States.A).On(StateMachine.Events.B).If(() => false).Execute(() => { });
 
             action.ShouldThrow<InvalidOperationException>().WithMessage(ExceptionMessages.TransitionWithoutGuardHasToBeLast);
-        }
-
-        [Fact]
-        public void ThrowsExceptionOnLoading_WhenAlreadyInitialized()
-        {
-            this.testee.Initialize(StateMachine.States.A);
-            Action action = () => this.testee.Load(A.Fake<IStateMachineLoader<StateMachine.States>>());
-
-            action.ShouldThrow<InvalidOperationException>().WithMessage(ExceptionMessages.StateMachineIsAlreadyInitialized);
-        }
-
-        [Fact]
-        public void ThrowsExceptionOnLoading_WhenSettingALastActiveStateThatIsNotASubState()
-        {
-            this.testee.DefineHierarchyOn(StateMachine.States.B)
-                .WithHistoryType(HistoryType.Deep)
-                .WithInitialSubState(StateMachine.States.B1)
-                .WithSubState(StateMachine.States.B2);
-
-            var loader = A.Fake<IStateMachineLoader<StateMachine.States>>();
-
-            A.CallTo(() => loader.LoadHistoryStates())
-                .Returns(new Dictionary<StateMachine.States, StateMachine.States>
-                             {
-                                 { StateMachine.States.B, StateMachine.States.A }
-                             });
-
-            Action action = () => this.testee.Load(loader);
-
-            action.ShouldThrow<InvalidOperationException>()
-                .WithMessage(ExceptionMessages.CannotSetALastActiveStateThatIsNotASubState);
         }
 
         /// <summary>
