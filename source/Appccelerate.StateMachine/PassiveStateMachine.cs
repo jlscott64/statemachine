@@ -64,37 +64,12 @@ namespace Appccelerate.StateMachine
         public PassiveStateMachine(string name, IFactory<TState, TEvent> factory)
         {
             var passiveExecuter = new PassiveExecuter<TState, TEvent>();
-            name = StateMachine<TState, TEvent>.NameOrDefault(this.GetType(), name);
             stateMachine = new StateMachine<TState, TEvent>(name ?? this.GetType().FullName, factory, passiveExecuter);
         }
 
         public override string ToString()
         {
             return stateMachine.Name;
-        }
-
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined
-        {
-            add { stateMachine.TransitionDeclined += value; }
-            remove { stateMachine.TransitionDeclined -= value; }
-        }
-
-        public event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown
-        {
-            add { stateMachine.TransitionExceptionThrown += value; }
-            remove { stateMachine.TransitionExceptionThrown -= value; }
-        }
-
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin
-        {
-            add { stateMachine.TransitionBegin += value; }
-            remove { stateMachine.TransitionBegin -= value; }
-        }
-
-        public event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted
-        {
-            add { stateMachine.TransitionCompleted += value; }
-            remove { stateMachine.TransitionCompleted -= value; }
         }
 
         public bool IsRunning

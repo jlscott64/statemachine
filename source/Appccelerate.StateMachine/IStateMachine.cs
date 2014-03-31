@@ -21,7 +21,6 @@ using System.Collections.Generic;
 namespace Appccelerate.StateMachine
 {
     using System;
-    using Appccelerate.StateMachine.Machine.Events;
     using Appccelerate.StateMachine.Syntax;
 
     /// <summary>
@@ -33,26 +32,6 @@ namespace Appccelerate.StateMachine
         where TState : IComparable
         where TEvent : IComparable
     {
-        /// <summary>
-        /// Occurs when no transition could be executed.
-        /// </summary>
-        event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined;
-
-        /// <summary>
-        /// Occurs when an exception was thrown inside a transition of the state machine.
-        /// </summary>
-        event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown;
-
-        /// <summary>
-        /// Occurs when a transition begins.
-        /// </summary>
-        event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin;
-
-        /// <summary>
-        /// Occurs when a transition completed.
-        /// </summary>
-        event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted;
-
         /// <summary>
         /// Gets a value indicating whether this instance is running. The state machine is running if if was started and not yet stopped.
         /// </summary>

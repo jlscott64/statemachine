@@ -43,14 +43,6 @@ namespace Appccelerate.StateMachine.Machine
         public ExceptionCasesTest()
         {
             this.testee = new TestStateMachine<StateMachine.States, StateMachine.Events>();
-
-            this.testee.TransitionExceptionThrown += (sender, eventArgs) =>
-                                                         {
-                                                             this.recordedStateId = eventArgs.StateId;
-                                                             this.recordedEventId = eventArgs.EventId;
-                                                             this.recordedEventArgument = eventArgs.EventArgument;
-                                                             this.recordedException = eventArgs.Exception;
-                                                         };
         }
 
         /// <summary>
@@ -90,7 +82,6 @@ namespace Appccelerate.StateMachine.Machine
                     .If(() => { throw exception; }).Goto(StateMachine.States.B);
 
             bool transitionDeclined = false;
-            this.testee.TransitionDeclined += (sender, e) => transitionDeclined = true;
 
             this.testee.Initialize(StateMachine.States.A);
             this.testee.Start();

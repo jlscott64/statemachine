@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Appccelerate.StateMachine.Machine;
-using Appccelerate.StateMachine.Machine.Events;
 using Appccelerate.StateMachine.Syntax;
 
 namespace Appccelerate.StateMachine
@@ -23,30 +22,6 @@ namespace Appccelerate.StateMachine
         {
             var passiveExecuter = new PassiveExecuter<TState, TEvent>();
             stateMachine = new StateMachine<TState, TEvent>(name ?? this.GetType().FullName, null, passiveExecuter);
-        }
-
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionDeclined
-        {
-            add { stateMachine.TransitionDeclined += value; }
-            remove { stateMachine.TransitionDeclined -= value; }
-        }
-
-        public event EventHandler<TransitionExceptionEventArgs<TState, TEvent>> TransitionExceptionThrown
-        {
-            add { stateMachine.TransitionExceptionThrown += value; }
-            remove { stateMachine.TransitionExceptionThrown -= value; }
-        }
-
-        public event EventHandler<TransitionEventArgs<TState, TEvent>> TransitionBegin
-        {
-            add { stateMachine.TransitionBegin += value; }
-            remove { stateMachine.TransitionBegin -= value; }
-        }
-
-        public event EventHandler<TransitionCompletedEventArgs<TState, TEvent>> TransitionCompleted
-        {
-            add { stateMachine.TransitionCompleted += value; }
-            remove { stateMachine.TransitionCompleted -= value; }
         }
 
         public bool IsRunning
